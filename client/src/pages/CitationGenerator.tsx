@@ -3303,12 +3303,194 @@ export default function CitationGenerator() {
                           )}
                         />
                       </div>
+                      
+                      {form.watch("isOnline") && (
+                        <div className="space-y-4 pl-4 border-l-2 border-gray-200">
+                          <FormField
+                            control={form.control}
+                            name="webAddress"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                                  Web Address (URL)
+                                  <span className="text-red-500 ml-1">*</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" className="p-0 h-auto ml-1">
+                                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="w-60">The complete URL where the lecture recording or transcript can be found online</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g., https://example.edu/lectures/recording" 
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div>
+                            <FormLabel className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              Date of Access
+                              <span className="text-red-500 ml-1">*</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" className="p-0 h-auto ml-1">
+                                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="w-60">The date when you accessed the online lecture</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </FormLabel>
+                            
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                              <FormField
+                                control={form.control}
+                                name="accessDay"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        placeholder="Day" 
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="accessMonth"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Select 
+                                        onValueChange={field.onChange} 
+                                        defaultValue={field.value}
+                                        value={field.value}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Month" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="January">January</SelectItem>
+                                          <SelectItem value="February">February</SelectItem>
+                                          <SelectItem value="March">March</SelectItem>
+                                          <SelectItem value="April">April</SelectItem>
+                                          <SelectItem value="May">May</SelectItem>
+                                          <SelectItem value="June">June</SelectItem>
+                                          <SelectItem value="July">July</SelectItem>
+                                          <SelectItem value="August">August</SelectItem>
+                                          <SelectItem value="September">September</SelectItem>
+                                          <SelectItem value="October">October</SelectItem>
+                                          <SelectItem value="November">November</SelectItem>
+                                          <SelectItem value="December">December</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="accessYear"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        placeholder="Year" 
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const today = new Date();
+                                const day = today.getDate().toString();
+                                const month = format(today, 'MMMM');
+                                const year = today.getFullYear().toString();
+                                
+                                form.setValue('accessDay', day);
+                                form.setValue('accessMonth', month);
+                                form.setValue('accessYear', year);
+                                form.setValue('accessDate', `${day} ${month} ${year}`);
+                              }}
+                              className="flex items-center text-[#1B387A]"
+                            >
+                              <Calendar className="h-4 w-4 mr-1" />
+                              Use Today's Date
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                   
                   {/* Encyclopedia specific fields */}
                   {sourceType === 'encyclopedia' && (
                     <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="isOnline"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Online Source
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" className="p-0 h-auto ml-1">
+                                        <HelpCircle className="h-4 w-4 text-gray-400" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="w-60">Check this box if the encyclopedia entry is available online</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </FormLabel>
+                              <FormDescription className="text-xs text-gray-500">
+                                This will include the web address and access date in the citation
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
                       <FormField
                         control={form.control}
                         name="title"
@@ -3444,6 +3626,154 @@ export default function CitationGenerator() {
                           </FormItem>
                         )}
                       />
+                      
+                      {form.watch("isOnline") && (
+                        <div className="space-y-4 pl-4 border-l-2 border-gray-200">
+                          <FormField
+                            control={form.control}
+                            name="webAddress"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                                  Web Address (URL)
+                                  <span className="text-red-500 ml-1">*</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" className="p-0 h-auto ml-1">
+                                          <HelpCircle className="h-4 w-4 text-gray-400" />
+                                        </Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p className="w-60">The complete URL where the encyclopedia entry can be found online</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g., https://example.edu/encyclopedia/volume" 
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div>
+                            <FormLabel className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                              Date of Access
+                              <span className="text-red-500 ml-1">*</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" className="p-0 h-auto ml-1">
+                                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="w-60">The date when you accessed the online encyclopedia</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </FormLabel>
+                            
+                            <div className="grid grid-cols-3 gap-2 mb-2">
+                              <FormField
+                                control={form.control}
+                                name="accessDay"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        placeholder="Day" 
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="accessMonth"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Select 
+                                        onValueChange={field.onChange} 
+                                        defaultValue={field.value}
+                                        value={field.value}
+                                      >
+                                        <SelectTrigger className="w-full">
+                                          <SelectValue placeholder="Month" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="January">January</SelectItem>
+                                          <SelectItem value="February">February</SelectItem>
+                                          <SelectItem value="March">March</SelectItem>
+                                          <SelectItem value="April">April</SelectItem>
+                                          <SelectItem value="May">May</SelectItem>
+                                          <SelectItem value="June">June</SelectItem>
+                                          <SelectItem value="July">July</SelectItem>
+                                          <SelectItem value="August">August</SelectItem>
+                                          <SelectItem value="September">September</SelectItem>
+                                          <SelectItem value="October">October</SelectItem>
+                                          <SelectItem value="November">November</SelectItem>
+                                          <SelectItem value="December">December</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={form.control}
+                                name="accessYear"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        placeholder="Year" 
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const today = new Date();
+                                const day = today.getDate().toString();
+                                const month = format(today, 'MMMM');
+                                const year = today.getFullYear().toString();
+                                
+                                form.setValue('accessDay', day);
+                                form.setValue('accessMonth', month);
+                                form.setValue('accessYear', year);
+                                form.setValue('accessDate', `${day} ${month} ${year}`);
+                              }}
+                              className="flex items-center text-[#1B387A]"
+                            >
+                              <Calendar className="h-4 w-4 mr-1" />
+                              Use Today's Date
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
