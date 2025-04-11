@@ -1,0 +1,59 @@
+Certainly! Here is the consolidated Project Brief for the NALT Cite web application, incorporating all the requirements we've discussed, including the downloadable guide files which you confirmed you already have prepared:
+
+---
+
+**Project Brief: NALT Cite Web Application**
+
+**1. Project Goal:**
+Develop a comprehensive, user-friendly web application for the "NALT Cite" organization. This application will serve as the primary online resource for understanding and correctly applying the Nigerian Association of Law Teachers (NALT) Uniform Format and Citation Guide for legal research and writing in Nigeria.
+
+**2. Target Audience:**
+Law students (undergraduate and postgraduate), legal academics, researchers, legal practitioners, and journal editors in Nigeria who need to adhere to NALT standards.
+
+**3. Core Functionality:**
+The application should function as an interactive guide and toolset for the NALT citation style. It needs to be informative, easy to navigate, and provide practical assistance for legal writing and research formatting.
+
+**4. Key Features/Sections Required:**
+
+* **Homepage:** Engaging landing page introducing NALT Cite and its purpose. Crucially, it must feature prominent download links for:
+    * The **complete** "NALT Uniform Format and Citation Guide" (You will provide this PDF).
+    * **Individual Parts** of the Guide (Part 1, Part 2, Part 3, Part 4) (You will provide these separate, pre-split PDF files).
+    * Should also highlight other key features/sections of the site.
+* **NALT Citation Generator:** An interactive tool where users can input source details (book, journal, case, statute, etc.) and receive a correctly formatted NALT citation. *(Initial build should create the interface; specific NALT rules will be provided by you for backend logic later).*
+* **Glossary:** A dedicated section containing a comprehensive list of legal citation and research methodology terms relevant to Nigeria. This section must be searchable and allow users to browse terms alphabetically. *(You will provide the content for the glossary).*
+* **FAQ Section:** A section addressing frequently asked questions about the NALT guide, citation formats, and common issues. *(You will provide the content).*
+* **Blog:** A section to host blog posts related to NALT updates, legal writing tips, research advice, etc. Should support multiple posts and potentially categorization. *(You will provide the content for ~30 posts).*
+* **Resources:** A section offering downloadable materials. Create placeholders and download functionality for:
+    * NALT Citation Quick Reference Guide (PDF)
+    * NALT Citation Templates (DOCX)
+    * NALT vs. OSCOLA Comparison Chart (PDF)
+    * Legal Research Methodology Guide (PDF)
+    * Legal Writing Style Guide (PDF)
+    * Citation Proofreading Checklist (PDF)
+    * Undergraduate Essay Template (DOCX)
+    * Master's Dissertation Template (DOCX)
+    * Journal Article Submission Template (DOCX)
+    * Nigerian Legal Research Links (PDF)
+    * NALT Citation FAQs (PDF)
+    * Links to NALT Citation Video Tutorials (Placeholder for URLs)
+    * *(Optional Placement):* Consider also placing the download links for the individual parts (Part 1, Part 2, Part 3, Part 4) of the main NALT Guide here for organizational clarity, in addition to or instead of the homepage links. *(You will provide these separate PDF files).*
+
+**5. Branding & Design:**
+
+* **Color Palette:** Strictly adhere to the provided brand colors:
+    * Primary Blues: Yale Blue (`#1B387A`), Polynesian Blue (`#294D98`)
+    * Neutral: White (`#FFFFFF`)
+    * Accent/Secondary Neutral: French Gray (`#C3CDE1`)
+    * *(Utilize the Tailwind configuration provided previously if applicable to the chosen framework).*
+* **Logo:** Incorporate the NALT Cite logo prominently (e.g., header). *(You will provide the logo file).*
+* **Overall Tone:** Professional, academic, clean, modern, and highly credible. User interface should be intuitive and accessible.
+
+**6. Technology:**
+Utilize Firebase Studio and its integrated tools (including AI assistance via Gemini, if helpful for prototyping or code generation) and Firebase services (like Firebase Hosting for deployment). Choose a suitable modern web framework supported by Firebase Studio (e.g., Next.js, React, Vue, Angular).
+
+**7. Content Population:**
+This initial phase focuses on building the structure, layout, feature shells, and implementing the branding. Populating the application with the specific rules, glossary terms, FAQ answers, blog posts, and downloadable files (including the full NALT Guide PDF and the separate PDFs for Parts 1-4) will be a subsequent step, with content provided separately by you.
+
+---
+
+This is the complete brief based on our discussions so far. Let me know what you'd like to tackle next!
