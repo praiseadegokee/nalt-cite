@@ -3170,6 +3170,40 @@ export default function CitationGenerator() {
                     <div className="space-y-4">
                       <FormField
                         control={form.control}
+                        name="isOnline"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Online Source
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" className="p-0 h-auto ml-1">
+                                        <HelpCircle className="h-4 w-4 text-gray-400" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="w-60">Check this box if the lecture recording or transcript is available online</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </FormLabel>
+                              <FormDescription className="text-xs text-gray-500">
+                                This will include the web address and access date in the citation
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
                         name="title"
                         render={({ field }) => (
                           <FormItem>
