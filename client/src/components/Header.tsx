@@ -69,16 +69,16 @@ export default function Header() {
                 <div className="px-2 pt-2 pb-3 space-y-1">
                   {navItems.map((item) => (
                     <Link key={item.path} href={item.path}>
-                      <a 
+                      <span 
                         className={`block px-3 py-2 ${
                           isActive(item.path)
                             ? 'bg-[#294D98] text-white'
                             : 'text-white hover:bg-[#294D98]'
-                        } rounded`}
+                        } rounded cursor-pointer`}
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {item.name}
-                      </a>
+                      </span>
                     </Link>
                   ))}
                 </div>
