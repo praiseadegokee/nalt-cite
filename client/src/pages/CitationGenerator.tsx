@@ -27,7 +27,7 @@ import { Copy, Book, FileText, Gavel, Scroll, GraduationCap, Globe, Newspaper, P
 const authorSchema = z.object({
   firstName: z.string().optional(),
   middleName: z.string().optional(),
-  lastName: z.string().min(1, "Last name is required"),
+  lastName: z.string().min(1, "Name is required"),
   isOrganization: z.boolean().optional(),
 });
 
@@ -62,17 +62,19 @@ const journalArticleSchema = baseFormSchema.extend({
 });
 
 // Case schema
-const caseSchema = baseFormSchema.extend({
+const caseSchema = z.object({
+  sourceType: z.literal('case'),
   plaintiff: z.string().min(1, "Plaintiff is required"),
   defendant: z.string().min(1, "Defendant is required"),
-  year: z.string().min(1, "Year is required"),
+  year: z.string().min(1, "Year is required").optional(),
   volume: z.string().optional(),
-  lawReport: z.string().min(1, "Law report is required"),
+  lawReport: z.string().optional(),
   partNumber: z.string().optional(),
-  page: z.string().min(1, "Page number is required"),
+  page: z.string().optional(),
   isUnreported: z.boolean().optional(),
   court: z.string().optional(),
   judgmentDate: z.string().optional(),
+  suitNumber: z.string().optional(),
 });
 
 // Statute schema
@@ -173,6 +175,8 @@ const formSchema = z.object({
   isUnreported: z.boolean().optional(),
   court: z.string().optional(),
   judgmentDate: z.string().optional(),
+  suitNumber: z.string().optional(),
+  isOnline: z.boolean().optional(),
   actNumber: z.string().optional(),
   chapter: z.string().optional(),
   section: z.string().optional(),
@@ -184,6 +188,9 @@ const formSchema = z.object({
   alterationInfo: z.string().optional(),
   webAddress: z.string().optional(),
   accessDate: z.string().optional(),
+  accessDay: z.string().optional(),
+  accessMonth: z.string().optional(),
+  accessYear: z.string().optional(),
   newspaperName: z.string().optional(),
   city: z.string().optional(),
   publicationDate: z.string().optional(),
@@ -394,7 +401,14 @@ export default function CitationGenerator() {
         
       case 'case':
         if (data.isUnreported) {
-          formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i> (Unreported) ${data.court}, ${data.judgmentDate}`;
+          formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i>`;
+          
+          if (data.suitNumber) {
+            formattedCitation += ` (${data.suitNumber}, ${data.court}, ${data.judgmentDate})`;
+          } else {
+            formattedCitation += ` (Unreported) ${data.court}, ${data.judgmentDate}`;
+          }
+          
           bibCitation = formattedCitation;
         } else {
           formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i> [${data.year}]`;
@@ -1149,13 +1163,25 @@ export default function CitationGenerator() {
                   {/* Case specific fields */}
                   {sourceType === 'case' && (
                     <div className="space-y-4">
+                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <div className="flex">
+                          <AlertCircle className="h-5 w-5 text-blue-500 mr-2" />
+                          <p className="text-sm text-blue-700">
+                            Note: Cases don't require author information. Enter parties directly below.
+                          </p>
+                        </div>
+                      </div>
+                    
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
                           name="plaintiff"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Plaintiff</FormLabel>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Plaintiff
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
@@ -1163,6 +1189,9 @@ export default function CitationGenerator() {
                                   className="w-full"
                                 />
                               </FormControl>
+                              <FormDescription>
+                                The party bringing the case
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1173,7 +1202,10 @@ export default function CitationGenerator() {
                           name="defendant"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Defendant</FormLabel>
+                              <FormLabel className="text-sm font-medium text-gray-700">
+                                Defendant
+                                <span className="text-red-500 ml-1">*</span>
+                              </FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
@@ -1181,6 +1213,9 @@ export default function CitationGenerator() {
                                   className="w-full"
                                 />
                               </FormControl>
+                              <FormDescription>
+                                The party against whom the case is brought
+                              </FormDescription>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1211,6 +1246,27 @@ export default function CitationGenerator() {
                         <>
                           <FormField
                             control={form.control}
+                            name="suitNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-sm font-medium text-gray-700">Suit/Case Number</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g., FHC/J/CRC/10/2015" 
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormDescription>
+                                  The official identification number assigned to the case
+                                </FormDescription>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        
+                          <FormField
+                            control={form.control}
                             name="court"
                             render={({ field }) => (
                               <FormItem>
@@ -1222,6 +1278,9 @@ export default function CitationGenerator() {
                                     className="w-full"
                                   />
                                 </FormControl>
+                                <FormDescription>
+                                  The court where the case was decided
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1240,6 +1299,9 @@ export default function CitationGenerator() {
                                     className="w-full"
                                   />
                                 </FormControl>
+                                <FormDescription>
+                                  The date when judgment was pronounced (day-month-year format)
+                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1261,6 +1323,9 @@ export default function CitationGenerator() {
                                       className="w-full"
                                     />
                                   </FormControl>
+                                  <FormDescription>
+                                    Year of reporting
+                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -1279,6 +1344,9 @@ export default function CitationGenerator() {
                                       className="w-full"
                                     />
                                   </FormControl>
+                                  <FormDescription>
+                                    Volume number
+                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -1309,6 +1377,8 @@ export default function CitationGenerator() {
                                         <SelectItem value="NISLR">NISLR</SelectItem>
                                         <SelectItem value="WLR">WLR</SelectItem>
                                         <SelectItem value="All NLR">All NLR</SelectItem>
+                                        <SelectItem value="LPELR">LPELR</SelectItem>
+                                        <SelectItem value="other">Other (specify)</SelectItem>
                                       </SelectContent>
                                     </Select>
                                   </FormControl>
@@ -1317,6 +1387,28 @@ export default function CitationGenerator() {
                               )}
                             />
                             
+                            {form.watch("lawReport") === "other" && (
+                              <FormField
+                                control={form.control}
+                                name="lawReportCustom"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Custom Law Report</FormLabel>
+                                    <FormControl>
+                                      <Input 
+                                        {...field} 
+                                        placeholder="Enter custom law report" 
+                                        className="w-full"
+                                      />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            )}
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
                               name="partNumber"
@@ -1330,29 +1422,35 @@ export default function CitationGenerator() {
                                       className="w-full"
                                     />
                                   </FormControl>
+                                  <FormDescription>
+                                    Part number in brackets if applicable
+                                  </FormDescription>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="page"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-sm font-medium text-gray-700">Page Number</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      {...field} 
+                                      placeholder="e.g., 550" 
+                                      className="w-full"
+                                    />
+                                  </FormControl>
+                                  <FormDescription>
+                                    Starting page number of the case report
+                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
                           </div>
-                          
-                          <FormField
-                            control={form.control}
-                            name="page"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Page Number</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., 550" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                         </>
                       )}
                     </div>
