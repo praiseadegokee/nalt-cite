@@ -37,22 +37,22 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">Quick Links</h3>
             <nav className="flex flex-col space-y-2">
               <Link href="/">
-                <a className="text-gray-400 hover:text-white text-sm">Home</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Home</span>
               </Link>
               <Link href="/citation-generator">
-                <a className="text-gray-400 hover:text-white text-sm">Citation Generator</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Citation Generator</span>
               </Link>
               <Link href="/glossary">
-                <a className="text-gray-400 hover:text-white text-sm">Glossary</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Glossary</span>
               </Link>
               <Link href="/faq">
-                <a className="text-gray-400 hover:text-white text-sm">FAQ</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">FAQ</span>
               </Link>
               <Link href="/blog">
-                <a className="text-gray-400 hover:text-white text-sm">Blog</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Blog</span>
               </Link>
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Resources</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Resources</span>
               </Link>
             </nav>
           </div>
@@ -62,19 +62,19 @@ export default function Footer() {
             <h3 className="text-white font-semibold text-lg mb-4">Resources</h3>
             <nav className="flex flex-col space-y-2">
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Download Complete Guide</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Download Complete Guide</span>
               </Link>
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Citation Templates</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Citation Templates</span>
               </Link>
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Writing Style Guide</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Writing Style Guide</span>
               </Link>
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Research Methodology</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Research Methodology</span>
               </Link>
               <Link href="/resources">
-                <a className="text-gray-400 hover:text-white text-sm">Video Tutorials</a>
+                <span className="text-gray-400 hover:text-white text-sm cursor-pointer">Video Tutorials</span>
               </Link>
             </nav>
           </div>
