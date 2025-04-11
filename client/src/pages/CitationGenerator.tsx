@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { format } from 'date-fns';
 import { 
   Form,
   FormControl,
@@ -21,7 +22,13 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Copy, Book, FileText, Gavel, Scroll, GraduationCap, Globe, Newspaper, Plus, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
+import { Copy, Book, FileText, Gavel, Scroll, GraduationCap, Globe, Newspaper, Plus, Trash2, AlertCircle, HelpCircle, Calendar } from 'lucide-react';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Base author schema for a single author
 const authorSchema = z.object({
@@ -1673,11 +1680,59 @@ export default function CitationGenerator() {
                         name="title"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Title</FormLabel>
+                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                              Title
+                              <span className="text-red-500 ml-1">*</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" className="p-0 h-auto ml-1">
+                                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="w-60">The main title of the web resource or article</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </FormLabel>
                             <FormControl>
                               <Input 
                                 {...field} 
                                 placeholder="e.g., Overview of Nigerian Legal System" 
+                                className="w-full"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="webAddress"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                              Web Address (URL)
+                              <span className="text-red-500 ml-1">*</span>
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" className="p-0 h-auto ml-1">
+                                      <HelpCircle className="h-4 w-4 text-gray-400" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="w-60">The complete URL where the resource can be found</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </FormLabel>
+                            <FormControl>
+                              <Input 
+                                {...field} 
+                                placeholder="e.g., https://www.nigerianbar.org/legal-system" 
                                 className="w-full"
                               />
                             </FormControl>
@@ -1692,7 +1747,21 @@ export default function CitationGenerator() {
                           name="publisher"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Publisher/Website</FormLabel>
+                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                                Publisher/Website
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" className="p-0 h-auto ml-1">
+                                        <HelpCircle className="h-4 w-4 text-gray-400" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="w-60">The organization that published the content</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
@@ -1710,7 +1779,21 @@ export default function CitationGenerator() {
                           name="year"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
+                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
+                                Year of Publication
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button variant="ghost" className="p-0 h-auto ml-1">
+                                        <HelpCircle className="h-4 w-4 text-gray-400" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="w-60">The year when the content was published online</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </FormLabel>
                               <FormControl>
                                 <Input 
                                   {...field} 
@@ -1724,41 +1807,130 @@ export default function CitationGenerator() {
                         />
                       </div>
                       
-                      <FormField
-                        control={form.control}
-                        name="webAddress"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Web Address</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., https://www.nigerianbar.org/legal-system" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="accessDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Date of Access</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., 30 September 2021" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div>
+                        <FormLabel className="flex items-center text-sm font-medium text-gray-700 mb-2">
+                          Date of Access
+                          <span className="text-red-500 ml-1">*</span>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" className="p-0 h-auto ml-1">
+                                  <HelpCircle className="h-4 w-4 text-gray-400" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="w-60">The date when you accessed the web resource</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </FormLabel>
+                        
+                        <div className="grid grid-cols-3 gap-2 mb-2">
+                          <FormField
+                            control={form.control}
+                            name="accessDay"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="Day" 
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="accessMonth"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Select 
+                                    onValueChange={field.onChange} 
+                                    defaultValue={field.value}
+                                    value={field.value}
+                                  >
+                                    <SelectTrigger className="w-full">
+                                      <SelectValue placeholder="Month" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="January">January</SelectItem>
+                                      <SelectItem value="February">February</SelectItem>
+                                      <SelectItem value="March">March</SelectItem>
+                                      <SelectItem value="April">April</SelectItem>
+                                      <SelectItem value="May">May</SelectItem>
+                                      <SelectItem value="June">June</SelectItem>
+                                      <SelectItem value="July">July</SelectItem>
+                                      <SelectItem value="August">August</SelectItem>
+                                      <SelectItem value="September">September</SelectItem>
+                                      <SelectItem value="October">October</SelectItem>
+                                      <SelectItem value="November">November</SelectItem>
+                                      <SelectItem value="December">December</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="accessYear"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="Year" 
+                                    className="w-full"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const today = new Date();
+                            const day = today.getDate().toString();
+                            const month = format(today, 'MMMM');
+                            const year = today.getFullYear().toString();
+                            
+                            form.setValue('accessDay', day);
+                            form.setValue('accessMonth', month);
+                            form.setValue('accessYear', year);
+                            
+                            // Set the combined access date for backward compatibility
+                            form.setValue('accessDate', `${day} ${month} ${year}`);
+                          }}
+                          className="flex items-center text-[#1B387A]"
+                        >
+                          <Calendar className="h-4 w-4 mr-1" />
+                          Use Today's Date
+                        </Button>
+                        
+                        <FormField
+                          control={form.control}
+                          name="accessDate"
+                          render={({ field }) => (
+                            <FormItem hidden>
+                              <FormControl>
+                                <Input {...field} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   )}
                   
@@ -2380,12 +2552,18 @@ export default function CitationGenerator() {
                   </Tabs>
                 </div>
                 
-                <div className="p-5 bg-white border border-gray-300 rounded font-mono text-sm mb-4">
+                <div className="p-5 bg-white border border-gray-300 rounded mb-4">
                   <div className="flex items-start space-x-2">
                     {selectedTab === "footnote" && (
                       <span className="text-xs align-top leading-5">¹</span>
                     )}
-                    <span dangerouslySetInnerHTML={{ __html: citation }} />
+                    <span 
+                      dangerouslySetInnerHTML={{ __html: citation }} 
+                      style={{ 
+                        fontFamily: "'Times New Roman', serif", 
+                        fontSize: selectedTab === "footnote" ? "10pt" : "12pt" 
+                      }} 
+                    />
                   </div>
                 </div>
                 
