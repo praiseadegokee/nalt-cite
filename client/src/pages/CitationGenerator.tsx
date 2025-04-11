@@ -376,7 +376,7 @@ export default function CitationGenerator() {
               : data.accessDate;
               
             if (accessDateStr) {
-              formattedCitation += ` <accessed online: ${data.webAddress}, ${accessDateStr}>`;
+              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
             }
           }
           
@@ -395,7 +395,7 @@ export default function CitationGenerator() {
               : data.accessDate;
               
             if (accessDateStr) {
-              bibCitation += ` <accessed online: ${data.webAddress}, ${accessDateStr}>`;
+              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
             }
           }
         }
@@ -597,8 +597,30 @@ export default function CitationGenerator() {
       case 'thesis':
         formattedCitation = `${formatAuthors(data.authors)}, <i>${data.title}</i> (${data.degreeType}, ${data.faculty}, ${data.university} ${data.year})`;
         
+        // Add online source information if applicable
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
+        
         // Bibliography format
         bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i> (${data.degreeType}, ${data.faculty}, ${data.university} ${data.year})`;
+        
+        // Add online source to bibliography
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
         break;
         
       case 'conferencePaper':
@@ -608,11 +630,33 @@ export default function CitationGenerator() {
           formattedCitation += ` ${data.page}`;
         }
         
+        // Add online source information if applicable
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
+        
         // Bibliography format
         bibCitation = `${formatAuthors(data.authors, true)}, '${data.title}' <i>${data.proceedingsTitle}</i>, ${data.conferenceName}, ${data.conferenceLocation}, ${data.conferenceDates}`;
         
         if (data.page) {
           bibCitation += ` ${data.page}`;
+        }
+        
+        // Add online source to bibliography
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
         }
         break;
         
@@ -625,6 +669,17 @@ export default function CitationGenerator() {
         
         formattedCitation += `, ${data.presentationPlace}, ${data.presentationDate}`;
         
+        // Add online source information if applicable
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
+        
         // Bibliography format
         bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i>, ${data.lectureType}`;
         
@@ -633,6 +688,17 @@ export default function CitationGenerator() {
         }
         
         bibCitation += `, ${data.presentationPlace}, ${data.presentationDate}`;
+        
+        // Add online source to bibliography
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
         break;
         
       case 'encyclopedia':
@@ -652,6 +718,17 @@ export default function CitationGenerator() {
           formattedCitation += ` para ${data.paragraph}`;
         }
         
+        // Add online source information if applicable
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
+        
         // Bibliography format
         bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i>`;
         
@@ -667,6 +744,17 @@ export default function CitationGenerator() {
         
         if (data.paragraph) {
           bibCitation += ` para ${data.paragraph}`;
+        }
+        
+        // Add online source to bibliography
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
         }
         break;
         
