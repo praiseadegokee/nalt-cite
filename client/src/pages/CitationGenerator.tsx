@@ -175,7 +175,23 @@ const onlineSourceSchema = z.object({
 // Define a simpler schema approach
 const formSchema = z.object({
   sourceType: z.string().min(1, "Source type is required"),
-  authors: z.array(authorSchema).min(1, "At least one author is required"),
+  authors: z.array(authorSchema)
+    .refine(
+      (authors, ctx) => {
+        // Only require authors for source types other than case and statute
+        const sourceType = (ctx.path && ctx.path[0] === 'sourceType') ? 
+          (ctx.data as any).sourceType : 
+          ((ctx.data as any).sourceType as string);
+          
+        if (sourceType === 'case' || sourceType === 'statute') {
+          return true; // Authors not required for these types
+        }
+        return authors.length >= 1;
+      }, 
+      {
+        message: "At least one author is required"
+      }
+    ),
   title: z.string().min(1, "Title is required").optional(),
   // Make all other fields optional
   edition: z.string().optional(),
@@ -1696,6 +1712,22 @@ export default function CitationGenerator() {
                           </div>
                         </>
                       )}
+                      
+                      <div className="mb-3 mt-6 border-t pt-4">
+                        <OnlineSourceCheckbox 
+                          control={form.control} 
+                          sourceType="case" 
+                          setValue={form.setValue} 
+                        />
+                      </div>
+                      
+                      {form.watch("isOnline") && (
+                        <OnlineSourceFields 
+                          control={form.control} 
+                          sourceType="case" 
+                          setValue={form.setValue} 
+                        />
+                      )}
                     </div>
                   )}
                   
@@ -1905,6 +1937,22 @@ export default function CitationGenerator() {
                           </FormItem>
                         )}
                       />
+                      
+                      <div className="mb-3 mt-6 border-t pt-4">
+                        <OnlineSourceCheckbox 
+                          control={form.control} 
+                          sourceType="statute" 
+                          setValue={form.setValue} 
+                        />
+                      </div>
+                      
+                      {form.watch("isOnline") && (
+                        <OnlineSourceFields 
+                          control={form.control} 
+                          sourceType="statute" 
+                          setValue={form.setValue} 
+                        />
+                      )}
                     </div>
                   )}
                   
