@@ -3,6 +3,8 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
+import { OnlineSourceCheckbox } from '@/components/citation/OnlineSourceCheckbox';
+import { OnlineSourceFields } from '@/components/citation/OnlineSourceFields';
 import { 
   Form,
   FormControl,
@@ -205,6 +207,29 @@ const formSchema = z.object({
   orderNumber: z.string().optional(),
   ruleNumber: z.string().optional(),
   alterationInfo: z.string().optional(),
+  
+  // Newspaper fields
+  newspaperName: z.string().optional(),
+  city: z.string().optional(),
+  publicationDate: z.string().optional(),
+  isEditorial: z.boolean().optional(),
+  
+  // Thesis fields
+  degreeType: z.string().optional(),
+  faculty: z.string().optional(),
+  university: z.string().optional(),
+  
+  // Conference Paper fields
+  proceedingsTitle: z.string().optional(),
+  conferenceName: z.string().optional(),
+  conferenceLocation: z.string().optional(),
+  conferenceDates: z.string().optional(),
+  
+  // Lecture fields
+  lectureType: z.string().optional(),
+  occasion: z.string().optional(),
+  presentationPlace: z.string().optional(),
+  presentationDate: z.string().optional(),
   
   // Add all online source fields
   isOnline: z.boolean().optional(),
