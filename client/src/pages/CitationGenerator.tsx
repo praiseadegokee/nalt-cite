@@ -157,6 +157,19 @@ const encyclopediaSchema = baseFormSchema.extend({
   paragraph: z.string().optional(),
 });
 
+// Schema for online source fields
+const onlineSourceSchema = z.object({
+  isOnline: z.boolean().optional(),
+  webAddress: z.string().optional().refine(
+    (val) => !val || (val && val.trim().length > 0), 
+    { message: "Web address is required for online sources" }
+  ),
+  accessDate: z.string().optional(),
+  accessDay: z.string().optional(),
+  accessMonth: z.string().optional(),
+  accessYear: z.string().optional(),
+});
+
 // Define a simpler schema approach
 const formSchema = z.object({
   sourceType: z.string().min(1, "Source type is required"),
@@ -183,7 +196,6 @@ const formSchema = z.object({
   court: z.string().optional(),
   judgmentDate: z.string().optional(),
   suitNumber: z.string().optional(),
-  isOnline: z.boolean().optional(),
   actNumber: z.string().optional(),
   chapter: z.string().optional(),
   section: z.string().optional(),
@@ -193,26 +205,34 @@ const formSchema = z.object({
   orderNumber: z.string().optional(),
   ruleNumber: z.string().optional(),
   alterationInfo: z.string().optional(),
+  
+  // Add all online source fields
+  isOnline: z.boolean().optional(),
   webAddress: z.string().optional(),
   accessDate: z.string().optional(),
   accessDay: z.string().optional(),
   accessMonth: z.string().optional(),
   accessYear: z.string().optional(),
-  newspaperName: z.string().optional(),
-  city: z.string().optional(),
-  publicationDate: z.string().optional(),
-  isEditorial: z.boolean().optional(),
-  degreeType: z.string().optional(),
-  faculty: z.string().optional(),
-  university: z.string().optional(),
-  proceedingsTitle: z.string().optional(),
-  conferenceName: z.string().optional(),
-  conferenceLocation: z.string().optional(),
-  conferenceDates: z.string().optional(),
-  lectureType: z.string().optional(),
-  occasion: z.string().optional(),
-  presentationPlace: z.string().optional(),
-  presentationDate: z.string().optional(),
+}).superRefine((data, ctx) => {
+  // If isOnline is true, webAddress is required
+  if (data.isOnline && (!data.webAddress || data.webAddress.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Web address is required for online sources",
+      path: ["webAddress"],
+    });
+  }
+  
+  // If isOnline is true, ensure at least one form of access date is provided
+  if (data.isOnline && 
+      !data.accessDate && 
+      !(data.accessDay && data.accessMonth && data.accessYear)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Access date is required for online sources",
+      path: ["accessDate"],
+    });
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;
