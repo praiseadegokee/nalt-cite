@@ -175,23 +175,7 @@ const onlineSourceSchema = z.object({
 // Define a simpler schema approach
 const formSchema = z.object({
   sourceType: z.string().min(1, "Source type is required"),
-  authors: z.array(authorSchema)
-    .refine(
-      (authors, ctx) => {
-        // Only require authors for source types other than case and statute
-        const sourceType = (ctx.path && ctx.path[0] === 'sourceType') ? 
-          (ctx.data as any).sourceType : 
-          ((ctx.data as any).sourceType as string);
-          
-        if (sourceType === 'case' || sourceType === 'statute') {
-          return true; // Authors not required for these types
-        }
-        return authors.length >= 1;
-      }, 
-      {
-        message: "At least one author is required"
-      }
-    ),
+  authors: z.array(authorSchema),
   title: z.string().min(1, "Title is required").optional(),
   // Make all other fields optional
   edition: z.string().optional(),
@@ -209,6 +193,7 @@ const formSchema = z.object({
   plaintiff: z.string().optional(),
   defendant: z.string().optional(),
   lawReport: z.string().optional(),
+  lawReportCustom: z.string().optional(),
   partNumber: z.string().optional(),
   isUnreported: z.boolean().optional(),
   court: z.string().optional(),
@@ -255,6 +240,16 @@ const formSchema = z.object({
   accessMonth: z.string().optional(),
   accessYear: z.string().optional(),
 }).superRefine((data, ctx) => {
+  // Validate authors based on source type
+  if (data.sourceType !== 'case' && data.sourceType !== 'statute' && 
+      (!data.authors || data.authors.length === 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "At least one author is required",
+      path: ["authors"],
+    });
+  }
+  
   // If isOnline is true, webAddress is required
   if (data.isOnline && (!data.webAddress || data.webAddress.trim() === '')) {
     ctx.addIssue({
@@ -522,6 +517,18 @@ export default function CitationGenerator() {
           }
           
           bibCitation = formattedCitation;
+          
+          // Add online source information if applicable
+          if (data.isOnline && data.webAddress) {
+            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+              : data.accessDate;
+              
+            if (accessDateStr) {
+              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+            }
+          }
         } else {
           formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i> [${data.year}]`;
           
@@ -539,6 +546,18 @@ export default function CitationGenerator() {
           
           // Bibliography format - same as footnote for cases
           bibCitation = formattedCitation;
+          
+          // Add online source information if applicable
+          if (data.isOnline && data.webAddress) {
+            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+              : data.accessDate;
+              
+            if (accessDateStr) {
+              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+            }
+          }
         }
         break;
         
@@ -583,6 +602,18 @@ export default function CitationGenerator() {
         
         // Bibliography format - same as footnote for statutes
         bibCitation = formattedCitation;
+        
+        // Add online source information if applicable
+        if (data.isOnline && data.webAddress) {
+          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
+            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
+            : data.accessDate;
+            
+          if (accessDateStr) {
+            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
+          }
+        }
         break;
         
       case 'webResource':
