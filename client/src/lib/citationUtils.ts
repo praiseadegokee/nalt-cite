@@ -117,7 +117,7 @@ export function formatBookChapterCitation(fields: BookChapterFields): string {
   }
   
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -154,7 +154,7 @@ export function formatJournalArticleCitation(fields: JournalArticleFields): stri
   }
   
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -228,7 +228,7 @@ export function formatOnlineSourceCitation(fields: OnlineSourceFields): string {
     citation += ` (`;
   }
   
-  citation += ` ${fields.year}) <i>${fields.websiteTitle}</i> <${fields.url}> accessed ${fields.accessDate}`;
+  citation += ` ${fields.year}) <i>${fields.websiteTitle}</i> &lt;${fields.url}&gt; accessed ${fields.accessDate}`;
   
   return citation;
 }
@@ -302,7 +302,7 @@ export function formatLectureCitation(fields: LectureFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -332,7 +332,7 @@ export function formatEncyclopediaCitation(fields: EncyclopediaFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -360,7 +360,7 @@ export function formatMonographCitation(fields: MonographFields): string {
   
   // Add online access information if available
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -396,7 +396,7 @@ export function formatLectureNoteCitation(fields: LectureNoteFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
