@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import OnlineAccessFields from './OnlineAccessFields';
 import PartyInput from './PartyInput';
-import { useEffect } from 'react';
 import { Party } from '@/lib/types';
 
 export default function CaseForm() {
@@ -23,25 +23,38 @@ export default function CaseForm() {
   const parties = form.watch('parties') || [];
   const isUnreportedSimple = form.watch('isUnreportedSimple') ?? false;
 
-  // Update case name when parties change
+  // Update case name when parties change - using a ref to avoid excessive renders
+  const previousPartiesRef = React.useRef<Party[]>([]);
+  
   useEffect(() => {
     if (parties.length >= 2) { // Only update if we have at least two parties
-      console.log("CaseForm: Updating case name from parties:", parties);
+      // Check if the party names have actually changed to avoid unnecessary updates
+      const prevFirstParty = previousPartiesRef.current[0]?.name || '';
+      const prevSecondParty = previousPartiesRef.current[1]?.name || '';
+      const currentFirstParty = parties[0]?.name || '';
+      const currentSecondParty = parties[1]?.name || '';
       
-      // Check if both parties have names
-      const firstParty = parties[0];
-      const secondParty = parties[1];
-      
-      if (firstParty?.name?.trim() && secondParty?.name?.trim()) {
-        // Format the case name with the parties in correct order
-        const caseName = `${firstParty.name} v ${secondParty.name}`;
-        console.log("CaseForm: Setting case name to:", caseName);
-        form.setValue('caseName', caseName, { shouldValidate: true });
-      } else {
-        console.log("CaseForm: Missing party names, can't generate case name yet");
+      if (prevFirstParty !== currentFirstParty || prevSecondParty !== currentSecondParty) {
+        console.log("CaseForm: Updating case name from parties:", parties);
+        
+        // Check if both parties have names
+        const firstParty = parties[0];
+        const secondParty = parties[1];
+        
+        if (firstParty?.name?.trim() && secondParty?.name?.trim()) {
+          // Format the case name with the parties in correct order
+          const caseName = `${firstParty.name} v ${secondParty.name}`;
+          console.log("CaseForm: Setting case name to:", caseName);
+          form.setValue('caseName', caseName, { shouldValidate: false });
+        } else {
+          console.log("CaseForm: Missing party names, can't generate case name yet");
+        }
+        
+        // Update the ref
+        previousPartiesRef.current = [...parties];
       }
     }
-  }, [parties, form]);
+  }, [parties]);
 
   // Set default values on mount - only run once
   useEffect(() => {

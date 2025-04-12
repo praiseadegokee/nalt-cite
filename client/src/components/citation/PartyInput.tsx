@@ -75,7 +75,7 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
       };
       onChange(updatedParties);
     }
-  }, [parties, onChange]);
+  }, [onChange]);
   
   // Handle tab change
   const handleTabChange = useCallback((value: string) => {
@@ -89,7 +89,7 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
     if (parties.length === 0) {
       setupPartyPair(activeTab);
     }
-  }, [activeTab, parties.length, setupPartyPair]);
+  }, []);
 
   return (
     <div className="space-y-6">
