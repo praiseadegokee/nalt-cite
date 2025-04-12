@@ -72,32 +72,14 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
 
       <div className="bg-gray-50 p-4 rounded-md">
         <h3 className="text-lg font-medium mb-4">Editor Information</h3>
-        
-        <FormField
-          control={control}
-          name="multipleEditors"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2 mb-3">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="font-normal cursor-pointer">
-                Multiple editors (more than one)
-              </FormLabel>
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <div className="mb-4">
           <FormField
             control={control}
             name="editorFirstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Editor First Name</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Primary Editor First Name</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -109,13 +91,15 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
               </FormItem>
             )}
           />
+        </div>
           
+        <div className="mb-4">
           <FormField
             control={control}
             name="editorMiddleName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Editor Middle Name</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Primary Editor Middle Name</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -127,13 +111,15 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
               </FormItem>
             )}
           />
+        </div>
           
+        <div className="mb-4">
           <FormField
             control={control}
             name="editorLastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Editor Last Name</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Primary Editor Last Name</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
@@ -146,6 +132,67 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
             )}
           />
         </div>
+
+        <div className="mb-4">
+          <FormField
+            control={control}
+            name="secondEditorFirstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Second Editor First Name (if any)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., Karen" 
+                    className="w-full"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="mb-4">
+          <FormField
+            control={control}
+            name="secondEditorLastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Second Editor Last Name (if any)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., Shaakaa" 
+                    className="w-full"
+                  />
+                </FormControl>
+                <FormDescription>
+                  If there are multiple editors, add their information here. The citation will use "(eds)" instead of "(ed)".
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+          
+        <FormField
+          control={control}
+          name="multipleEditors"
+          render={({ field }) => (
+            <FormItem className="flex items-center space-x-2 mb-3">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+              <FormLabel className="font-normal cursor-pointer">
+                There are multiple editors (will use "(eds)" instead of "(ed)")
+              </FormLabel>
+            </FormItem>
+          )}
+        />
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">

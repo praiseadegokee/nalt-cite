@@ -88,6 +88,8 @@ export interface BookChapterFormData extends BaseFormData {
   editorFirstName?: string;
   editorMiddleName?: string;
   editorLastName?: string;
+  secondEditorFirstName?: string;
+  secondEditorLastName?: string;
   multipleEditors?: boolean;
   edition?: string;
   publisher?: string;

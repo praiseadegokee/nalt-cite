@@ -118,7 +118,11 @@ export function formatBookChapterCitation(data: BookChapterFormData, footnote = 
   citation += 'in ';
   
   // Format editor information
+  let hasEditors = false;
+  let hasMultipleEditors = data.multipleEditors || false;
+  
   if (data.editorFirstName && data.editorLastName) {
+    hasEditors = true;
     const editorInitial = data.editorFirstName.charAt(0);
     const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
     
@@ -128,8 +132,15 @@ export function formatBookChapterCitation(data: BookChapterFormData, footnote = 
       citation += `${editorInitial}. ${data.editorLastName}`;
     }
     
+    // Check for second editor
+    if (data.secondEditorFirstName && data.secondEditorLastName) {
+      const secondEditorInitial = data.secondEditorFirstName.charAt(0);
+      citation += ` and ${secondEditorInitial}. ${data.secondEditorLastName}`;
+      hasMultipleEditors = true; // Force multiple editors formatting
+    }
+    
     // Use (eds) for multiple editors, otherwise (ed)
-    citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
+    citation += hasMultipleEditors ? ' (eds), ' : ' (ed), ';
   }
   
   if (data.bookTitle) citation += `<em>${data.bookTitle}</em>`;
@@ -160,7 +171,11 @@ export function formatBookChapterBibliography(data: BookChapterFormData): string
   citation += 'in ';
   
   // Format editor information
+  let hasEditors = false;
+  let hasMultipleEditors = data.multipleEditors || false;
+  
   if (data.editorFirstName && data.editorLastName) {
+    hasEditors = true;
     const editorInitial = data.editorFirstName.charAt(0);
     const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
     
@@ -170,8 +185,15 @@ export function formatBookChapterBibliography(data: BookChapterFormData): string
       citation += `${editorInitial}. ${data.editorLastName}`;
     }
     
+    // Check for second editor
+    if (data.secondEditorFirstName && data.secondEditorLastName) {
+      const secondEditorInitial = data.secondEditorFirstName.charAt(0);
+      citation += ` and ${secondEditorInitial}. ${data.secondEditorLastName}`;
+      hasMultipleEditors = true; // Force multiple editors formatting
+    }
+    
     // Use (eds) for multiple editors, otherwise (ed)
-    citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
+    citation += hasMultipleEditors ? ' (eds), ' : ' (ed), ';
   }
   
   if (data.bookTitle) citation += `<em>${data.bookTitle}</em>`;
