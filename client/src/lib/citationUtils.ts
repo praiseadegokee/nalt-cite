@@ -271,6 +271,15 @@ export function formatThesisCitation(fields: ThesisFields): string {
     citation += ` ${fields.page}`;
   }
   
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
+  }
+  
   return citation;
 }
 
@@ -280,6 +289,15 @@ export function formatLectureCitation(fields: LectureFields): string {
   
   if (fields.location) {
     citation += ` ${fields.location}`;
+  }
+  
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
   }
   
   return citation;

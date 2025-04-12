@@ -128,6 +128,9 @@ export interface CaseFields extends BaseCitationFields {
   citation: string;
   court?: string;
   judgmentDate?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface StatuteFields extends BaseCitationFields {
@@ -136,6 +139,9 @@ export interface StatuteFields extends BaseCitationFields {
   section?: string;
   year: string;
   cap?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface OnlineSourceFields extends BaseCitationFields {
@@ -150,6 +156,9 @@ export interface ConferencePaperFields extends BaseCitationFields {
   conferenceLocation: string;
   conferenceDate: string;
   page?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface NewspaperFields extends BaseCitationFields {
@@ -166,6 +175,9 @@ export interface ThesisFields extends BaseCitationFields {
   institution: string;
   year: string;
   page?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface LectureFields extends BaseCitationFields {
@@ -173,6 +185,9 @@ export interface LectureFields extends BaseCitationFields {
   institution: string;
   date: string;
   location?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface EncyclopediaFields extends BaseCitationFields {
@@ -182,6 +197,9 @@ export interface EncyclopediaFields extends BaseCitationFields {
   publisher: string;
   year: string;
   page?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface MonographFields extends BaseCitationFields {
@@ -201,6 +219,9 @@ export interface LectureNoteFields extends BaseCitationFields {
   page?: string;
   audience?: string;
   additionalInfo?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 // Union type of all citation field types for use in citation generator
