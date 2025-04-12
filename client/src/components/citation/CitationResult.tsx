@@ -73,7 +73,7 @@ export default function CitationResult({ citation }: CitationResultProps) {
       </div>
       <div 
         ref={citationRef}
-        className="p-6 bg-white border border-gray-300 rounded-md shadow-inner font-mono text-sm break-words leading-relaxed"
+        className="p-6 bg-white border border-gray-300 rounded-md shadow-inner font-serif text-base break-words leading-relaxed tracking-wide"
         dangerouslySetInnerHTML={{ __html: citation }}
       />
       <div className="mt-6 flex justify-between items-center">
