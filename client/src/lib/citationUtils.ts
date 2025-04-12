@@ -178,7 +178,7 @@ export function formatCaseCitation(fields: CaseFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -208,7 +208,7 @@ export function formatStatuteCitation(fields: StatuteFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -243,7 +243,7 @@ export function formatConferencePaperCitation(fields: ConferencePaperFields): st
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -262,7 +262,7 @@ export function formatNewspaperCitation(fields: NewspaperFields): string {
   }
   
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -282,7 +282,7 @@ export function formatThesisCitation(fields: ThesisFields): string {
   
   // Add online access information if applicable
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` <${fields.webAddress}>`;
+    citation += ` &lt;${fields.webAddress}&gt;`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
