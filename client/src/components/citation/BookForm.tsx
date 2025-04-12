@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function BookForm() {
   const form = useFormContext();
@@ -104,6 +105,13 @@ export default function BookForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Toggle and Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );
