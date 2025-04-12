@@ -83,6 +83,13 @@ export interface BaseCitationFields {
   authors: Author[];
   title: string;
   year: string;
+  // Common fields for online access
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
+  accessDateDay?: string;
+  accessDateMonth?: string;
+  accessDateYear?: string;
 }
 
 export interface BookFields extends BaseCitationFields {
@@ -150,6 +157,9 @@ export interface CaseFields extends BaseCitationFields {
   isOnlineSource?: boolean;
   webAddress?: string;
   accessDate?: string;
+  accessDateDay?: string;
+  accessDateMonth?: string;
+  accessDateYear?: string;
 }
 
 export interface StatuteFields extends BaseCitationFields {

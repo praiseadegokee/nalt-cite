@@ -76,13 +76,27 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
       Object.entries(fieldsToUpdate).forEach(([key, value]) => {
         form.setValue(key, value, { shouldValidate: false });
       });
-      
-      // Only then update the combined field
-      if (form.getValues(fieldPrefix) === undefined) {
-        setTimeout(updateCombinedField, 0); // Use setTimeout to ensure field values are updated
-      }
     }
-  }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear, updateCombinedField]);
+    
+    // Always update the combined field to ensure it's properly formatted
+    // Use a small timeout to ensure the other fields are updated first
+    setTimeout(() => {
+      // Get the actual values that may have been set or defaulted
+      const day = form.getValues(dayField) || currentDay;
+      const monthNum = form.getValues(monthField) || currentMonth;
+      const year = form.getValues(yearField) || currentYear;
+      
+      // Find the month name
+      const monthName = months.find(m => m.value === monthNum)?.label || months[parseInt(monthNum) - 1]?.label;
+      
+      if (monthName) {
+        // Format the date as "15 January 2023"
+        const formattedDate = `${day} ${monthName} ${year}`;
+        console.log(`AccessDateFields: Initializing combined date field to ${formattedDate}`);
+        form.setValue(fieldPrefix, formattedDate, { shouldValidate: false });
+      }
+    }, 0);
+  }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear]);
 
   return (
     <div className="space-y-4">
