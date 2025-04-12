@@ -291,6 +291,12 @@ export default function CitationGenerator() {
       sourceType: 'book',
       authors: [{ firstName: '', lastName: '', middleName: '', isOrganization: false }],
       title: '',
+      // New book fields
+      isChapter: false,
+      multipleEditors: false,
+      editorFirstName: '',
+      editorMiddleName: '',
+      editorLastName: '',
     } as any,
   });
 
@@ -310,6 +316,12 @@ export default function CitationGenerator() {
       form.reset({ 
         sourceType: watchSourceType, 
         authors: [{ firstName: '', lastName: '', middleName: '', isOrganization: false }],
+        // Keep these fields initialized for books
+        isChapter: false,
+        multipleEditors: false,
+        editorFirstName: '',
+        editorMiddleName: '',
+        editorLastName: '',
       } as any);
     }
   }, [watchSourceType, form]);
