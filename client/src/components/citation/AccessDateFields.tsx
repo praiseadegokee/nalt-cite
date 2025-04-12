@@ -2,7 +2,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 interface AccessDateFieldsProps {
   fieldPrefix: string; // e.g. 'accessDate' or other field name
@@ -39,7 +39,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
   const currentYear = today.getFullYear().toString();
   
   // When any of the fields change, update the combined field
-  const updateCombinedField = () => {
+  const updateCombinedField = useCallback(() => {
     const day = form.getValues(dayField) || currentDay;
     const monthNum = form.getValues(monthField) || currentMonth;
     const year = form.getValues(yearField) || currentYear;
@@ -51,7 +51,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
       const formattedDate = `${day} ${monthName} ${year}`;
       form.setValue(fieldPrefix, formattedDate, { shouldValidate: true });
     }
-  };
+  }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear]);
   
   // Initialize fields with default values when component mounts
   useEffect(() => {
@@ -72,7 +72,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
       // After setting individual fields, update the combined field
       updateCombinedField();
     }
-  }, []);
+  }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear, updateCombinedField]);
 
   return (
     <div className="space-y-4">

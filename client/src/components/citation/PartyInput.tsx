@@ -55,10 +55,14 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
   
   useEffect(() => {
     // If there are no parties, add the first one automatically
-    if (parties.length === 0) {
-      addParty();
+    if (!parties || parties.length === 0) {
+      // Initialize with a default plaintiff and defendant
+      onChange([
+        { role: 'Plaintiff', name: '' },
+        { role: 'Defendant', name: '' }
+      ]);
     }
-  }, [parties.length, addParty]);
+  }, [parties, onChange]);
 
   return (
     <div className="space-y-4">

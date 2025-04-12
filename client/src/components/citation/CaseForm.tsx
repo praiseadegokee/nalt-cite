@@ -41,21 +41,34 @@ export default function CaseForm() {
     }
   }, [parties, form]);
 
-  // Set default case type on mount
+  // Set default values on mount
   useEffect(() => {
-    if (!form.getValues('caseType')) {
-      form.setValue('caseType', 'reported');
-    }
+    // Set defaults for all necessary fields to avoid uncontrolled to controlled warnings
+    const defaults = {
+      caseType: 'reported',
+      parties: form.getValues('parties') || [],
+      isUnreportedSimple: false,
+      caseName: '',
+      yearReported: '',
+      volumeNumber: '',
+      partNumber: '',
+      lawReportAbbreviation: '',
+      pageNumber: '',
+      caseNumber: '',
+      court: '',
+      judgmentDate: '',
+      isOnlineSource: false,
+      webAddress: '',
+      accessDate: ''
+    };
     
-    // Initialize empty parties array if it doesn't exist
-    if (!form.getValues('parties')) {
-      form.setValue('parties', []);
-    }
+    // Apply all default values that aren't already set
+    Object.entries(defaults).forEach(([key, value]) => {
+      if (form.getValues(key) === undefined) {
+        form.setValue(key, value);
+      }
+    });
     
-    // Ensure isUnreportedSimple has a value
-    if (form.getValues('isUnreportedSimple') === undefined) {
-      form.setValue('isUnreportedSimple', false);
-    }
   }, [form]);
 
   return (
