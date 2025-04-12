@@ -33,10 +33,10 @@ export default function CaseForm() {
         ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role)
       );
       
-      if (plaintiff && defendant) {
-        // Format the case name
-        const caseName = `${plaintiff.name.toLowerCase()} v ${defendant.name.toLowerCase()}`;
-        form.setValue('caseName', caseName);
+      if (plaintiff && plaintiff.name && defendant && defendant.name) {
+        // Format the case name - only update if both have names entered
+        const caseName = `${plaintiff.name} v ${defendant.name}`;
+        form.setValue('caseName', caseName, { shouldValidate: true });
       }
     }
   }, [parties, form]);
