@@ -66,41 +66,49 @@ export default function CitationResult({ citation }: CitationResultProps) {
   };
 
   return (
-    <div className="mt-8 p-4 bg-[#C3CDE1]/30 border border-[#C3CDE1] rounded-md">
-      <h3 className="text-sm font-medium text-gray-700 mb-2">Generated Citation:</h3>
+    <div className="mt-8 p-6 bg-[#C3CDE1]/30 border border-[#C3CDE1] rounded-md shadow-sm">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-sm font-medium text-gray-700">Generated Citation:</h3>
+        <div className="text-xs text-gray-500">NALT Format</div>
+      </div>
       <div 
         ref={citationRef}
-        className="p-4 bg-white border border-gray-300 rounded font-mono text-sm break-words"
+        className="p-6 bg-white border border-gray-300 rounded-md shadow-inner font-mono text-sm break-words leading-relaxed"
         dangerouslySetInnerHTML={{ __html: citation }}
       />
-      <div className="mt-4 flex justify-end space-x-3">
-        <Button 
-          type="button" 
-          onClick={downloadCitation}
-          variant="outline" 
-          className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded border border-gray-300 text-sm flex items-center"
-        >
-          <Download className="h-4 w-4 mr-1" />
-          Download
-        </Button>
-        <Button 
-          type="button" 
-          onClick={copyToClipboard}
-          variant="outline" 
-          className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded border border-gray-300 text-sm flex items-center"
-        >
-          {hasCopied ? (
-            <>
-              <Check className="h-4 w-4 mr-1 text-green-500" />
-              Copied!
-            </>
-          ) : (
-            <>
-              <Copy className="h-4 w-4 mr-1" />
-              Copy to Clipboard
-            </>
-          )}
-        </Button>
+      <div className="mt-6 flex justify-between items-center">
+        <div className="text-xs text-gray-500">
+          Use this citation in your legal document
+        </div>
+        <div className="flex space-x-3">
+          <Button 
+            type="button" 
+            onClick={downloadCitation}
+            variant="outline" 
+            className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
+          >
+            <Download className="h-4 w-4 mr-1" />
+            Download
+          </Button>
+          <Button 
+            type="button" 
+            onClick={copyToClipboard}
+            variant="outline" 
+            className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
+          >
+            {hasCopied ? (
+              <>
+                <Check className="h-4 w-4 mr-1 text-green-500" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4 mr-1" />
+                Copy to Clipboard
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
