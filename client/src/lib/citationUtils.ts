@@ -197,6 +197,15 @@ export function formatStatuteCitation(fields: StatuteFields): string {
     citation += `, s ${fields.section}`;
   }
   
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
+  }
+  
   return citation;
 }
 
@@ -221,6 +230,15 @@ export function formatConferencePaperCitation(fields: ConferencePaperFields): st
   
   if (fields.page) {
     citation += ` ${fields.page}`;
+  }
+  
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
   }
   
   return citation;

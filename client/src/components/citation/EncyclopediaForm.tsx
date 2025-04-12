@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function EncyclopediaForm() {
   const form = useFormContext();
@@ -140,6 +141,13 @@ export default function EncyclopediaForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );

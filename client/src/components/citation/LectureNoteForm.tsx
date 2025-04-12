@@ -11,6 +11,7 @@ import {
   FormDescription,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function LectureNoteForm() {
   const form = useFormContext();
@@ -160,6 +161,13 @@ export default function LectureNoteForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );
