@@ -78,7 +78,9 @@ export interface BookFormData extends BaseFormData {
   isChapter?: boolean;
   chapterTitle?: string;
   editorFirstName?: string;
+  editorMiddleName?: string;
   editorLastName?: string;
+  multipleEditors?: boolean;
   edition?: string;
   publisher?: string;
   year?: string;

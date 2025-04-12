@@ -5,7 +5,8 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -73,17 +74,35 @@ export function BookFields({ control, watch, setValue }: BookFieldsProps) {
             )}
           />
           
+          <FormField
+            control={control}
+            name="editorFirstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Editor First Name</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., Emeka" 
+                    className="w-full"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={control}
-              name="editorFirstName"
+              name="editorMiddleName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Editor First Name</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-700">Editor Middle Name</FormLabel>
                   <FormControl>
                     <Input 
                       {...field} 
-                      placeholder="e.g., Emeka" 
+                      placeholder="e.g., Chukwuma" 
                       className="w-full"
                     />
                   </FormControl>
@@ -110,6 +129,27 @@ export function BookFields({ control, watch, setValue }: BookFieldsProps) {
               )}
             />
           </div>
+          
+          <FormField
+            control={control}
+            name="multipleEditors"
+            render={({ field }) => (
+              <FormItem className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="font-normal cursor-pointer">
+                  Multiple editors (eds)
+                </FormLabel>
+                <FormDescription className="ml-2 text-xs">
+                  Check this if the book has multiple editors
+                </FormDescription>
+              </FormItem>
+            )}
+          />
         </>
       ) : null}
       
