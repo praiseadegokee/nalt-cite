@@ -165,7 +165,7 @@ const encyclopediaSchema = baseFormSchema.extend({
 
 // Schema for online source fields
 const onlineSourceSchema = z.object({
-  isOnline: z.boolean().optional(),
+
   webAddress: z.string().optional().refine(
     (val) => !val || (val && val.trim().length > 0), 
     { message: "Web address is required for online sources" }
@@ -259,8 +259,8 @@ const formSchema = z.object({
     });
   }
   
-  // If isOnline is true, webAddress is required
-  if (data.isOnline && (!data.webAddress || data.webAddress.trim() === '')) {
+  // If isOnlineSource is true, webAddress is required
+  if (data.isOnlineSource && (!data.webAddress || data.webAddress.trim() === '')) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "Web address is required for online sources",
@@ -268,8 +268,8 @@ const formSchema = z.object({
     });
   }
   
-  // If isOnline is true, ensure at least one form of access date is provided
-  if (data.isOnline && 
+  // If isOnlineSource is true, ensure at least one form of access date is provided
+  if (data.isOnlineSource && 
       !data.accessDate && 
       !(data.accessDay && data.accessMonth && data.accessYear)) {
     ctx.addIssue({
