@@ -490,9 +490,13 @@ export function formatEncyclopediaCitation(data: EncyclopediaFormData, footnote 
   let citation = formatAuthors(data.authors);
   if (citation) citation += ', ';
   
-  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  if (data.title) {
+    citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+    citation += `in <em>Halsbury's Laws of England</em>`;
+  } else {
+    citation += `in <em>Halsbury's Laws of England</em>`;
+  }
   
-  if (data.title) citation += `in <em>${data.title}</em>`;
   if (data.edition) citation += `, ${data.edition}`;
   if (data.volume) citation += `, vol ${data.volume}`;
   if (data.year) citation += ` (${data.year})`;
@@ -511,9 +515,13 @@ export function formatEncyclopediaBibliography(data: EncyclopediaFormData): stri
   let citation = formatAuthors(data.authors, true);
   if (citation) citation += ', ';
   
-  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  if (data.title) {
+    citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+    citation += `in <em>Halsbury's Laws of England</em>`;
+  } else {
+    citation += `in <em>Halsbury's Laws of England</em>`;
+  }
   
-  if (data.title) citation += `in <em>${data.title}</em>`;
   if (data.edition) citation += `, ${data.edition}`;
   if (data.volume) citation += `, vol ${data.volume}`;
   if (data.year) citation += ` (${data.year})`;
@@ -567,6 +575,21 @@ export function generateCitation(data: any, citationType: 'footnote' | 'bibliogr
       return isFootnote 
         ? formatNewspaperCitation(data as NewspaperFormData) 
         : formatNewspaperBibliography(data as NewspaperFormData);
+    
+    case 'conferencePaper':
+      return isFootnote
+        ? formatConferencePaperCitation(data as ConferencePaperFormData)
+        : formatConferencePaperBibliography(data as ConferencePaperFormData);
+    
+    case 'lecture':
+      return isFootnote
+        ? formatLectureCitation(data as LectureFormData)
+        : formatLectureBibliography(data as LectureFormData);
+    
+    case 'encyclopedia':
+      return isFootnote
+        ? formatEncyclopediaCitation(data as EncyclopediaFormData)
+        : formatEncyclopediaBibliography(data as EncyclopediaFormData);
         
     default:
       return 'Invalid source type';
