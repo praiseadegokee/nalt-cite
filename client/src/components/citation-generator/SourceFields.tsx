@@ -7,6 +7,9 @@ import { StatuteFields } from './StatuteFields';
 import { ThesisFields } from './ThesisFields';
 import { WebResourceFields } from './WebResourceFields';
 import { NewspaperFields } from './NewspaperFields';
+import { ConferencePaperFields } from './ConferencePaperFields';
+import { LectureFields } from './LectureFields';
+import { EncyclopediaFields } from './EncyclopediaFields';
 
 interface SourceFieldsProps {
   sourceType: SourceType;
@@ -37,6 +40,15 @@ export function SourceFields({ sourceType, control, watch, setValue }: SourceFie
       
     case 'newspaper':
       return <NewspaperFields control={control} watch={watch} setValue={setValue} />;
+      
+    case 'conferencePaper':
+      return <ConferencePaperFields control={control} watch={watch} setValue={setValue} />;
+      
+    case 'lecture':
+      return <LectureFields control={control} watch={watch} setValue={setValue} />;
+      
+    case 'encyclopedia':
+      return <EncyclopediaFields control={control} watch={watch} setValue={setValue} />;
       
     default:
       return null;
