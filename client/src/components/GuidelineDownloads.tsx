@@ -16,7 +16,7 @@ const guidelineParts = [
     id: 'complete-guide',
     title: 'NALT Citation Guidelines - Complete',
     description: 'The complete NALT Uniform Format and Citation Guide document',
-    filename: 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria '
+    filename: 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria'
   },
   {
     id: 'part1',
