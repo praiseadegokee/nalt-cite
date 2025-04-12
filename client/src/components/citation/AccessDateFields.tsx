@@ -53,19 +53,25 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
     }
   };
   
-  // Initialize the combined field when the component mounts
+  // Initialize fields with default values when component mounts
   useEffect(() => {
-    // Register all fields with default values
-    form.register(dayField, { value: currentDay });
-    form.register(monthField, { value: currentMonth });
-    form.register(yearField, { value: currentYear });
+    // Set default values for all date fields if they don't exist
+    if (form.getValues(dayField) === undefined) {
+      form.setValue(dayField, currentDay);
+    }
     
-    // After a short delay to allow the form to fully render, update the combined field
-    const timeoutId = setTimeout(() => {
+    if (form.getValues(monthField) === undefined) {
+      form.setValue(monthField, currentMonth);
+    }
+    
+    if (form.getValues(yearField) === undefined) {
+      form.setValue(yearField, currentYear);
+    }
+    
+    if (form.getValues(fieldPrefix) === undefined) {
+      // After setting individual fields, update the combined field
       updateCombinedField();
-    }, 100);
-    
-    return () => clearTimeout(timeoutId);
+    }
   }, []);
 
   return (
@@ -77,14 +83,12 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
         <FormField
           control={form.control}
           name={dayField}
-          defaultValue={currentDay}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">Day</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  value={field.value || currentDay}
                   type="number"
                   min={1}
                   max={31}
@@ -92,7 +96,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
                   onChange={(e) => {
                     field.onChange(e);
-                    updateCombinedField();
+                    setTimeout(updateCombinedField, 0);
                   }}
                 />
               </FormControl>
@@ -105,15 +109,14 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
         <FormField
           control={form.control}
           name={monthField}
-          defaultValue={currentMonth}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">Month</FormLabel>
               <Select
-                value={field.value || currentMonth}
+                value={field.value}
                 onValueChange={(value) => {
                   field.onChange(value);
-                  updateCombinedField();
+                  setTimeout(updateCombinedField, 0);
                 }}
               >
                 <FormControl>
@@ -138,14 +141,12 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
         <FormField
           control={form.control}
           name={yearField}
-          defaultValue={currentYear}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
               <FormControl>
                 <Input
                   {...field}
-                  value={field.value || currentYear}
                   type="number"
                   min={1900}
                   max={2100}
@@ -153,7 +154,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
                   className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
                   onChange={(e) => {
                     field.onChange(e);
-                    updateCombinedField();
+                    setTimeout(updateCombinedField, 0);
                   }}
                 />
               </FormControl>

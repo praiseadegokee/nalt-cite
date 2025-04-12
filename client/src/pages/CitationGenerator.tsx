@@ -1,16 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { CitationProvider } from '@/context/CitationContext';
-import { useCitation } from '@/context/CitationContext';
 import { useCitationForm, CitationFormValues } from '@/hooks/citation/useCitationForm';
+import { generateCitation } from '@/lib/citationUtils';
 import CitationFormContainer from '@/components/citation/CitationFormContainer';
 import CitationResult from '@/components/citation/CitationResult';
 
+// Main generator component
 function CitationGeneratorContent() {
-  const { citation, isSubmitting, generateCitationFromData } = useCitation();
+  const [citation, setCitation] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const { toast } = useToast();
   const form = useCitationForm();
   
   async function onSubmit(data: CitationFormValues) {
-    await generateCitationFromData(data);
+    try {
+      setIsSubmitting(true);
+      
+      // Add a small delay to show loading state
+      await new Promise(r => setTimeout(r, 500));
+      
+      // Generate citation based on form data
+      const formattedCitation = generateCitation(data);
+      setCitation(formattedCitation);
+      
+      // Show success message
+      toast({
+        title: "Citation Generated",
+        description: "Your citation has been successfully generated.",
+      });
+    } catch (error) {
+      console.error("Citation generation error:", error);
+      toast({
+        title: "Citation Error",
+        description: "There was an error generating your citation. Please check your inputs.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -37,10 +65,7 @@ function CitationGeneratorContent() {
   );
 }
 
+// Wrapping component for future context usage
 export default function CitationGenerator() {
-  return (
-    <CitationProvider>
-      <CitationGeneratorContent />
-    </CitationProvider>
-  );
+  return <CitationGeneratorContent />;
 }

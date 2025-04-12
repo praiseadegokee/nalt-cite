@@ -11,7 +11,16 @@ interface CitationContextType {
 
 const CitationContext = createContext<CitationContextType | undefined>(undefined);
 
-export function CitationProvider({ children }: { children: ReactNode }) {
+// Custom hook to use the citation context
+const useCitation = () => {
+  const context = useContext(CitationContext);
+  if (context === undefined) {
+    throw new Error('useCitation must be used within a CitationProvider');
+  }
+  return context;
+};
+
+function CitationProvider({ children }: { children: ReactNode }) {
   const [citation, setCitation] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
@@ -62,10 +71,4 @@ export function CitationProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useCitation() {
-  const context = useContext(CitationContext);
-  if (context === undefined) {
-    throw new Error('useCitation must be used within a CitationProvider');
-  }
-  return context;
-}
+export { CitationProvider, useCitation };

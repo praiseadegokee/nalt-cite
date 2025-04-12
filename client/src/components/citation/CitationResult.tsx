@@ -1,7 +1,26 @@
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, Download } from 'lucide-react';
+import { Copy, Check, Download, FileText, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { 
+  copyCitationToClipboard, 
+  downloadCitationAsText, 
+  exportToWord 
+} from '@/lib/citationExportUtils';
 
 interface CitationResultProps {
   citation: string;
@@ -12,56 +31,47 @@ export default function CitationResult({ citation }: CitationResultProps) {
   const [hasCopied, setHasCopied] = useState(false);
   const citationRef = useRef<HTMLDivElement>(null);
 
-  // Function to strip HTML tags for clipboard
-  const getPlainTextCitation = () => {
-    return citation.replace(/<[^>]*>/g, '');
-  };
-
   // Function to copy citation to clipboard
-  const copyToClipboard = () => {
-    const plainTextCitation = getPlainTextCitation();
+  const copyToClipboard = async () => {
+    const success = await copyCitationToClipboard(citation);
     
-    navigator.clipboard.writeText(plainTextCitation)
-      .then(() => {
-        setHasCopied(true);
-        toast({
-          title: "Copied to clipboard",
-          description: "Citation has been copied to your clipboard.",
-        });
-        
-        // Reset the copied state after 2 seconds
-        setTimeout(() => {
-          setHasCopied(false);
-        }, 2000);
-      })
-      .catch(() => {
-        toast({
-          title: "Copy failed",
-          description: "Could not copy to clipboard. Please try again.",
-          variant: "destructive",
-        });
+    if (success) {
+      setHasCopied(true);
+      toast({
+        title: "Copied to clipboard",
+        description: "Citation has been copied to your clipboard.",
       });
+      
+      // Reset the copied state after 2 seconds
+      setTimeout(() => {
+        setHasCopied(false);
+      }, 2000);
+    } else {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Function to generate a text file with the citation
-  const downloadCitation = () => {
-    const plainTextCitation = getPlainTextCitation();
-    const blob = new Blob([plainTextCitation], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'citation.txt';
-    document.body.appendChild(a);
-    a.click();
-    
-    // Clean up
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  // Function to download text file
+  const handleDownloadText = () => {
+    downloadCitationAsText(citation);
     
     toast({
       title: "Citation downloaded",
       description: "Your citation has been downloaded as a text file.",
+    });
+  };
+  
+  // Function to export to Word
+  const handleExportToWord = () => {
+    exportToWord(citation);
+    
+    toast({
+      title: "Citation exported",
+      description: "Your citation has been exported as a Word document.",
     });
   };
 
@@ -81,15 +91,39 @@ export default function CitationResult({ citation }: CitationResultProps) {
           Use this citation in your legal document
         </div>
         <div className="flex space-x-3">
-          <Button 
-            type="button" 
-            onClick={downloadCitation}
-            variant="outline" 
-            className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
-          >
-            <Download className="h-4 w-4 mr-1" />
-            Download
-          </Button>
+          <DropdownMenu>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Export citation in different formats</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleDownloadText}>
+                <FileText className="h-4 w-4 mr-2" />
+                <span>Text (.txt)</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportToWord}>
+                <FileText className="h-4 w-4 mr-2" />
+                <span>Word (.docx)</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <Button 
             type="button" 
             onClick={copyToClipboard}

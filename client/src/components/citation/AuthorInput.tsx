@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Author } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,29 @@ interface AuthorInputProps {
 export default function AuthorInput({ index, onRemove, namePrefix, showRemoveButton }: AuthorInputProps) {
   const form = useFormContext();
   const isOrganization = form.watch(`${namePrefix}.${index}.isOrganization`);
+
+  // Initialize form fields with default values to avoid controlled/uncontrolled component warnings
+  useEffect(() => {
+    const basePath = `${namePrefix}.${index}`;
+    
+    // Ensure the isOrganization field has a default value
+    if (form.getValues(`${basePath}.isOrganization`) === undefined) {
+      form.setValue(`${basePath}.isOrganization`, false);
+    }
+    
+    // Initialize other author fields if they don't exist
+    if (form.getValues(`${basePath}.firstName`) === undefined) {
+      form.setValue(`${basePath}.firstName`, "");
+    }
+    
+    if (form.getValues(`${basePath}.middleName`) === undefined) {
+      form.setValue(`${basePath}.middleName`, "");
+    }
+    
+    if (form.getValues(`${basePath}.lastName`) === undefined) {
+      form.setValue(`${basePath}.lastName`, "");
+    }
+  }, [form, namePrefix, index]);
 
   return (
     <div className="p-4 border border-gray-200 rounded-md bg-gray-50">
@@ -49,7 +71,7 @@ export default function AuthorInput({ index, onRemove, namePrefix, showRemoveBut
             <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white">
               <FormControl>
                 <Checkbox
-                  checked={field.value}
+                  checked={!!field.value}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
