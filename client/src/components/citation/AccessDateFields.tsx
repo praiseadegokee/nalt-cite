@@ -2,6 +2,7 @@ import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useEffect } from 'react';
 
 interface AccessDateFieldsProps {
   fieldPrefix: string; // e.g. 'accessDate' or other field name
@@ -39,20 +40,38 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
   
   // When any of the fields change, update the combined field
   const updateCombinedField = () => {
-    const day = form.getValues(dayField) || '';
-    const monthNum = form.getValues(monthField) || '';
-    const year = form.getValues(yearField) || '';
+    const day = form.getValues(dayField) || currentDay;
+    const monthNum = form.getValues(monthField) || currentMonth;
+    const year = form.getValues(yearField) || currentYear;
     
-    if (day && monthNum && year) {
-      // Find the month name
-      const monthName = months.find(m => m.value === monthNum)?.label || '';
-      if (monthName) {
-        // Format the date as "15 January 2023"
-        const formattedDate = `${day} ${monthName} ${year}`;
-        form.setValue(fieldPrefix, formattedDate);
-      }
+    // Find the month name
+    const monthName = months.find(m => m.value === monthNum)?.label || months[parseInt(monthNum) - 1]?.label;
+    if (monthName) {
+      // Format the date as "15 January 2023"
+      const formattedDate = `${day} ${monthName} ${year}`;
+      form.setValue(fieldPrefix, formattedDate);
+      
+      // Also set individual fields if they're not set
+      if (!form.getValues(dayField)) form.setValue(dayField, day);
+      if (!form.getValues(monthField)) form.setValue(monthField, monthNum);
+      if (!form.getValues(yearField)) form.setValue(yearField, year);
     }
   };
+  
+  // Initialize the combined field when the component mounts
+  useEffect(() => {
+    // Set default values for individual fields
+    if (!form.getValues(dayField)) form.setValue(dayField, currentDay);
+    if (!form.getValues(monthField)) form.setValue(monthField, currentMonth);
+    if (!form.getValues(yearField)) form.setValue(yearField, currentYear);
+    
+    // After a short delay to allow the form to fully render, update the combined field
+    const timeoutId = setTimeout(() => {
+      updateCombinedField();
+    }, 100);
+    
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -70,6 +89,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
               <FormControl>
                 <Input
                   {...field}
+                  value={field.value || currentDay}
                   type="number"
                   min={1}
                   max={31}
@@ -95,7 +115,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
             <FormItem>
               <FormLabel className="text-sm font-medium text-gray-700">Month</FormLabel>
               <Select
-                value={field.value}
+                value={field.value || currentMonth}
                 onValueChange={(value) => {
                   field.onChange(value);
                   updateCombinedField();
@@ -130,6 +150,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
               <FormControl>
                 <Input
                   {...field}
+                  value={field.value || currentYear}
                   type="number"
                   min={1900}
                   max={2100}
