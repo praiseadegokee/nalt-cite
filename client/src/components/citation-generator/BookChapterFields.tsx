@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   FormField,
   FormItem,
@@ -10,6 +10,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BookChapterFieldsProps {
   control: any;
@@ -19,11 +21,33 @@ interface BookChapterFieldsProps {
 
 export function BookChapterFields({ control, watch, setValue }: BookChapterFieldsProps) {
   const isOnlineSource = watch('isOnlineSource');
+  const secondEditorFirstName = watch('secondEditorFirstName');
+  const secondEditorLastName = watch('secondEditorLastName');
+  
+  // Auto-set multipleEditors flag when second editor info is provided
+  useEffect(() => {
+    if ((secondEditorFirstName && secondEditorFirstName.trim() !== '') || 
+        (secondEditorLastName && secondEditorLastName.trim() !== '')) {
+      setValue('multipleEditors', true);
+    }
+  }, [secondEditorFirstName, secondEditorLastName, setValue]);
   
   return (
     <div className="space-y-6">
       <div className="bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium mb-4">Chapter Information</h3>
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          Chapter Information
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">Enter the title of the chapter. The chapter title will be enclosed in single quotes in the citation.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
         
         <div className="grid grid-cols-1 gap-4">
           <FormField
@@ -37,8 +61,12 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., The Value of Authorship in the Digital Environment" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
+                <FormDescription>
+                  Will be enclosed in single quotes in the citation
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -47,7 +75,19 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium mb-4">Book Information</h3>
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          Book Information
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">Enter the title of the book containing the chapter. The book title will be italicized in the citation.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
         
         <div className="grid grid-cols-1 gap-4">
           <FormField
@@ -61,8 +101,12 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., World Wide Research: Reshaping the Sciences and Humanities in the Century of Information" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
+                <FormDescription>
+                  Will be automatically italicized in the citation
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -71,7 +115,19 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium mb-4">Editor Information</h3>
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          Editor Information
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">Enter the editor(s) of the book. The word "in" will be automatically added before the editor names. Adding a second editor will automatically use "(eds)" instead of "(ed)".</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
 
         <div className="mb-4">
           <FormField
@@ -85,6 +141,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., Clement" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -99,12 +156,13 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
             name="editorMiddleName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Primary Editor Middle Name</FormLabel>
+                <FormLabel className="text-sm font-medium text-gray-700">Primary Editor Middle Name (if any)</FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
                     placeholder="e.g., Francis" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -125,6 +183,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., Kwede" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -145,6 +204,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., Karen" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -165,10 +225,11 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., Shaakaa" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormDescription>
-                  If there are multiple editors, add their information here. The citation will use "(eds)" instead of "(ed)".
+                  Adding a second editor will automatically use "(eds)" in the citation
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -183,12 +244,12 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
             <FormItem className="flex items-center space-x-2 mb-3">
               <FormControl>
                 <Checkbox
-                  checked={field.value}
+                  checked={field.value || false}
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
               <FormLabel className="font-normal cursor-pointer">
-                There are multiple editors (will use "(eds)" instead of "(ed)")
+                Other multiple editors (will use "(eds)" instead of "(ed)")
               </FormLabel>
             </FormItem>
           )}
@@ -196,7 +257,19 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium mb-4">Publication Information</h3>
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          Publication Information
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">Enter the publisher and year of publication. These will appear in parentheses in the citation.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -210,6 +283,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., MIT" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -229,6 +303,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     placeholder="e.g., 2010" 
                     className="w-full"
                     type="number"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -239,7 +314,19 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
       </div>
 
       <div className="bg-gray-50 p-4 rounded-md">
-        <h3 className="text-lg font-medium mb-4">Additional Information</h3>
+        <h3 className="text-lg font-medium mb-4 flex items-center">
+          Additional Information
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 ml-2 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs text-sm">Add edition details and page range. For chapters, the page range is a required element.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -253,6 +340,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., 2nd edn" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormDescription>
@@ -274,6 +362,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                     {...field} 
                     placeholder="e.g., 62-80" 
                     className="w-full"
+                    value={field.value || ''}
                   />
                 </FormControl>
                 <FormDescription>
@@ -293,7 +382,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
               <FormItem className="flex items-center space-x-2 mb-3">
                 <FormControl>
                   <Checkbox
-                    checked={field.value}
+                    checked={field.value || false}
                     onCheckedChange={field.onChange}
                   />
                 </FormControl>
@@ -317,8 +406,12 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                         {...field} 
                         placeholder="e.g., https://example.com/book-chapter" 
                         className="w-full"
+                        value={field.value || ''}
                       />
                     </FormControl>
+                    <FormDescription>
+                      Will be enclosed in angle brackets &lt;URL&gt; in the citation
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -335,6 +428,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                         {...field} 
                         placeholder="e.g., 23 April 2023" 
                         className="w-full"
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormDescription>
