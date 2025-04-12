@@ -99,7 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // PDF file download endpoints
   app.get(`${apiPrefix}/downloads/:file`, (req: Request, res: Response) => {
     const file = req.params.file;
-    const filePath = path.join(__dirname, '../public/pdfs', `${file}.pdf`);
+    const filePath = path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`);
     
     // Check if file exists
     if (!fs.existsSync(filePath)) {
