@@ -123,14 +123,19 @@ export default function CitationGenerator() {
                             <SelectValue placeholder="Select a source type" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="book">Book</SelectItem>
-                            <SelectItem value="journalArticle">Journal Article</SelectItem>
-                            <SelectItem value="case">Case</SelectItem>
-                            <SelectItem value="statute">Statute</SelectItem>
-                            <SelectItem value="constitution">Constitution</SelectItem>
-                            <SelectItem value="thesis">Thesis/Dissertation</SelectItem>
-                            <SelectItem value="webResource">Web Resource</SelectItem>
-                            <SelectItem value="newspaper">Newspaper</SelectItem>
+                            <SelectItem value="case">Cases</SelectItem>
+                            <SelectItem value="statute">Statutes</SelectItem>
+                            <SelectItem value="book">Books</SelectItem>
+                            <SelectItem value="bookChapter">Chapters in Edited Books</SelectItem>
+                            <SelectItem value="journalArticle">Journal Articles</SelectItem>
+                            <SelectItem value="onlineSource">Online Sources</SelectItem>
+                            <SelectItem value="conferencePaper">Conference Papers</SelectItem>
+                            <SelectItem value="newspaper">Newspapers/Magazines</SelectItem>
+                            <SelectItem value="thesis">Projects/Theses</SelectItem>
+                            <SelectItem value="lecture">Inaugural/Distinguished Lectures</SelectItem>
+                            <SelectItem value="encyclopedia">Encyclopedias</SelectItem>
+                            <SelectItem value="monograph">Monographs</SelectItem>
+                            <SelectItem value="lectureNote">Lecture Notes</SelectItem>
                           </SelectContent>
                         </Select>
                       </FormControl>
