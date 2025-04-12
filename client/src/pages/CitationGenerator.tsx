@@ -144,6 +144,9 @@ export default function CitationGenerator() {
       // Simulate some processing time
       await new Promise(r => setTimeout(r, 500));
       
+      // Debug: log form data to check online fields
+      console.log("Form Data:", JSON.stringify(data, null, 2));
+      
       // Use our citation utility to generate a properly formatted citation
       const formattedCitation = generateCitation(data);
       setCitation(formattedCitation);
