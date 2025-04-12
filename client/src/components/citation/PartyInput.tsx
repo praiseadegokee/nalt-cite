@@ -31,40 +31,44 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
   const parties = Array.isArray(value) ? value : [];
   const [activeTab, setActiveTab] = useState(CASE_TYPES.APPEAL);
   
-  // Set up party pair based on the selected case type
+  // Set up party pair based on the selected case type - preserving existing names when possible
   const setupPartyPair = useCallback((caseType: string) => {
+    // Extract existing party names if available
+    const existingNames = parties.map(party => party.name || '');
+    
     let partyPair: Party[] = [];
     
     switch (caseType) {
       case CASE_TYPES.APPEAL:
         partyPair = [
-          { role: 'Appellant', name: '' },
-          { role: 'Respondent', name: '' }
+          { role: 'Appellant', name: existingNames[0] || '' },
+          { role: 'Respondent', name: existingNames[1] || '' }
         ];
         break;
       case CASE_TYPES.CIVIL:
         partyPair = [
-          { role: 'Plaintiff', name: '' },
-          { role: 'Defendant', name: '' }
+          { role: 'Plaintiff', name: existingNames[0] || '' },
+          { role: 'Defendant', name: existingNames[1] || '' }
         ];
         break;
       case CASE_TYPES.CRIMINAL:
         partyPair = [
-          { role: 'State', name: 'Federal Republic of Nigeria' },
-          { role: 'Defendant', name: '' }
+          { role: 'State', name: existingNames[0] || 'Federal Republic of Nigeria' },
+          { role: 'Defendant', name: existingNames[1] || '' }
         ];
         break;
       default:
         partyPair = [
-          { role: 'Appellant', name: '' },
-          { role: 'Respondent', name: '' }
+          { role: 'Appellant', name: existingNames[0] || '' },
+          { role: 'Respondent', name: existingNames[1] || '' }
         ];
     }
     
     onChange(partyPair);
-  }, [onChange]);
+  }, [onChange, parties]);
   
-  // Update party name
+  // Update party name - We include parties in the dependency array to ensure
+  // the function always has access to the latest state
   const updatePartyName = useCallback((index: number, name: string) => {
     // Make sure the index exists in the array
     if (index >= 0 && index < parties.length) {
@@ -75,7 +79,7 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
       };
       onChange(updatedParties);
     }
-  }, [onChange]);
+  }, [onChange, parties]);
   
   // Handle tab change
   const handleTabChange = useCallback((value: string) => {
@@ -89,7 +93,7 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
     if (parties.length === 0) {
       setupPartyPair(activeTab);
     }
-  }, []);
+  }, [setupPartyPair, activeTab, parties.length]);
 
   return (
     <div className="space-y-6">
