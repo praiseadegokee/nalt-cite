@@ -19,6 +19,43 @@ export default function OnlineAccessFields({
   const form = useFormContext();
   const isOnlineSource = form.watch(toggleField) ?? false; // Provide default value to avoid undefined
   
+  // Update access date when online access is toggled
+  useEffect(() => {
+    if (isOnlineSource) {
+      // If online source is enabled, ensure we update the combined access date field
+      const day = form.getValues(`${accessDateField}Day`);
+      const month = form.getValues(`${accessDateField}Month`);
+      const year = form.getValues(`${accessDateField}Year`);
+      
+      // Get the current date for default values if not already set
+      const today = new Date();
+      const currentDay = today.getDate().toString();
+      const currentMonth = (today.getMonth() + 1).toString();
+      const currentYear = today.getFullYear().toString();
+      
+      // Find the month name
+      const months = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December'
+      ];
+      
+      // Use current values or defaults
+      const dayValue = day || currentDay;
+      const monthValue = month || currentMonth;
+      const yearValue = year || currentYear;
+      
+      const monthIndex = parseInt(monthValue) - 1;
+      const monthName = months[monthIndex] || ''; 
+      
+      // Format: "day monthName year"
+      const formattedDate = `${dayValue} ${monthName} ${yearValue}`;
+      
+      // Set the combined date field
+      console.log(`OnlineAccessFields: Setting ${accessDateField} to ${formattedDate}`);
+      form.setValue(accessDateField, formattedDate, { shouldValidate: false });
+    }
+  }, [isOnlineSource, form, accessDateField]);
+  
   // Set default values when the component mounts
   useEffect(() => {
     // Batch update all fields that might be undefined

@@ -240,10 +240,34 @@ export class CaseCitationFormatter extends CitationFormatter {
       
       // Add online access information if applicable
       if (fields.isOnlineSource && fields.webAddress) {
+        // Debug: Log online access fields
+        console.log("Online access fields:", {
+          webAddress: fields.webAddress,
+          accessDate: fields.accessDate,
+          accessDateDay: fields.accessDateDay,
+          accessDateMonth: fields.accessDateMonth,
+          accessDateYear: fields.accessDateYear
+        });
+        
         citation += ` &lt;${fields.webAddress}&gt;`;
         
+        // Check if accessDate is available
         if (fields.accessDate) {
           citation += ` accessed ${fields.accessDate}`;
+        } 
+        // If combined field is not available but individual date parts are, reconstruct it
+        else if (fields.accessDateDay && fields.accessDateMonth && fields.accessDateYear) {
+          // Get the month name
+          const months = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+          ];
+          const monthIndex = parseInt(fields.accessDateMonth) - 1;
+          const monthName = months[monthIndex] || ''; 
+          
+          // Format: "day monthName year"
+          const formattedDate = `${fields.accessDateDay} ${monthName} ${fields.accessDateYear}`;
+          citation += ` accessed ${formattedDate}`;
         }
       }
       
