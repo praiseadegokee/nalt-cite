@@ -56,26 +56,21 @@ export default function OnlineAccessFields({
     }
   }, [isOnlineSource, form, accessDateField]);
   
-  // Set default values when the component mounts
+  // Set default values when the component mounts - only once
   useEffect(() => {
-    // Batch update all fields that might be undefined
-    const fieldsToUpdate: Record<string, any> = {};
+    // Only initialize if the fields are undefined to prevent controlled/uncontrolled warnings
     
+    // Check and set the toggle field
     if (form.getValues(toggleField) === undefined) {
-      fieldsToUpdate[toggleField] = false;
+      form.setValue(toggleField, false, { shouldValidate: false });
     }
     
+    // Check and set the URL field
     if (form.getValues(urlField) === undefined) {
-      fieldsToUpdate[urlField] = "";
+      form.setValue(urlField, "", { shouldValidate: false });
     }
     
-    // Apply all updates at once to reduce rerenders
-    if (Object.keys(fieldsToUpdate).length > 0) {
-      Object.entries(fieldsToUpdate).forEach(([key, value]) => {
-        form.setValue(key, value, { shouldValidate: false });
-      });
-    }
-  }, [form, toggleField, urlField]);
+  }, []); // Empty dependency array ensures this only runs once on mount
 
   return (
     <div className="space-y-6 mt-6 p-4 border border-gray-200 rounded-md bg-blue-50/30">

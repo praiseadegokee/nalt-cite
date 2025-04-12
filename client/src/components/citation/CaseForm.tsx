@@ -60,57 +60,33 @@ export default function CaseForm() {
   useEffect(() => {
     console.log("CaseForm: Initializing default values");
     
-    // Define all fields with default values to prevent uncontrolled->controlled warnings
-    const defaults = {
-      sourceType: 'case', // Ensure sourceType is set to 'case'
-      caseType: 'reported',
-      parties: [
+    // Only set sourceType to 'case' if not already set
+    // This is crucial to prevent controlled/uncontrolled component warnings
+    if (form.getValues('sourceType') === undefined) {
+      form.setValue('sourceType', 'case', { shouldValidate: false });
+    }
+    
+    // Only set initial parties if the array is empty
+    if (!form.getValues('parties') || form.getValues('parties').length === 0) {
+      form.setValue('parties', [
         { role: 'Plaintiff', name: '' },
         { role: 'Defendant', name: '' }
-      ],
-      isUnreportedSimple: false,
-      caseName: '',
-      yearReported: '',
-      volumeNumber: '',
-      partNumber: '',
-      lawReportAbbreviation: '',
-      pageNumber: '',
-      caseNumber: '',
-      court: '',
-      judgmentDate: '',
-      isOnlineSource: false,
-      webAddress: '',
-      accessDate: '',
-      // Include date-related fields for access date
-      accessDateDay: new Date().getDate().toString(),
-      accessDateMonth: (new Date().getMonth() + 1).toString(),
-      accessDateYear: new Date().getFullYear().toString()
-    };
-    
-    console.log("CaseForm: Current sourceType value:", form.getValues('sourceType'));
-    
-    // Explicitly set sourceType to 'case' regardless of current value to ensure consistency
-    form.setValue('sourceType', 'case', { shouldValidate: false });
-    
-    // Batch update all fields that aren't already set
-    const fieldsToUpdate: Record<string, any> = {};
-    Object.entries(defaults).forEach(([key, value]) => {
-      const currentValue = form.getValues(key);
-      if (currentValue === undefined || 
-          (Array.isArray(currentValue) && currentValue.length === 0)) {
-        fieldsToUpdate[key] = value;
-      }
-    });
-    
-    console.log("CaseForm: Fields to update:", fieldsToUpdate);
-    
-    // Apply updates in batch to minimize rerenders
-    if (Object.keys(fieldsToUpdate).length > 0) {
-      Object.entries(fieldsToUpdate).forEach(([key, value]) => {
-        form.setValue(key, value, { shouldValidate: false });
-      });
+      ], { shouldValidate: false });
     }
-  }, [form]); // Include form as dependency for the hook
+    
+    // Make sure caseType has a value
+    if (form.getValues('caseType') === undefined) {
+      form.setValue('caseType', 'reported', { shouldValidate: false });
+    }
+    
+    // Make sure isUnreportedSimple has a boolean value
+    if (form.getValues('isUnreportedSimple') === undefined) {
+      form.setValue('isUnreportedSimple', false, { shouldValidate: false });
+    }
+    
+    // No need to set other fields as the form will default them based on the 
+    // defaultValues in useCitationForm
+  }, []); // Empty dependency array ensures this only runs once on mount
 
   return (
     <div className="space-y-8">

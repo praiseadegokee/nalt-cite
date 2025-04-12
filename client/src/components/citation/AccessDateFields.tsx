@@ -56,32 +56,38 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
   
   // Initialize fields with default values when component mounts
   useEffect(() => {
-    // Set default values for all date fields in a batch to prevent multiple rerenders
+    // Only set default values if fields are undefined to prevent uncontrolled->controlled warnings
+    // Do this in a safer, more deterministic way without relying on timeouts
+    
+    let needsUpdate = false;
     const fieldsToUpdate: Record<string, string> = {};
     
+    // Check day field
     if (form.getValues(dayField) === undefined) {
       fieldsToUpdate[dayField] = currentDay;
+      needsUpdate = true;
     }
     
+    // Check month field
     if (form.getValues(monthField) === undefined) {
       fieldsToUpdate[monthField] = currentMonth;
+      needsUpdate = true;
     }
     
+    // Check year field
     if (form.getValues(yearField) === undefined) {
       fieldsToUpdate[yearField] = currentYear;
+      needsUpdate = true;
     }
     
-    // Apply all updates at once if there are any
-    if (Object.keys(fieldsToUpdate).length > 0) {
+    // Apply all updates at once if needed
+    if (needsUpdate) {
+      // Update form values first
       Object.entries(fieldsToUpdate).forEach(([key, value]) => {
         form.setValue(key, value, { shouldValidate: false });
       });
-    }
-    
-    // Always update the combined field to ensure it's properly formatted
-    // Use a small timeout to ensure the other fields are updated first
-    setTimeout(() => {
-      // Get the actual values that may have been set or defaulted
+      
+      // Then update the combined date field with the now-set values
       const day = form.getValues(dayField) || currentDay;
       const monthNum = form.getValues(monthField) || currentMonth;
       const year = form.getValues(yearField) || currentYear;
@@ -95,8 +101,8 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
         console.log(`AccessDateFields: Initializing combined date field to ${formattedDate}`);
         form.setValue(fieldPrefix, formattedDate, { shouldValidate: false });
       }
-    }, 0);
-  }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear]);
+    }
+  }, []); // Empty dependency array to ensure this only runs once on mount
 
   return (
     <div className="space-y-4">
