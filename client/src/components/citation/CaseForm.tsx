@@ -26,22 +26,19 @@ export default function CaseForm() {
   // Update case name when parties change
   useEffect(() => {
     if (parties.length >= 2) { // Only update if we have at least two parties
-      // Find the first plaintiff/appellant and defendant/respondent
-      const plaintiffRoles = ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'];
-      const defendantRoles = ['Defendant', 'Respondent', 'Accused', 'Objector'];
+      console.log("CaseForm: Updating case name from parties:", parties);
       
-      const plaintiff = parties.find((p: Party) => 
-        plaintiffRoles.includes(p.role) && p.name.trim() !== ''
-      );
+      // Check if both parties have names
+      const firstParty = parties[0];
+      const secondParty = parties[1];
       
-      const defendant = parties.find((p: Party) => 
-        defendantRoles.includes(p.role) && p.name.trim() !== ''
-      );
-      
-      if (plaintiff?.name && defendant?.name) {
-        // Format the case name - only update if both have names entered
-        const caseName = `${plaintiff.name} v ${defendant.name}`;
+      if (firstParty?.name?.trim() && secondParty?.name?.trim()) {
+        // Format the case name with the parties in correct order
+        const caseName = `${firstParty.name} v ${secondParty.name}`;
+        console.log("CaseForm: Setting case name to:", caseName);
         form.setValue('caseName', caseName, { shouldValidate: true });
+      } else {
+        console.log("CaseForm: Missing party names, can't generate case name yet");
       }
     }
   }, [parties, form]);
