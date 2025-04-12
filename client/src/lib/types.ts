@@ -123,11 +123,30 @@ export interface JournalArticleFields extends BaseCitationFields {
   accessDate?: string;
 }
 
+export interface Party {
+  role: string;
+  name: string;
+}
+
 export interface CaseFields extends BaseCitationFields {
-  caseName: string;
-  citation: string;
+  caseType: 'reported' | 'unreported';
+  parties: Party[];
+  caseName: string; // Generated based on parties
+  
+  // Reported case fields
+  yearReported?: string;
+  volumeNumber?: string;
+  partNumber?: string;
+  lawReportAbbreviation?: string;
+  pageNumber?: string;
+  
+  // Unreported case fields
+  caseNumber?: string;
   court?: string;
   judgmentDate?: string;
+  isUnreportedSimple?: boolean; // For the "(unreported)" alternative
+  
+  // Online access fields
   isOnlineSource?: boolean;
   webAddress?: string;
   accessDate?: string;
