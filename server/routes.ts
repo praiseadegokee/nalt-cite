@@ -1,9 +1,8 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
-import multer from "multer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
@@ -111,55 +110,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Content-Disposition', `attachment; filename="${file}.pdf"`);
     res.setHeader('Content-Type', 'application/pdf');
     res.sendFile(filePath);
-  });
-
-  // File Upload handling
-  // Setup multer storage
-  const pdfStorage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      const targetDir = path.resolve(process.cwd(), 'public/pdfs');
-      // Create directory if it doesn't exist
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
-      cb(null, targetDir);
-    },
-    filename: function (req, file, cb) {
-      // Use the original filename if it's a PDF, or convert it
-      const fileExt = path.extname(file.originalname).toLowerCase();
-      if (fileExt !== '.pdf') {
-        return cb(new Error('Only PDF files are allowed'), '');
-      }
-      cb(null, file.originalname);
-    }
-  });
-  
-  const upload = multer({ 
-    storage: pdfStorage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-    fileFilter: (req, file, cb) => {
-      if (file.mimetype !== 'application/pdf') {
-        return cb(new Error('Only PDF files are allowed'));
-      }
-      cb(null, true);
-    }
-  });
-  
-  // File upload endpoint
-  app.post(`${apiPrefix}/upload-pdf`, upload.single('pdfFile'), (req: Request, res: Response) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
-      
-      res.json({ 
-        message: 'File uploaded successfully', 
-        filename: req.file.filename 
-      });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      res.status(500).json({ message: 'Failed to upload file' });
-    }
   });
 
   // Citation generator API endpoint
