@@ -79,9 +79,14 @@ const formSchema = z.object({
   // Online source specific fields
   websiteTitle: z.string().optional(),
   url: z.string().optional(),
-  accessDate: z.string().optional(),
   isOnlineSource: z.boolean().optional(),
   webAddress: z.string().optional(),
+  
+  // Access date fields (structured format)
+  accessDay: z.string().optional(),
+  accessMonth: z.string().optional(),
+  accessYear: z.string().optional(),
+  accessDate: z.string().optional(),
   
   // Conference paper specific fields
   conferenceName: z.string().optional(),
@@ -132,8 +137,16 @@ export default function CitationGenerator() {
       publisher: "",
       page: "",
       
-      multipleEditors: false,
+      // Online access fields
       isOnlineSource: false,
+      webAddress: "",
+      accessDay: "",
+      accessMonth: "",
+      accessYear: "",
+      accessDate: "",
+      
+      // Other toggle fields
+      multipleEditors: false,
     },
   });
 
