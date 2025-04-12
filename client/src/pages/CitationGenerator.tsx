@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { format } from 'date-fns';
 import { OnlineSourceCheckbox } from '@/components/citation/OnlineSourceCheckbox';
 import { OnlineSourceFields } from '@/components/citation/OnlineSourceFields';
+import { SourceFields } from '@/components/citation-generator/SourceFields';
+import { generateCitation } from '@/components/citation-generator/CitationFormatters';
+import { SourceType } from '@/lib/types';
 import { 
   Form,
   FormControl,
@@ -87,7 +90,8 @@ const caseSchema = z.object({
 });
 
 // Statute schema
-const statuteSchema = baseFormSchema.extend({
+const statuteSchema = z.object({
+  sourceType: z.literal('statute'),
   title: z.string().min(1, "Title is required"),
   year: z.string().min(1, "Year is required"),
   actNumber: z.string().optional(),
@@ -277,7 +281,7 @@ export default function CitationGenerator() {
   const [citation, setCitation] = useState<string>("");
   const [formattedCitation, setFormattedCitation] = useState<string>("");
   const [selectedTab, setSelectedTab] = useState<string>("footnote");
-  const [sourceType, setSourceType] = useState<string | null>(null);
+  const [sourceType, setSourceType] = useState<SourceType>('book');
   const { toast } = useToast();
 
   // Initialize form with default book type
@@ -297,7 +301,7 @@ export default function CitationGenerator() {
   });
 
   // Update sourceType state when form sourceType changes
-  const watchSourceType = form.watch("sourceType");
+  const watchSourceType = form.watch("sourceType") as SourceType;
   useEffect(() => {
     if (watchSourceType) {
       setSourceType(watchSourceType);
@@ -371,1157 +375,96 @@ export default function CitationGenerator() {
   }
 
   function onSubmit(data: FormValues) {
-    let formattedCitation = "";
-    let bibCitation = "";
+    // Use the citation formatter utility to generate properly formatted citations
+    const footnote = generateCitation(data, 'footnote');
+    const bibliography = generateCitation(data, 'bibliography');
     
-    // Format based on source type
-    switch(data.sourceType) {
-      case 'book':
-        if (data.isChapter) {
-          // Format for book chapter
-          formattedCitation = `${formatAuthors(data.authors)}, '${data.chapterTitle}' in `;
-          
-          // Add editor if available
-          if (data.editorFirstName || data.editorLastName) {
-            const editorInitial = data.editorFirstName ? data.editorFirstName.charAt(0) : '';
-            formattedCitation += `${editorInitial} ${data.editorLastName} (ed), `;
-          }
-          
-          formattedCitation += `<i>${data.title}</i>`;
-          
-          if (data.edition) {
-            formattedCitation += ` (${data.edition}, ${data.publisher} ${data.year})`;
-          } else {
-            formattedCitation += ` (${data.publisher} ${data.year})`;
-          }
-          
-          if (data.pageRange) {
-            formattedCitation += ` ${data.pageRange}`;
-          }
-          
-          // Bibliography format
-          bibCitation = `${formatAuthors(data.authors, true)}, '${data.chapterTitle}' in `;
-          if (data.editorFirstName || data.editorLastName) {
-            const editorInitial = data.editorFirstName ? data.editorFirstName.charAt(0) : '';
-            bibCitation += `${data.editorLastName}, ${editorInitial} (ed), `;
-          }
-          bibCitation += `<i>${data.title}</i>`;
-          if (data.edition) {
-            bibCitation += ` (${data.edition}, ${data.publisher} ${data.year})`;
-          } else {
-            bibCitation += ` (${data.publisher} ${data.year})`;
-          }
-        } else {
-          // Format for standard book
-          formattedCitation = `${formatAuthors(data.authors)}, <i>${data.title}</i>`;
-          
-          if (data.edition) {
-            formattedCitation += ` (${data.edition}, ${data.publisher} ${data.year})`;
-          } else {
-            formattedCitation += ` (${data.publisher} ${data.year})`;
-          }
-          
-          if (data.page) {
-            formattedCitation += ` ${data.page}`;
-          }
-          
-          // Add online source information if applicable
-          if (data.isOnline && data.webAddress) {
-            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-              : data.accessDate;
-              
-            if (accessDateStr) {
-              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-            }
-          }
-          
-          // Bibliography format
-          bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i>`;
-          if (data.edition) {
-            bibCitation += ` (${data.edition}, ${data.publisher} ${data.year})`;
-          } else {
-            bibCitation += ` (${data.publisher} ${data.year})`;
-          }
-          
-          // Add online source to bibliography
-          if (data.isOnline && data.webAddress) {
-            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-              : data.accessDate;
-              
-            if (accessDateStr) {
-              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-            }
-          }
-        }
-        break;
-        
-      case 'journalArticle':
-        formattedCitation = `${formatAuthors(data.authors)}, '${data.title}' (${data.year})`;
-        
-        if (data.volume) {
-          formattedCitation += ` ${data.volume}`;
-        }
-        
-        formattedCitation += ` <i>${data.journalName}</i>`;
-        
-        if (data.issue) {
-          formattedCitation += ` (${data.issue})`;
-        }
-        
-        formattedCitation += ` ${data.page}`;
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, '${data.title}' (${data.year})`;
-        if (data.volume) {
-          bibCitation += ` ${data.volume}`;
-        }
-        bibCitation += ` <i>${data.journalName}</i>`;
-        if (data.issue) {
-          bibCitation += ` (${data.issue})`;
-        }
-        bibCitation += ` ${data.page}`;
-        
-        // Add online source to bibliography
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      case 'case':
-        if (data.isUnreported) {
-          formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i>`;
-          
-          if (data.suitNumber) {
-            formattedCitation += ` (${data.suitNumber}, ${data.court}, ${data.judgmentDate})`;
-          } else {
-            formattedCitation += ` (Unreported) ${data.court}, ${data.judgmentDate}`;
-          }
-          
-          bibCitation = formattedCitation;
-          
-          // Add online source information if applicable
-          if (data.isOnline && data.webAddress) {
-            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-              : data.accessDate;
-              
-            if (accessDateStr) {
-              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-            }
-          }
-        } else {
-          formattedCitation = `<i>${data.plaintiff} v ${data.defendant}</i> [${data.year}]`;
-          
-          if (data.volume) {
-            formattedCitation += ` ${data.volume}`;
-          }
-          
-          formattedCitation += ` ${data.lawReport}`;
-          
-          if (data.partNumber) {
-            formattedCitation += ` (Pt ${data.partNumber})`;
-          }
-          
-          formattedCitation += ` ${data.page}`;
-          
-          // Bibliography format - same as footnote for cases
-          bibCitation = formattedCitation;
-          
-          // Add online source information if applicable
-          if (data.isOnline && data.webAddress) {
-            const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-              ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-              : data.accessDate;
-              
-            if (accessDateStr) {
-              formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-              bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-            }
-          }
-        }
-        break;
-        
-      case 'statute':
-        formattedCitation = `${data.title} ${data.year}`;
-        
-        if (data.actNumber) {
-          formattedCitation += `, Act No ${data.actNumber}`;
-        }
-        
-        if (data.chapter) {
-          formattedCitation += `, Cap ${data.chapter}`;
-        }
-        
-        if (data.section) {
-          formattedCitation += `, s ${data.section}`;
-          
-          if (data.subsection) {
-            formattedCitation += `(${data.subsection})`;
-          }
-          
-          if (data.paragraph) {
-            formattedCitation += `(${data.paragraph})`;
-          }
-        }
-        
-        if (data.schedule) {
-          formattedCitation += `, Schedule ${data.schedule}`;
-        }
-        
-        if (data.orderNumber) {
-          formattedCitation += `, Order ${data.orderNumber}`;
-        }
-        
-        if (data.ruleNumber) {
-          formattedCitation += `, Rule ${data.ruleNumber}`;
-        }
-        
-        if (data.alterationInfo) {
-          formattedCitation += ` (${data.alterationInfo})`;
-        }
-        
-        // Bibliography format - same as footnote for statutes
-        bibCitation = formattedCitation;
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      case 'webResource':
-        formattedCitation = `${formatAuthors(data.authors)}, '${data.title}'`;
-        
-        if (data.publisher || data.year) {
-          formattedCitation += ` (`;
-          if (data.publisher) {
-            formattedCitation += data.publisher;
-            if (data.year) {
-              formattedCitation += ` ${data.year}`;
-            }
-          } else if (data.year) {
-            formattedCitation += data.year;
-          }
-          formattedCitation += `)`;
-        }
-        
-        formattedCitation += ` <${data.webAddress}> accessed ${data.accessDate}`;
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, '${data.title}'`;
-        if (data.publisher || data.year) {
-          bibCitation += ` (`;
-          if (data.publisher) {
-            bibCitation += data.publisher;
-            if (data.year) {
-              bibCitation += ` ${data.year}`;
-            }
-          } else if (data.year) {
-            bibCitation += data.year;
-          }
-          bibCitation += `)`;
-        }
-        bibCitation += ` <${data.webAddress}> accessed ${data.accessDate}`;
-        break;
-        
-      case 'newspaper':
-        if (data.isEditorial) {
-          formattedCitation = `Editorial, '${data.title}' <i>${data.newspaperName}</i> (${data.city}) ${data.publicationDate}`;
-          if (data.page) {
-            formattedCitation += ` ${data.page}`;
-          }
-        } else {
-          formattedCitation = `${formatAuthors(data.authors)}, '${data.title}' <i>${data.newspaperName}</i> (${data.city}) ${data.publicationDate}`;
-          if (data.page) {
-            formattedCitation += ` ${data.page}`;
-          }
-        }
-        
-        if (data.webAddress && data.accessDate) {
-          formattedCitation += ` <${data.webAddress}> accessed ${data.accessDate}`;
-        }
-        
-        // Bibliography format
-        if (data.isEditorial) {
-          bibCitation = `Editorial, '${data.title}' <i>${data.newspaperName}</i> (${data.city}) ${data.publicationDate}`;
-          if (data.page) {
-            bibCitation += ` ${data.page}`;
-          }
-        } else {
-          bibCitation = `${formatAuthors(data.authors, true)}, '${data.title}' <i>${data.newspaperName}</i> (${data.city}) ${data.publicationDate}`;
-          if (data.page) {
-            bibCitation += ` ${data.page}`;
-          }
-        }
-        
-        if (data.webAddress && data.accessDate) {
-          bibCitation += ` <${data.webAddress}> accessed ${data.accessDate}`;
-        }
-        break;
-        
-      case 'thesis':
-        formattedCitation = `${formatAuthors(data.authors)}, <i>${data.title}</i> (${data.degreeType}, ${data.faculty}, ${data.university} ${data.year})`;
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i> (${data.degreeType}, ${data.faculty}, ${data.university} ${data.year})`;
-        
-        // Add online source to bibliography
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      case 'conferencePaper':
-        formattedCitation = `${formatAuthors(data.authors)}, '${data.title}' <i>${data.proceedingsTitle}</i>, ${data.conferenceName}, ${data.conferenceLocation}, ${data.conferenceDates}`;
-        
-        if (data.page) {
-          formattedCitation += ` ${data.page}`;
-        }
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, '${data.title}' <i>${data.proceedingsTitle}</i>, ${data.conferenceName}, ${data.conferenceLocation}, ${data.conferenceDates}`;
-        
-        if (data.page) {
-          bibCitation += ` ${data.page}`;
-        }
-        
-        // Add online source to bibliography
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      case 'lecture':
-        formattedCitation = `${formatAuthors(data.authors)}, <i>${data.title}</i>, ${data.lectureType}`;
-        
-        if (data.occasion) {
-          formattedCitation += `, ${data.occasion}`;
-        }
-        
-        formattedCitation += `, ${data.presentationPlace}, ${data.presentationDate}`;
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i>, ${data.lectureType}`;
-        
-        if (data.occasion) {
-          bibCitation += `, ${data.occasion}`;
-        }
-        
-        bibCitation += `, ${data.presentationPlace}, ${data.presentationDate}`;
-        
-        // Add online source to bibliography
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      case 'encyclopedia':
-        formattedCitation = `${formatAuthors(data.authors)}, <i>${data.title}</i>`;
-        
-        if (data.edition) {
-          formattedCitation += ` (${data.edition})`;
-        }
-        
-        formattedCitation += ` (${data.year})`;
-        
-        if (data.volume) {
-          formattedCitation += ` vol ${data.volume}`;
-        }
-        
-        if (data.paragraph) {
-          formattedCitation += ` para ${data.paragraph}`;
-        }
-        
-        // Add online source information if applicable
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            formattedCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        
-        // Bibliography format
-        bibCitation = `${formatAuthors(data.authors, true)}, <i>${data.title}</i>`;
-        
-        if (data.edition) {
-          bibCitation += ` (${data.edition})`;
-        }
-        
-        bibCitation += ` (${data.year})`;
-        
-        if (data.volume) {
-          bibCitation += ` vol ${data.volume}`;
-        }
-        
-        if (data.paragraph) {
-          bibCitation += ` para ${data.paragraph}`;
-        }
-        
-        // Add online source to bibliography
-        if (data.isOnline && data.webAddress) {
-          const accessDateStr = data.accessDay && data.accessMonth && data.accessYear 
-            ? `${data.accessDay} ${data.accessMonth} ${data.accessYear}`
-            : data.accessDate;
-            
-          if (accessDateStr) {
-            bibCitation += ` <${data.webAddress}> accessed ${accessDateStr}`;
-          }
-        }
-        break;
-        
-      default:
-        formattedCitation = "Source type not supported";
-        bibCitation = "Source type not supported";
-    }
+    // Set the formatted citations for display
+    setCitation(footnote);
+    setFormattedCitation(bibliography);
     
-    // Set citation depending on selected tab
-    setCitation(selectedTab === "footnote" ? formattedCitation : bibCitation);
-    setFormattedCitation(formattedCitation); // Store the footnote citation for reference
+    // Show success message
+    toast({
+      title: "Citation generated successfully",
+      description: "Your citation has been generated in both footnote and bibliography formats.",
+    });
   }
-  
-  const copyToClipboard = () => {
-    // Strip HTML tags for clipboard
-    const plainTextCitation = citation.replace(/<[^>]*>/g, '');
-    
-    navigator.clipboard.writeText(plainTextCitation)
-      .then(() => {
-        toast({
-          title: "Copied to clipboard",
-          description: "Citation has been copied to your clipboard.",
-        });
-      })
-      .catch(() => {
-        toast({
-          title: "Copy failed",
-          description: "Could not copy to clipboard. Please try again.",
-          variant: "destructive",
-        });
-      });
-  };
-
-  // Get source type icon
-  const getSourceTypeIcon = () => {
-    switch(sourceType) {
-      case 'book': return <Book className="h-5 w-5" />;
-      case 'journalArticle': return <FileText className="h-5 w-5" />;
-      case 'case': return <Gavel className="h-5 w-5" />;
-      case 'statute': return <Scroll className="h-5 w-5" />;
-      case 'thesis': return <GraduationCap className="h-5 w-5" />;
-      case 'webResource': return <Globe className="h-5 w-5" />;
-      case 'newspaper': return <Newspaper className="h-5 w-5" />;
-      default: return <Book className="h-5 w-5" />;
-    }
-  };
 
   return (
-    <section id="generator" className="py-16 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center mb-3">
-            {getSourceTypeIcon()}
-            <h2 className="text-2xl md:text-3xl font-bold ml-2 text-[#1B387A]">NALT Citation Generator</h2>
-          </div>
-          <p className="text-gray-600 mb-8">Generate properly formatted citations based on the Nigerian Association of Law Teachers Uniform Format and Citation Guide.</p>
-          
-          {/* Tool interface */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 shadow-md p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Source Type Selection */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-[#1B387A]">Source Type</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="sourceType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-sm font-medium text-gray-700">Select Source Type</FormLabel>
-                          <FormControl>
-                            <Select 
-                              onValueChange={field.onChange} 
-                              defaultValue={field.value}
-                              value={field.value}
-                            >
-                              <SelectTrigger className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
-                                <SelectValue placeholder="Select a source type" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="book">Book</SelectItem>
-                                <SelectItem value="journalArticle">Journal Article</SelectItem>
-                                <SelectItem value="case">Case</SelectItem>
-                                <SelectItem value="statute">Statute/Legislation</SelectItem>
-                                <SelectItem value="thesis">Thesis/Dissertation</SelectItem>
-                                <SelectItem value="conferencePaper">Conference Paper</SelectItem>
-                                <SelectItem value="newspaper">Newspaper/Magazine</SelectItem>
-                                <SelectItem value="webResource">Web Resource</SelectItem>
-                                <SelectItem value="lecture">Lecture</SelectItem>
-                                <SelectItem value="encyclopedia">Encyclopedia</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </FormControl>
-                          <FormDescription>
-                            Choose the type of source you want to cite
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                {/* Authors Section - Only visible for types that require authors */}
-                {sourceType !== 'case' && sourceType !== 'statute' && (
-                  <>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-[#1B387A]">Author Information</h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => append({ firstName: '', lastName: '', middleName: '', isOrganization: false })}
-                          className="flex items-center text-[#1B387A]"
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Author
-                        </Button>
-                      </div>
-
-                      {fields.map((field, index) => (
-                        <Card key={field.id} className="border border-gray-200">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-center mb-4">
-                              <h4 className="font-medium">Author {index + 1}</h4>
-                              {fields.length > 1 && (
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => remove(index)}
-                                  className="text-red-500 p-1 h-auto"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </div>
-                            
-                            <div className="mb-3">
-                              <FormField
-                                control={form.control}
-                                name={`authors.${index}.isOrganization`}
-                                render={({ field }) => (
-                                  <FormItem className="flex items-center space-x-2">
-                                    <FormControl>
-                                      <Checkbox
-                                        checked={field.value}
-                                        onCheckedChange={field.onChange}
-                                      />
-                                    </FormControl>
-                                    <FormLabel className="font-normal cursor-pointer">
-                                      This is an organization/institution
-                                    </FormLabel>
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                            
-                            {form.watch(`authors.${index}.isOrganization`) ? (
-                              <div className="space-y-3">
-                                <FormField
-                                  control={form.control}
-                                  name={`authors.${index}.lastName`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-sm font-medium text-gray-700">Organization Name</FormLabel>
-                                      <FormControl>
-                                        <Input 
-                                          {...field} 
-                                          placeholder="e.g., Nigerian Association of Law Teachers" 
-                                          className="w-full"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <FormField
-                                  control={form.control}
-                                  name={`authors.${index}.firstName`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                                      <FormControl>
-                                        <Input 
-                                          {...field} 
-                                          placeholder="e.g., Oluwole" 
-                                          className="w-full"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                <FormField
-                                  control={form.control}
-                                  name={`authors.${index}.middleName`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-sm font-medium text-gray-700">Middle Name</FormLabel>
-                                      <FormControl>
-                                        <Input 
-                                          {...field} 
-                                          placeholder="e.g., Akin" 
-                                          className="w-full"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                                
-                                <FormField
-                                  control={form.control}
-                                  name={`authors.${index}.lastName`}
-                                  render={({ field }) => (
-                                    <FormItem>
-                                      <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                                      <FormControl>
-                                        <Input 
-                                          {...field} 
-                                          placeholder="e.g., Oyewo" 
-                                          className="w-full"
-                                        />
-                                      </FormControl>
-                                      <FormMessage />
-                                    </FormItem>
-                                  )}
-                                />
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </>
+    <div className="container py-8 px-4 max-w-5xl mx-auto">
+      <h1 className="text-3xl font-bold text-center mb-2 text-[#294D98]">NALT Citation Generator</h1>
+      <p className="text-center text-gray-600 mb-6">Generate properly formatted citations for legal sources</p>
+      
+      <Card className="mb-8">
+        <CardContent className="p-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Source Type Selection */}
+              <FormField
+                control={form.control}
+                name="sourceType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Select Source Type</FormLabel>
+                    <FormControl>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        defaultValue={field.value}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
+                          <SelectValue placeholder="Select a source type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="book">Book</SelectItem>
+                          <SelectItem value="journalArticle">Journal Article</SelectItem>
+                          <SelectItem value="case">Case</SelectItem>
+                          <SelectItem value="statute">Statute/Legislation</SelectItem>
+                          <SelectItem value="thesis">Thesis/Dissertation</SelectItem>
+                          <SelectItem value="conferencePaper">Conference Paper</SelectItem>
+                          <SelectItem value="newspaper">Newspaper/Magazine</SelectItem>
+                          <SelectItem value="webResource">Web Resource</SelectItem>
+                          <SelectItem value="lecture">Lecture</SelectItem>
+                          <SelectItem value="encyclopedia">Encyclopedia</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormDescription>
+                      Choose the type of source you want to cite
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
                 )}
-                
-                <Separator />
-                
-                {/* Source-specific fields */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-[#1B387A]">Source Details</h3>
-                  
-                  {/* Book specific fields */}
-                  {sourceType === 'book' && (
-                    <div className="space-y-4">
-                      <div className="mb-3">
-                        <FormField
-                          control={form.control}
-                          name="isChapter"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal cursor-pointer">
-                                This is a chapter in an edited book
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {form.watch("isChapter") ? (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="chapterTitle"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Chapter Title</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., The Role of Legal Education in Nigeria" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="editorFirstName"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Editor First Name</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      {...field} 
-                                      placeholder="e.g., Emeka" 
-                                      className="w-full"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="editorLastName"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Editor Last Name</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      {...field} 
-                                      placeholder="e.g., Nweze" 
-                                      className="w-full"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </>
-                      ) : null}
-                      
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">
-                              {form.watch("isChapter") ? "Book Title" : "Title"}
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Constitutional Law in Nigeria" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="edition"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Edition</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2nd edn" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="publisher"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Publisher</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., University Press" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2018" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name={form.watch("isChapter") ? "pageRange" : "page"}
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                              {form.watch("isChapter") ? "Page Range" : "Page Number"}
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0 h-auto ml-1">
-                                      <HelpCircle className="h-4 w-4 text-gray-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="w-60">{form.watch("isChapter") ? "The range of pages the chapter spans (e.g., 120-135)" : "The specific page being cited"}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder={form.watch("isChapter") ? "e.g., 120-135" : "e.g., 25"} 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="mb-3 mt-6 border-t pt-4">
-                        <OnlineSourceCheckbox 
-                          control={form.control} 
-                          sourceType="book" 
-                          setValue={form.setValue} 
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="book" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Journal Article specific fields */}
-                  {sourceType === 'journalArticle' && (
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Article Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Judicial Activism in Nigerian Courts" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="journalName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Journal Name</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Nigerian Journal of Contemporary Law" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2020" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="volume"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Volume</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 5" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="issue"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Issue</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="page"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                                Page Number
-                                <span className="text-red-500 ml-1">*</span>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" className="p-0 h-auto ml-1">
-                                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="w-60">The starting page number of the article</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 245" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="mb-3 mt-6 border-t pt-4">
-                        <OnlineSourceCheckbox 
-                          control={form.control} 
-                          sourceType="journalArticle" 
-                          setValue={form.setValue} 
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="journalArticle" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Case specific fields */}
-                  {sourceType === 'case' && (
-                    <div className="space-y-4">
-                      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-                        <div className="flex">
-                          <AlertCircle className="h-5 w-5 text-blue-500 mr-2" />
-                          <p className="text-sm text-blue-700">
-                            Note: Cases don't require author information. Enter parties directly below.
-                          </p>
-                        </div>
-                      </div>
+              />
+              
+              {/* Author Information - hidden for Case and Statute */}
+              {sourceType !== 'case' && sourceType !== 'statute' && (
+                <>
+                  <div className="bg-gray-50 p-4 rounded-md">
+                    <h3 className="text-lg font-medium mb-4">Author Information</h3>
                     
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="plaintiff"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">
-                                Plaintiff
-                                <span className="text-red-500 ml-1">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., Garba" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                The party bringing the case
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="mb-4 bg-white p-4 rounded-md shadow-sm">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="text-md font-medium">Author {index + 1}</h4>
+                          {index > 0 && (
+                            <Button
+                              variant="ghost"
+                              className="h-8 px-2 text-red-500"
+                              onClick={() => remove(index)}
+                              type="button"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Remove
+                            </Button>
                           )}
-                        />
+                        </div>
                         
                         <FormField
                           control={form.control}
-                          name="defendant"
+                          name={`authors.${index}.isOrganization`}
                           render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">
-                                Defendant
-                                <span className="text-red-500 ml-1">*</span>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., University of Maiduguri" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                The party against whom the case is brought
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="mb-3">
-                        <FormField
-                          control={form.control}
-                          name="isUnreported"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
+                            <FormItem className="flex items-center space-x-2 mb-3">
                               <FormControl>
                                 <Checkbox
                                   checked={field.value}
@@ -1529,97 +472,45 @@ export default function CitationGenerator() {
                                 />
                               </FormControl>
                               <FormLabel className="font-normal cursor-pointer">
-                                This is an unreported case
+                                This is an organization or institution
                               </FormLabel>
                             </FormItem>
                           )}
                         />
-                      </div>
-                      
-                      {form.watch("isUnreported") ? (
-                        <>
-                          <FormField
-                            control={form.control}
-                            name="suitNumber"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Suit/Case Number</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., FHC/J/CRC/10/2015" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  The official identification number assigned to the case
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
                         
+                        {form.watch(`authors.${index}.isOrganization`) ? (
                           <FormField
                             control={form.control}
-                            name="court"
+                            name={`authors.${index}.lastName`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Court</FormLabel>
+                                <FormLabel className="text-sm font-medium text-gray-700">Organization Name</FormLabel>
                                 <FormControl>
                                   <Input 
                                     {...field} 
-                                    placeholder="e.g., Federal High Court Jos Judicial Division" 
+                                    placeholder="e.g., National Judicial Institute" 
                                     className="w-full"
                                   />
                                 </FormControl>
-                                <FormDescription>
-                                  The court where the case was decided
-                                </FormDescription>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                          
-                          <FormField
-                            control={form.control}
-                            name="judgmentDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Judgment Date</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., 17 June 2016" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormDescription>
-                                  The date when judgment was pronounced (day-month-year format)
-                                </FormDescription>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </>
-                      ) : (
-                        <>
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <FormField
                               control={form.control}
-                              name="year"
+                              name={`authors.${index}.firstName`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
+                                  <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
                                   <FormControl>
                                     <Input 
                                       {...field} 
-                                      placeholder="e.g., 1986" 
+                                      placeholder="e.g., Chinua" 
                                       className="w-full"
                                     />
                                   </FormControl>
-                                  <FormDescription>
-                                    Year of reporting
-                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -1627,20 +518,17 @@ export default function CitationGenerator() {
                             
                             <FormField
                               control={form.control}
-                              name="volume"
+                              name={`authors.${index}.middleName`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Volume</FormLabel>
+                                  <FormLabel className="text-sm font-medium text-gray-700">Middle Name</FormLabel>
                                   <FormControl>
                                     <Input 
                                       {...field} 
-                                      placeholder="e.g., 1" 
+                                      placeholder="e.g., Ezeani" 
                                       className="w-full"
                                     />
                                   </FormControl>
-                                  <FormDescription>
-                                    Volume number
-                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
@@ -1648,1380 +536,134 @@ export default function CitationGenerator() {
                             
                             <FormField
                               control={form.control}
-                              name="lawReport"
+                              name={`authors.${index}.lastName`}
                               render={({ field }) => (
                                 <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Law Report</FormLabel>
-                                  <FormControl>
-                                    <Select 
-                                      onValueChange={field.onChange} 
-                                      defaultValue={field.value}
-                                      value={field.value}
-                                    >
-                                      <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select a law report" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="NWLR">NWLR</SelectItem>
-                                        <SelectItem value="FWLR">FWLR</SelectItem>
-                                        <SelectItem value="SCNJ">SCNJ</SelectItem>
-                                        <SelectItem value="WRNLR">WRNLR</SelectItem>
-                                        <SelectItem value="LRCN">LRCN</SelectItem>
-                                        <SelectItem value="NSCQR">NSCQR</SelectItem>
-                                        <SelectItem value="NISLR">NISLR</SelectItem>
-                                        <SelectItem value="WLR">WLR</SelectItem>
-                                        <SelectItem value="All NLR">All NLR</SelectItem>
-                                        <SelectItem value="LPELR">LPELR</SelectItem>
-                                        <SelectItem value="other">Other (specify)</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            {form.watch("lawReport") === "other" && (
-                              <FormField
-                                control={form.control}
-                                name="lawReportCustom"
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-medium text-gray-700">Custom Law Report</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        placeholder="Enter custom law report" 
-                                        className="w-full"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            )}
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="partNumber"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Part Number</FormLabel>
+                                  <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
                                   <FormControl>
                                     <Input 
                                       {...field} 
-                                      placeholder="e.g., 18" 
+                                      placeholder="e.g., Achebe" 
                                       className="w-full"
                                     />
                                   </FormControl>
-                                  <FormDescription>
-                                    Part number in brackets if applicable
-                                  </FormDescription>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="page"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-sm font-medium text-gray-700">Page Number</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      {...field} 
-                                      placeholder="e.g., 550" 
-                                      className="w-full"
-                                    />
-                                  </FormControl>
-                                  <FormDescription>
-                                    Starting page number of the case report
-                                  </FormDescription>
                                   <FormMessage />
                                 </FormItem>
                               )}
                             />
                           </div>
-                        </>
-                      )}
-                      
-                      <div className="mb-3 mt-6 border-t pt-4">
-                        <OnlineSourceCheckbox 
-                          control={form.control} 
-                          sourceType="case" 
-                          setValue={form.setValue} 
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="case" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Statute specific fields */}
-                  {sourceType === 'statute' && (
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Title of Statute</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Constitution of the Federal Republic of Nigeria" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
                         )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 1999" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="actNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Act Number</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 3" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="chapter"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Chapter</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., U8" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
                       </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="section"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Section</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 4" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="subsection"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Subsection</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 1" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="paragraph"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Paragraph</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., a" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="schedule"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Schedule</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="orderNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Order Number</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 5" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="ruleNumber"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Rule Number</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="alterationInfo"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Alteration Information</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Third Alteration" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="mb-3 mt-6 border-t pt-4">
-                        <OnlineSourceCheckbox 
-                          control={form.control} 
-                          sourceType="statute" 
-                          setValue={form.setValue} 
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="statute" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Web Resource specific fields */}
-                  {sourceType === 'webResource' && (
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                              Title
-                              <span className="text-red-500 ml-1">*</span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0 h-auto ml-1">
-                                      <HelpCircle className="h-4 w-4 text-gray-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="w-60">The main title of the web resource or article</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Overview of Nigerian Legal System" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="webAddress"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                              Web Address (URL)
-                              <span className="text-red-500 ml-1">*</span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0 h-auto ml-1">
-                                      <HelpCircle className="h-4 w-4 text-gray-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="w-60">The complete URL where the resource can be found</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., https://www.nigerianbar.org/legal-system" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="publisher"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                                Publisher/Website
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" className="p-0 h-auto ml-1">
-                                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="w-60">The organization that published the content</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., Nigerian Bar Association" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                                Year of Publication
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" className="p-0 h-auto ml-1">
-                                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="w-60">The year when the content was published online</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2021" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div>
-                        <FormLabel className="flex items-center text-sm font-medium text-gray-700 mb-2">
-                          Date of Access
-                          <span className="text-red-500 ml-1">*</span>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button variant="ghost" className="p-0 h-auto ml-1">
-                                  <HelpCircle className="h-4 w-4 text-gray-400" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="w-60">The date when you accessed the web resource</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </FormLabel>
-                        
-                        <div className="grid grid-cols-3 gap-2 mb-2">
-                          <FormField
-                            control={form.control}
-                            name="accessDay"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="Day" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="accessMonth"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                    value={field.value}
-                                  >
-                                    <SelectTrigger className="w-full">
-                                      <SelectValue placeholder="Month" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="January">January</SelectItem>
-                                      <SelectItem value="February">February</SelectItem>
-                                      <SelectItem value="March">March</SelectItem>
-                                      <SelectItem value="April">April</SelectItem>
-                                      <SelectItem value="May">May</SelectItem>
-                                      <SelectItem value="June">June</SelectItem>
-                                      <SelectItem value="July">July</SelectItem>
-                                      <SelectItem value="August">August</SelectItem>
-                                      <SelectItem value="September">September</SelectItem>
-                                      <SelectItem value="October">October</SelectItem>
-                                      <SelectItem value="November">November</SelectItem>
-                                      <SelectItem value="December">December</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="accessYear"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="Year" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const today = new Date();
-                            const day = today.getDate().toString();
-                            const month = format(today, 'MMMM');
-                            const year = today.getFullYear().toString();
-                            
-                            form.setValue('accessDay', day);
-                            form.setValue('accessMonth', month);
-                            form.setValue('accessYear', year);
-                            
-                            // Set the combined access date for backward compatibility
-                            form.setValue('accessDate', `${day} ${month} ${year}`);
-                          }}
-                          className="flex items-center text-[#1B387A]"
-                        >
-                          <Calendar className="h-4 w-4 mr-1" />
-                          Use Today's Date
-                        </Button>
-                        
-                        <FormField
-                          control={form.control}
-                          name="accessDate"
-                          render={({ field }) => (
-                            <FormItem hidden>
-                              <FormControl>
-                                <Input {...field} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Newspaper specific fields */}
-                  {sourceType === 'newspaper' && (
-                    <div className="space-y-4">
-                      <div className="mb-3">
-                        <FormField
-                          control={form.control}
-                          name="isEditorial"
-                          render={({ field }) => (
-                            <FormItem className="flex items-center space-x-2">
-                              <FormControl>
-                                <Checkbox
-                                  checked={field.value}
-                                  onCheckedChange={field.onChange}
-                                />
-                              </FormControl>
-                              <FormLabel className="font-normal cursor-pointer">
-                                This is an editorial
-                              </FormLabel>
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Article Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Legal Reform in Nigeria" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="newspaperName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Newspaper Name</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., The Guardian" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="city"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">City of Publication</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., Lagos" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="publicationDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Date of Publication</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 13 October 2012" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="page"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Page Number</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., 12" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-medium text-gray-700">Online Version</h4>
-                          <div className="text-xs text-gray-500 py-1 px-2 bg-gray-100 rounded">Optional</div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="webAddress"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Web Address</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., https://guardian.ng/news/legal-reform" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="accessDate"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-sm font-medium text-gray-700">Date of Access</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    {...field} 
-                                    placeholder="e.g., 15 October 2012" 
-                                    className="w-full"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Thesis specific fields */}
-                  {sourceType === 'thesis' && (
-                    <div className="space-y-4">
-                      <div className="mb-3">
-                        <OnlineSourceCheckbox 
-                          control={form.control} 
-                          sourceType="thesis" 
-                          setValue={form.setValue} 
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Legal and Regulatory Framework for Environmental Protection in Nigeria" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="degreeType"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Degree Type</FormLabel>
-                              <FormControl>
-                                <Select 
-                                  onValueChange={field.onChange} 
-                                  defaultValue={field.value}
-                                  value={field.value}
-                                >
-                                  <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Select a degree type" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="LLB Project">LLB Project</SelectItem>
-                                    <SelectItem value="LLM Dissertation">LLM Dissertation</SelectItem>
-                                    <SelectItem value="PhD Thesis">PhD Thesis</SelectItem>
-                                    <SelectItem value="MPhil Thesis">MPhil Thesis</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="faculty"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Faculty</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., Faculty of Law" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="university"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">University</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., University of Lagos" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Year of Submission</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2019" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="thesis" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Conference Paper specific fields */}
-                  {sourceType === 'conferencePaper' && (
-                    <div className="space-y-4">
-                      <OnlineSourceCheckbox 
-                        control={form.control} 
-                        sourceType="conferencePaper" 
-                        setValue={form.setValue} 
-                      />
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Paper Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Evolution of Legal Education in Nigeria" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="proceedingsTitle"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Proceedings Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Proceedings of the Annual Conference of Nigerian Law Teachers" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="conferenceName"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Conference Name</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 46th Annual Conference of NALT" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="conferenceLocation"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Conference Location</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., University of Ilorin" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="conferenceDates"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Conference Dates</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 22nd to 26th April 2013" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="page"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Page Range</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., 45-67" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="conferencePaper" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Lecture specific fields */}
-                  {sourceType === 'lecture' && (
-                    <div className="space-y-4">
-                      <OnlineSourceCheckbox 
-                        control={form.control} 
-                        sourceType="lecture" 
-                        setValue={form.setValue} 
-                      />
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Lecture Title</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., The Role of Law in National Development" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="lectureType"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Lecture Type</FormLabel>
-                            <FormControl>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
-                                value={field.value}
-                              >
-                                <SelectTrigger className="w-full">
-                                  <SelectValue placeholder="Select lecture type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Inaugural Lecture">Inaugural Lecture</SelectItem>
-                                  <SelectItem value="Distinguished Lecture">Distinguished Lecture</SelectItem>
-                                  <SelectItem value="Public Lecture">Public Lecture</SelectItem>
-                                  <SelectItem value="Memorial Lecture">Memorial Lecture</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="occasion"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Occasion (if specific)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., 50th Anniversary Celebration" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="presentationPlace"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Place of Presentation</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., Abuja, Nigeria" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="presentationDate"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Date of Presentation</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 18th November 2013" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="lecture" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Encyclopedia specific fields */}
-                  {sourceType === 'encyclopedia' && (
-                    <div className="space-y-4">
-                      <OnlineSourceCheckbox 
-                        control={form.control} 
-                        sourceType="encyclopedia" 
-                        setValue={form.setValue} 
-                      />
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                              Title of Encyclopedia
-                              <span className="text-red-500 ml-1">*</span>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button variant="ghost" className="p-0 h-auto ml-1">
-                                      <HelpCircle className="h-4 w-4 text-gray-400" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p className="w-60">The full title of the encyclopedia work</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., Halsbury's Laws of England" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="edition"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                                Edition
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" className="p-0 h-auto ml-1">
-                                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="w-60">The edition number of the encyclopedia (if applicable)</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 5th edn" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="year"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-                                Year
-                                <span className="text-red-500 ml-1">*</span>
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button variant="ghost" className="p-0 h-auto ml-1">
-                                        <HelpCircle className="h-4 w-4 text-gray-400" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="w-60">The year of publication</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 2010" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="volume"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-sm font-medium text-gray-700">Volume</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  {...field} 
-                                  placeholder="e.g., 57" 
-                                  className="w-full"
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="paragraph"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Paragraph</FormLabel>
-                            <FormControl>
-                              <Input 
-                                {...field} 
-                                placeholder="e.g., 53" 
-                                className="w-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      {form.watch("isOnline") && (
-                        <OnlineSourceFields 
-                          control={form.control} 
-                          sourceType="encyclopedia" 
-                          setValue={form.setValue} 
-                        />
-                      )}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Generate button */}
-                <div className="mt-8">
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-[#1B387A] hover:bg-[#294D98] text-white font-bold py-3 px-4 rounded-md shadow transition duration-150"
+                    ))}
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => append({ firstName: '', lastName: '', middleName: '', isOrganization: false })}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add Author
+                    </Button>
+                  </div>
+                </>
+              )}
+              
+              {/* Source-specific fields */}
+              <SourceFields 
+                sourceType={sourceType as SourceType} 
+                control={form.control} 
+                watch={form.watch} 
+                setValue={form.setValue} 
+              />
+              
+              <Button 
+                type="submit" 
+                className="w-full bg-[#294D98] hover:bg-[#3A64BB] text-white"
+              >
+                Generate Citation
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+      
+      {/* Display the citation result */}
+      {(citation || formattedCitation) && (
+        <Card className="mt-8">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-4 text-center text-[#294D98]">Generated Citation</h2>
+            
+            <Tabs defaultValue={selectedTab} onValueChange={setSelectedTab} className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger value="footnote" className="flex-1">Footnote</TabsTrigger>
+                <TabsTrigger value="bibliography" className="flex-1">Bibliography</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="footnote" className="mt-4">
+                <div className="bg-gray-50 p-4 rounded-md relative">
+                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: citation }} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(citation.replace(/<\/?[^>]+(>|$)/g, ""));
+                      toast({
+                        title: "Copied to clipboard",
+                        description: "The footnote citation has been copied to your clipboard",
+                      });
+                    }}
                   >
-                    Generate Citation
+                    <Copy className="h-4 w-4" />
                   </Button>
                 </div>
-              </form>
-            </Form>
-            
-            {/* Result */}
-            {citation && (
-              <div className="mt-8 p-6 bg-[#C3CDE1]/30 border border-[#C3CDE1] rounded-md">
-                <div className="mb-6">
-                  <Tabs defaultValue="footnote" onValueChange={setSelectedTab}>
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-[#1B387A]">Generated Citation</h3>
-                      <TabsList>
-                        <TabsTrigger value="footnote">Footnote</TabsTrigger>
-                        <TabsTrigger value="bibliography">Bibliography</TabsTrigger>
-                      </TabsList>
-                    </div>
-                  </Tabs>
+              </TabsContent>
+              
+              <TabsContent value="bibliography" className="mt-4">
+                <div className="bg-gray-50 p-4 rounded-md relative">
+                  <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: formattedCitation }} />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(formattedCitation.replace(/<\/?[^>]+(>|$)/g, ""));
+                      toast({
+                        title: "Copied to clipboard",
+                        description: "The bibliography citation has been copied to your clipboard",
+                      });
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
                 </div>
-                
-                <div className="p-5 bg-white border border-gray-300 rounded mb-4">
-                  <div className="flex items-start space-x-2">
-                    {selectedTab === "footnote" && (
-                      <span className="text-xs align-top leading-5">¹</span>
-                    )}
-                    <span 
-                      dangerouslySetInnerHTML={{ __html: citation }} 
-                      style={{ 
-                        fontFamily: "'Times New Roman', serif", 
-                        fontSize: selectedTab === "footnote" ? "10pt" : "12pt" 
-                      }} 
-                    />
-                  </div>
-                </div>
-                
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center bg-yellow-50 text-yellow-700 p-2 rounded-md border border-yellow-200 text-xs">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    <p>Always verify citations against the official NALT guide.</p>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => {
-                        // Set Footnote/Bibliography based on tab
-                        setCitation(selectedTab === "footnote" ? formattedCitation : citation);
-                      }}
-                      className="bg-white hover:bg-gray-100 text-gray-700 border border-gray-300"
-                    >
-                      <HelpCircle className="h-4 w-4 mr-1" />
-                      Format Help
-                    </Button>
-                    
-                    <Button 
-                      type="button" 
-                      onClick={copyToClipboard}
-                      variant="outline" 
-                      className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded border border-gray-300 text-sm flex items-center"
-                    >
-                      <Copy className="h-4 w-4 mr-1" />
-                      Copy
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Educational guidance */}
+      <Card className="mt-8">
+        <CardContent className="p-6">
+          <h2 className="text-xl font-bold mb-4 flex items-center text-[#294D98]">
+            <HelpCircle className="mr-2 h-5 w-5" />
+            Citation Guide
+          </h2>
+          <p className="text-gray-600 mb-4">
+            This tool helps you generate citations according to Nigerian legal writing standards. Different source types have specific citation formats:
+          </p>
+          <ul className="list-disc pl-5 space-y-2 text-gray-600">
+            <li><strong>Books:</strong> Author, <i>Title</i> (Edition, Publisher Year) Page</li>
+            <li><strong>Journal Articles:</strong> Author, 'Title' (Year) Volume <i>Journal Name</i> (Issue) Page</li>
+            <li><strong>Cases:</strong> <i>Plaintiff v Defendant</i> [Year] Volume Law Report Page</li>
+            <li><strong>Statutes:</strong> Title Year, Section</li>
+            <li><strong>Web Resources:</strong> Author, 'Title' (Publisher Year) &lt;URL&gt; accessed Date</li>
+          </ul>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
