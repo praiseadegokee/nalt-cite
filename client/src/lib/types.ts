@@ -55,7 +55,7 @@ export interface CitationFormat {
   template: (data: Record<string, string>) => string;
 }
 
-export type SourceType = 'book' | 'journalArticle' | 'case' | 'statute' | 'thesis' | 'webResource' | 'newspaper';
+export type SourceType = 'book' | 'journalArticle' | 'case' | 'statute' | 'thesis' | 'webResource' | 'newspaper' | 'conferencePaper' | 'lecture' | 'encyclopedia';
 
 export interface Author {
   firstName: string;
@@ -133,4 +133,29 @@ export interface NewspaperFormData extends BaseFormData {
   newspaperName?: string;
   publicationDate?: string;
   page?: string;
+}
+
+export interface ConferencePaperFormData extends BaseFormData {
+  sourceType: 'conferencePaper';
+  proceedingsTitle?: string;
+  conferenceName?: string;
+  conferenceLocation?: string;
+  conferenceDates?: string;
+  page?: string;
+}
+
+export interface LectureFormData extends BaseFormData {
+  sourceType: 'lecture';
+  lectureType?: string;
+  occasion?: string;
+  presentationPlace?: string;
+  presentationDate?: string;
+}
+
+export interface EncyclopediaFormData extends BaseFormData {
+  sourceType: 'encyclopedia';
+  edition?: string;
+  year?: string;
+  volume?: string;
+  paragraph?: string;
 }

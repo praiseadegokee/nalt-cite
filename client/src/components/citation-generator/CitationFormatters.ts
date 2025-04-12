@@ -6,7 +6,10 @@ import {
   StatuteFormData,
   ThesisFormData,
   WebResourceFormData,
-  NewspaperFormData
+  NewspaperFormData,
+  ConferencePaperFormData,
+  LectureFormData,
+  EncyclopediaFormData
 } from '../../lib/types';
 
 export function formatAuthor(author: Author): string {
@@ -368,6 +371,153 @@ export function formatNewspaperBibliography(data: NewspaperFormData): string {
   if (data.newspaperName) citation += `<em>${data.newspaperName}</em>`;
   if (data.publicationDate) citation += ` (${data.publicationDate})`;
   if (data.page) citation += ` ${data.page}`;
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+// Conference Paper citation formatters
+export function formatConferencePaperCitation(data: ConferencePaperFormData, footnote = true): string {
+  let citation = formatAuthors(data.authors);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.proceedingsTitle) citation += `in <em>${data.proceedingsTitle}</em>`;
+  
+  if (data.conferenceName || data.conferenceLocation) {
+    citation += ': ';
+    if (data.conferenceName) citation += data.conferenceName;
+    if (data.conferenceName && data.conferenceLocation) citation += ', ';
+    if (data.conferenceLocation) citation += data.conferenceLocation;
+  }
+  
+  if (data.conferenceDates) citation += ` (${data.conferenceDates})`;
+  
+  if (data.page) citation += `, ${data.page}`;
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+export function formatConferencePaperBibliography(data: ConferencePaperFormData): string {
+  let citation = formatAuthors(data.authors, true);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.proceedingsTitle) citation += `in <em>${data.proceedingsTitle}</em>`;
+  
+  if (data.conferenceName || data.conferenceLocation) {
+    citation += ': ';
+    if (data.conferenceName) citation += data.conferenceName;
+    if (data.conferenceName && data.conferenceLocation) citation += ', ';
+    if (data.conferenceLocation) citation += data.conferenceLocation;
+  }
+  
+  if (data.conferenceDates) citation += ` (${data.conferenceDates})`;
+  
+  if (data.page) citation += `, ${data.page}`;
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+// Lecture citation formatters
+export function formatLectureCitation(data: LectureFormData, footnote = true): string {
+  let citation = formatAuthors(data.authors);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.lectureType) citation += `(${data.lectureType}`;
+  else citation += '(lecture';
+  
+  if (data.occasion) citation += ` presented at ${data.occasion}`;
+  if (data.presentationPlace) citation += `, ${data.presentationPlace}`;
+  if (data.presentationDate) citation += `, ${data.presentationDate}`;
+  citation += ')';
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+export function formatLectureBibliography(data: LectureFormData): string {
+  let citation = formatAuthors(data.authors, true);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.lectureType) citation += `(${data.lectureType}`;
+  else citation += '(lecture';
+  
+  if (data.occasion) citation += ` presented at ${data.occasion}`;
+  if (data.presentationPlace) citation += `, ${data.presentationPlace}`;
+  if (data.presentationDate) citation += `, ${data.presentationDate}`;
+  citation += ')';
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+// Encyclopedia citation formatters
+export function formatEncyclopediaCitation(data: EncyclopediaFormData, footnote = true): string {
+  let citation = formatAuthors(data.authors);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.title) citation += `in <em>${data.title}</em>`;
+  if (data.edition) citation += `, ${data.edition}`;
+  if (data.volume) citation += `, vol ${data.volume}`;
+  if (data.year) citation += ` (${data.year})`;
+  if (data.paragraph) citation += `, para ${data.paragraph}`;
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+export function formatEncyclopediaBibliography(data: EncyclopediaFormData): string {
+  let citation = formatAuthors(data.authors, true);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `'${data.title}'${data.title.endsWith('?') ? '' : ','} `;
+  
+  if (data.title) citation += `in <em>${data.title}</em>`;
+  if (data.edition) citation += `, ${data.edition}`;
+  if (data.volume) citation += `, vol ${data.volume}`;
+  if (data.year) citation += ` (${data.year})`;
+  if (data.paragraph) citation += `, para ${data.paragraph}`;
   
   // Add online source information if applicable
   if (data.isOnlineSource && data.websiteUrl) {
