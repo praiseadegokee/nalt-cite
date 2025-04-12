@@ -40,6 +40,7 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
   
   // When any of the fields change, update the combined field
   const updateCombinedField = useCallback(() => {
+    // Get values with defaults to prevent undefined values
     const day = form.getValues(dayField) || currentDay;
     const monthNum = form.getValues(monthField) || currentMonth;
     const year = form.getValues(yearField) || currentYear;
@@ -55,22 +56,31 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
   
   // Initialize fields with default values when component mounts
   useEffect(() => {
-    // Set default values for all date fields if they don't exist
+    // Set default values for all date fields in a batch to prevent multiple rerenders
+    const fieldsToUpdate: Record<string, string> = {};
+    
     if (form.getValues(dayField) === undefined) {
-      form.setValue(dayField, currentDay);
+      fieldsToUpdate[dayField] = currentDay;
     }
     
     if (form.getValues(monthField) === undefined) {
-      form.setValue(monthField, currentMonth);
+      fieldsToUpdate[monthField] = currentMonth;
     }
     
     if (form.getValues(yearField) === undefined) {
-      form.setValue(yearField, currentYear);
+      fieldsToUpdate[yearField] = currentYear;
     }
     
-    if (form.getValues(fieldPrefix) === undefined) {
-      // After setting individual fields, update the combined field
-      updateCombinedField();
+    // Apply all updates at once if there are any
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      Object.entries(fieldsToUpdate).forEach(([key, value]) => {
+        form.setValue(key, value, { shouldValidate: false });
+      });
+      
+      // Only then update the combined field
+      if (form.getValues(fieldPrefix) === undefined) {
+        setTimeout(updateCombinedField, 0); // Use setTimeout to ensure field values are updated
+      }
     }
   }, [form, dayField, monthField, yearField, fieldPrefix, currentDay, currentMonth, currentYear, updateCombinedField]);
 
