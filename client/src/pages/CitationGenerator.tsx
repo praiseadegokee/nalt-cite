@@ -2,29 +2,114 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Copy } from 'lucide-react';
+import SourceTypeSelector from '@/components/citation/SourceTypeSelector';
+import { generateCitation } from '@/lib/citationUtils';
+import { Author, SourceType } from '@/lib/types';
 
-// Define form schema with Zod
+// Define base form schema with Zod
 const formSchema = z.object({
-  sourceType: z.string().min(1, "Source type is required"),
-  author: z.string().min(1, "Author is required"),
-  title: z.string().min(1, "Title is required"),
+  sourceType: z.enum([
+    'case', 
+    'statute', 
+    'book', 
+    'bookChapter', 
+    'journalArticle', 
+    'onlineSource', 
+    'conferencePaper',
+    'newspaper',
+    'thesis',
+    'lecture',
+    'encyclopedia',
+    'monograph',
+    'lectureNote'
+  ] as const),
+  
+  // Common fields that most sources will have
+  title: z.string().optional(),
+  year: z.string().optional(),
+  
+  // Author fields
+  authors: z.array(
+    z.object({
+      firstName: z.string().optional(),
+      middleName: z.string().optional(),
+      lastName: z.string().min(1, "Last name or organization name is required"),
+      isOrganization: z.boolean().optional(),
+    })
+  ).optional(),
+  
+  // Book specific fields
   edition: z.string().optional(),
-  publisher: z.string().min(1, "Publisher is required"),
-  year: z.string().min(1, "Year is required"),
+  publisher: z.string().optional(),
   page: z.string().optional(),
+  
+  // Book chapter specific fields
+  bookTitle: z.string().optional(),
+  chapterTitle: z.string().optional(),
+  editorFirstName: z.string().optional(),
+  editorMiddleName: z.string().optional(),
+  editorLastName: z.string().optional(),
+  secondEditorFirstName: z.string().optional(),
+  secondEditorLastName: z.string().optional(),
+  multipleEditors: z.boolean().optional(),
+  pageRange: z.string().optional(),
+  
+  // Journal article specific fields
+  journalTitle: z.string().optional(),
+  volume: z.string().optional(),
+  issue: z.string().optional(),
+  startPage: z.string().optional(),
+  endPage: z.string().optional(),
+  doi: z.string().optional(),
+  
+  // Case specific fields
+  caseName: z.string().optional(),
+  citation: z.string().optional(),
+  court: z.string().optional(),
+  judgmentDate: z.string().optional(),
+  
+  // Statute specific fields
+  statuteTitle: z.string().optional(),
+  jurisdiction: z.string().optional(),
+  section: z.string().optional(),
+  cap: z.string().optional(),
+  
+  // Online source specific fields
+  websiteTitle: z.string().optional(),
+  url: z.string().optional(),
+  accessDate: z.string().optional(),
+  isOnlineSource: z.boolean().optional(),
+  webAddress: z.string().optional(),
+  
+  // Conference paper specific fields
+  conferenceName: z.string().optional(),
+  conferenceLocation: z.string().optional(),
+  conferenceDate: z.string().optional(),
+  
+  // Newspaper specific fields
+  newspaperTitle: z.string().optional(),
+  date: z.string().optional(),
+  
+  // Thesis specific fields
+  thesisType: z.string().optional(),
+  institution: z.string().optional(),
+  
+  // Lecture specific fields
+  lectureType: z.string().optional(),
+  location: z.string().optional(),
+  
+  // Encyclopedia specific fields
+  encyclopediaTitle: z.string().optional(),
+  
+  // Monograph specific fields
+  series: z.string().optional(),
+  
+  // Lecture note specific fields
+  course: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -36,44 +121,34 @@ export default function CitationGenerator() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      sourceType: "",
-      author: "",
+      sourceType: undefined,
+      authors: [],
       title: "",
+      year: "",
+      
+      // Initialize other fields
       edition: "",
       publisher: "",
-      year: "",
       page: "",
+      
+      multipleEditors: false,
+      isOnlineSource: false,
     },
   });
 
   function onSubmit(data: FormValues) {
-    // Simple citation formatter - in a real app this would be more sophisticated
-    // and would handle different source types differently
-    let formattedCitation = "";
-    
-    // Format based on source type
-    if (data.sourceType === "book") {
-      formattedCitation = `${data.author}, <i>${data.title}</i>`;
-      
-      if (data.edition) {
-        formattedCitation += ` (${data.edition}, ${data.publisher} ${data.year})`;
-      } else {
-        formattedCitation += ` (${data.publisher} ${data.year})`;
-      }
-      
-      if (data.page) {
-        formattedCitation += ` ${data.page}`;
-      }
-    } else {
-      // Basic format for other types
-      formattedCitation = `${data.author}, <i>${data.title}</i> (${data.publisher} ${data.year})`;
-      
-      if (data.page) {
-        formattedCitation += ` ${data.page}`;
-      }
+    try {
+      // Use our citation utility to generate a properly formatted citation
+      const formattedCitation = generateCitation(data);
+      setCitation(formattedCitation);
+    } catch (error) {
+      console.error("Citation generation error:", error);
+      toast({
+        title: "Citation Error",
+        description: "There was an error generating your citation. Please check your inputs.",
+        variant: "destructive",
+      });
     }
-    
-    setCitation(formattedCitation);
   }
   
   const copyToClipboard = () => {
@@ -106,158 +181,9 @@ export default function CitationGenerator() {
           {/* Tool interface */}
           <div className="bg-gray-50 rounded-lg border border-gray-200 shadow-md p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                {/* Source Type Selection */}
-                <FormField
-                  control={form.control}
-                  name="sourceType"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Source Type</FormLabel>
-                      <FormControl>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          defaultValue={field.value}
-                        >
-                          <SelectTrigger className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
-                            <SelectValue placeholder="Select a source type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="case">Cases</SelectItem>
-                            <SelectItem value="statute">Statutes</SelectItem>
-                            <SelectItem value="book">Books</SelectItem>
-                            <SelectItem value="bookChapter">Chapters in Edited Books</SelectItem>
-                            <SelectItem value="journalArticle">Journal Articles</SelectItem>
-                            <SelectItem value="onlineSource">Online Sources</SelectItem>
-                            <SelectItem value="conferencePaper">Conference Papers</SelectItem>
-                            <SelectItem value="newspaper">Newspapers/Magazines</SelectItem>
-                            <SelectItem value="thesis">Projects/Theses</SelectItem>
-                            <SelectItem value="lecture">Inaugural/Distinguished Lectures</SelectItem>
-                            <SelectItem value="encyclopedia">Encyclopedias</SelectItem>
-                            <SelectItem value="monograph">Monographs</SelectItem>
-                            <SelectItem value="lectureNote">Lecture Notes</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Author */}
-                <FormField
-                  control={form.control}
-                  name="author"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Author(s)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., O Oyewo" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <p className="mt-1 text-sm text-gray-500">Format: Initial Surname (e.g., O Oyewo)</p>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Title */}
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Title</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., Constitutional Law in Nigeria" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Edition */}
-                <FormField
-                  control={form.control}
-                  name="edition"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Edition (if applicable)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., 2nd edn" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Publisher */}
-                <FormField
-                  control={form.control}
-                  name="publisher"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Publisher</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., University Press Limited" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Year */}
-                <FormField
-                  control={form.control}
-                  name="year"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Year</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., 2018" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                {/* Page Number */}
-                <FormField
-                  control={form.control}
-                  name="page"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Page Number (if applicable)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          {...field} 
-                          placeholder="e.g., 25" 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                {/* Source Type Selection and Dynamic Form Fields */}
+                <SourceTypeSelector />
                 
                 {/* Generate button */}
                 <div className="mt-6">
