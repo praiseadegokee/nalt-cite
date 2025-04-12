@@ -188,8 +188,13 @@ const formSchema = z.object({
   page: z.string().optional(),
   isChapter: z.boolean().optional(),
   chapterTitle: z.string().optional(),
+  bookTitle: z.string().optional(),
   editorFirstName: z.string().optional(),
+  editorMiddleName: z.string().optional(),
   editorLastName: z.string().optional(),
+  secondEditorFirstName: z.string().optional(),
+  secondEditorLastName: z.string().optional(),
+  multipleEditors: z.boolean().optional(),
   pageRange: z.string().optional(),
   journalName: z.string().optional(),
   volume: z.string().optional(),
@@ -303,6 +308,8 @@ export default function CitationGenerator() {
       editorFirstName: '',
       editorMiddleName: '',
       editorLastName: '',
+      secondEditorFirstName: '',
+      secondEditorLastName: '',
       pageRange: '',
     } as any,
   });
@@ -337,6 +344,8 @@ export default function CitationGenerator() {
         editorFirstName: '',
         editorMiddleName: '',
         editorLastName: '',
+        secondEditorFirstName: '',
+        secondEditorLastName: '',
         pageRange: '',
       } as any);
     }
