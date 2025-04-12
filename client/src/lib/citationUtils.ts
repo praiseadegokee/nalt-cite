@@ -408,9 +408,6 @@ export function formatLectureNoteCitation(fields: LectureNoteFields): string {
 
 // Main function to generate citation based on source type
 export function generateCitation(fields: any): string {
-  // Debug: Log the fields being passed to the formatter
-  console.log("Citation generation fields:", fields);
-  
   switch (fields.sourceType) {
     case 'book':
       return formatBookCitation(fields as BookFields);

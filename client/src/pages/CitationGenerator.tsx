@@ -141,17 +141,23 @@ export default function CitationGenerator() {
     try {
       setIsSubmitting(true);
       
-      // Simulate some processing time
-      await new Promise(r => setTimeout(r, 500));
+      // Validate required fields based on source type
+      const requiredFields = getRequiredFieldsBySourceType(data.sourceType);
+      const missingFields = requiredFields.filter(field => !data[field]);
       
-      // Debug: log form data to check online fields
-      console.log("Form Data:", JSON.stringify(data, null, 2));
+      if (missingFields.length > 0) {
+        toast({
+          title: "Missing Required Fields",
+          description: `Please fill in: ${missingFields.join(', ')}`,
+          variant: "destructive",
+        });
+        return;
+      }
       
-      // Use our citation utility to generate a properly formatted citation
+      // Generate citation
       const formattedCitation = generateCitation(data);
       setCitation(formattedCitation);
       
-      // Show success message
       toast({
         title: "Citation Generated",
         description: "Your citation has been successfully generated.",

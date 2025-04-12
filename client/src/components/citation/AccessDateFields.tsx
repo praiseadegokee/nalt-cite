@@ -1,12 +1,11 @@
-import { UseFormReturn } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useEffect } from 'react';
 
 interface AccessDateFieldsProps {
-  form: UseFormReturn<any>;
-  fieldPrefix?: string; // e.g. 'accessDate' or other field name
+  fieldPrefix: string; // e.g. 'accessDate' or other field name
   label?: string;
 }
 
@@ -25,7 +24,8 @@ const months = [
   { value: '12', label: 'December' },
 ];
 
-export default function AccessDateFields({ form, fieldPrefix = 'accessDate', label = 'Access Date' }: AccessDateFieldsProps) {
+export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }: AccessDateFieldsProps) {
+  const form = useFormContext();
   
   // Fields for day, month, and year
   const dayField = `${fieldPrefix}Day`;
