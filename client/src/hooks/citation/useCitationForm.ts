@@ -60,10 +60,23 @@ const formSchema = z.object({
   doi: z.string().optional(),
   
   // Case specific fields
+  caseType: z.enum(['reported', 'unreported']).optional(),
   caseName: z.string().optional(),
-  citation: z.string().optional(),
+  parties: z.array(
+    z.object({
+      role: z.string(),
+      name: z.string()
+    })
+  ).optional(),
+  yearReported: z.string().optional(),
+  volumeNumber: z.string().optional(),
+  partNumber: z.string().optional(),
+  lawReportAbbreviation: z.string().optional(),
+  pageNumber: z.string().optional(),
+  caseNumber: z.string().optional(),
   court: z.string().optional(),
   judgmentDate: z.string().optional(),
+  isUnreportedSimple: z.boolean().optional(),
   
   // Statute specific fields
   statuteTitle: z.string().optional(),
@@ -142,10 +155,18 @@ export function useCitationForm() {
       accessDateYear: "",
       
       // Case fields
+      caseType: "reported",
       caseName: "",
-      citation: "",
+      parties: [],
+      yearReported: "",
+      volumeNumber: "",
+      partNumber: "",
+      lawReportAbbreviation: "",
+      pageNumber: "",
+      caseNumber: "",
       court: "",
       judgmentDate: "",
+      isUnreportedSimple: false,
       
       // Statute fields
       statuteTitle: "",
