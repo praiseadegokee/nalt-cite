@@ -89,6 +89,9 @@ export interface BookFields extends BaseCitationFields {
   edition?: string;
   publisher: string;
   page?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface BookChapterFields extends BaseCitationFields {
@@ -163,6 +166,9 @@ export interface ThesisFields extends BaseCitationFields {
   institution: string;
   year: string;
   page?: string;
+  isOnlineSource?: boolean;
+  webAddress?: string;
+  accessDate?: string;
 }
 
 export interface LectureFields extends BaseCitationFields {
