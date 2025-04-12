@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function MonographForm() {
   const form = useFormContext();
@@ -122,6 +123,13 @@ export default function MonographForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );

@@ -83,6 +83,15 @@ export function formatBookCitation(fields: BookFields): string {
     citation += ` ${fields.page}`;
   }
   
+  // Add online access information if available
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` &lt;${fields.webAddress}&gt;`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
+  }
+  
   return citation;
 }
 
@@ -293,6 +302,15 @@ export function formatMonographCitation(fields: MonographFields): string {
   
   if (fields.page) {
     citation += ` ${fields.page}`;
+  }
+  
+  // Add online access information if available
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` &lt;${fields.webAddress}&gt;`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
   }
   
   return citation;
