@@ -32,7 +32,8 @@ interface PartyInputProps {
 }
 
 export default function PartyInput({ value = [], onChange, onBlur }: PartyInputProps) {
-  const parties = value;
+  // Ensure parties is never undefined to prevent controlled/uncontrolled component warnings
+  const parties = Array.isArray(value) ? value : [];
   
   const addParty = useCallback(() => {
     onChange([...parties, { role: PARTY_ROLES[0], name: '' }]);
@@ -45,24 +46,28 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
   }, [parties, onChange]);
   
   const updateParty = useCallback((index: number, field: keyof Party, value: string) => {
-    const updatedParties = [...parties];
-    updatedParties[index] = {
-      ...updatedParties[index],
-      [field]: value,
-    };
-    onChange(updatedParties);
+    // Make sure the index exists in the array
+    if (index >= 0 && index < parties.length) {
+      const updatedParties = [...parties];
+      updatedParties[index] = {
+        ...updatedParties[index],
+        [field]: value,
+      };
+      onChange(updatedParties);
+    }
   }, [parties, onChange]);
   
+  // Initialize default parties on mount, but only once
   useEffect(() => {
-    // If there are no parties, add the first one automatically
-    if (!parties || parties.length === 0) {
+    // If there are no parties, add the first ones automatically
+    if (parties.length === 0) {
       // Initialize with a default plaintiff and defendant
       onChange([
         { role: 'Plaintiff', name: '' },
         { role: 'Defendant', name: '' }
       ]);
     }
-  }, [parties, onChange]);
+  }, []);
 
   return (
     <div className="space-y-4">

@@ -18,22 +18,27 @@ import { Party } from '@/lib/types';
 
 export default function CaseForm() {
   const form = useFormContext();
-  const caseType = form.watch('caseType') as 'reported' | 'unreported';
+  // Ensure these values are never undefined to prevent controlled/uncontrolled component warnings
+  const caseType = form.watch('caseType') as 'reported' | 'unreported' || 'reported';
   const parties = form.watch('parties') || [];
-  const isUnreportedSimple = form.watch('isUnreportedSimple');
+  const isUnreportedSimple = form.watch('isUnreportedSimple') ?? false;
 
-  // When parties change, update the caseName field to show the formatted citation
+  // Update case name when parties change
   useEffect(() => {
-    if (parties.length > 0) {
+    if (parties.length >= 2) { // Only update if we have at least two parties
       // Find the first plaintiff/appellant and defendant/respondent
+      const plaintiffRoles = ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'];
+      const defendantRoles = ['Defendant', 'Respondent', 'Accused', 'Objector'];
+      
       const plaintiff = parties.find((p: Party) => 
-        ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(p.role)
-      );
-      const defendant = parties.find((p: Party) => 
-        ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role)
+        plaintiffRoles.includes(p.role) && p.name.trim() !== ''
       );
       
-      if (plaintiff && plaintiff.name && defendant && defendant.name) {
+      const defendant = parties.find((p: Party) => 
+        defendantRoles.includes(p.role) && p.name.trim() !== ''
+      );
+      
+      if (plaintiff?.name && defendant?.name) {
         // Format the case name - only update if both have names entered
         const caseName = `${plaintiff.name} v ${defendant.name}`;
         form.setValue('caseName', caseName, { shouldValidate: true });
@@ -41,12 +46,12 @@ export default function CaseForm() {
     }
   }, [parties, form]);
 
-  // Set default values on mount
+  // Set default values on mount - only run once
   useEffect(() => {
-    // Set defaults for all necessary fields to avoid uncontrolled to controlled warnings
+    // Define all fields with default values to prevent uncontrolled->controlled warnings
     const defaults = {
       caseType: 'reported',
-      parties: form.getValues('parties') || [],
+      parties: [],
       isUnreportedSimple: false,
       caseName: '',
       yearReported: '',
@@ -59,17 +64,28 @@ export default function CaseForm() {
       judgmentDate: '',
       isOnlineSource: false,
       webAddress: '',
-      accessDate: ''
+      accessDate: '',
+      // Include date-related fields for access date
+      accessDateDay: new Date().getDate().toString(),
+      accessDateMonth: (new Date().getMonth() + 1).toString(),
+      accessDateYear: new Date().getFullYear().toString()
     };
     
-    // Apply all default values that aren't already set
+    // Batch update all fields that aren't already set
+    const fieldsToUpdate: Record<string, any> = {};
     Object.entries(defaults).forEach(([key, value]) => {
       if (form.getValues(key) === undefined) {
-        form.setValue(key, value);
+        fieldsToUpdate[key] = value;
       }
     });
     
-  }, [form]);
+    // Apply updates in batch to minimize rerenders
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      Object.entries(fieldsToUpdate).forEach(([key, value]) => {
+        form.setValue(key, value, { shouldValidate: false });
+      });
+    }
+  }, []); // Empty dependency array ensures this only runs once
 
   return (
     <div className="space-y-8">

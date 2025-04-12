@@ -17,18 +17,26 @@ export default function OnlineAccessFields({
   accessDateField
 }: OnlineAccessFieldsProps) {
   const form = useFormContext();
-  const isOnlineSource = form.watch(toggleField);
+  const isOnlineSource = form.watch(toggleField) ?? false; // Provide default value to avoid undefined
   
   // Set default values when the component mounts
   useEffect(() => {
-    // Ensure the online source toggle has a default boolean value
+    // Batch update all fields that might be undefined
+    const fieldsToUpdate: Record<string, any> = {};
+    
     if (form.getValues(toggleField) === undefined) {
-      form.setValue(toggleField, false);
+      fieldsToUpdate[toggleField] = false;
     }
     
-    // Ensure URL field has a default value
     if (form.getValues(urlField) === undefined) {
-      form.setValue(urlField, "");
+      fieldsToUpdate[urlField] = "";
+    }
+    
+    // Apply all updates at once to reduce rerenders
+    if (Object.keys(fieldsToUpdate).length > 0) {
+      Object.entries(fieldsToUpdate).forEach(([key, value]) => {
+        form.setValue(key, value, { shouldValidate: false });
+      });
     }
   }, [form, toggleField, urlField]);
 
