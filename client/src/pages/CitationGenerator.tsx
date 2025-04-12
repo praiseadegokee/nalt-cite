@@ -242,7 +242,7 @@ const formSchema = z.object({
   presentationDate: z.string().optional(),
   
   // Add all online source fields
-  isOnline: z.boolean().optional(),
+  isOnlineSource: z.boolean().optional(),
   webAddress: z.string().optional(),
   accessDate: z.string().optional(),
   accessDay: z.string().optional(),
