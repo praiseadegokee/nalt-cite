@@ -300,8 +300,24 @@ export function formatMonographCitation(fields: MonographFields): string {
 
 // Format a lecture note citation
 export function formatLectureNoteCitation(fields: LectureNoteFields): string {
-  let citation = `${formatAuthors(fields.authors)}, '${fields.title}' (Lecture notes, ${fields.course}, ${fields.institution}, ${fields.date})`;
+  let citation = `${formatAuthors(fields.authors)}, '${fields.title}' (`;
   
+  // Add descriptor with audience if present
+  if (fields.audience) {
+    citation += `A Lecture Note prepared for ${fields.audience} of the `;
+  } else {
+    citation += 'Lecture Note, ';
+  }
+  
+  // Add course and institution
+  citation += `${fields.course ? fields.course + ', ' : ''}${fields.institution}, ${fields.date})`;
+  
+  // Add additional information if provided
+  if (fields.additionalInfo) {
+    citation += ` ${fields.additionalInfo}`;
+  }
+  
+  // Add page number if provided
   if (fields.page) {
     citation += ` ${fields.page}`;
   }

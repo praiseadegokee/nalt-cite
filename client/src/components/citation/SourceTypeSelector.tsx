@@ -19,6 +19,8 @@ import ConferencePaperForm from './ConferencePaperForm';
 import ThesisForm from './ThesisForm';
 import LectureForm from './LectureForm';
 import EncyclopediaForm from './EncyclopediaForm';
+import MonographForm from './MonographForm';
+import LectureNoteForm from './LectureNoteForm';
 
 export default function SourceTypeSelector() {
   const form = useFormContext();
@@ -75,12 +77,8 @@ export default function SourceTypeSelector() {
           {sourceType === 'thesis' && <ThesisForm />}
           {sourceType === 'lecture' && <LectureForm />}
           {sourceType === 'encyclopedia' && <EncyclopediaForm />}
-          {/* Only display "under development" message for the two remaining source types */}
-          {['monograph', 'lectureNote'].includes(sourceType) && (
-            <div className="p-6 border border-dashed border-gray-300 rounded-md bg-gray-50 text-center">
-              <p className="text-gray-500">This citation type is under development. Please check back later.</p>
-            </div>
-          )}
+          {sourceType === 'monograph' && <MonographForm />}
+          {sourceType === 'lectureNote' && <LectureNoteForm />}
         </div>
       )}
     </div>

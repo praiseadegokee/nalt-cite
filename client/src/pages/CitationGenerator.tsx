@@ -110,6 +110,8 @@ const formSchema = z.object({
   
   // Lecture note specific fields
   course: z.string().optional(),
+  audience: z.string().optional(),
+  additionalInfo: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
