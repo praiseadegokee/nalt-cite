@@ -13,34 +13,34 @@ import {
 // Define the guideline parts
 const guidelineParts = [
   {
-    id: 'nalt-guideline-full',
+    id: 'complete-guide',
     title: 'NALT Citation Guidelines - Complete',
     description: 'The complete NALT Uniform Format and Citation Guide document',
-    filename: 'nalt-guideline-full'
+    filename: 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria'
   },
   {
-    id: 'nalt-part1',
+    id: 'part1',
     title: 'Part 1: General Rules',
     description: 'General rules for citation and formatting in legal documents',
-    filename: 'nalt-part1'
+    filename: 'NALT Guide Part 1 - General Rules'
   },
   {
-    id: 'nalt-part2',
+    id: 'part2',
     title: 'Part 2: Cases',
     description: 'Guidelines for citing reported and unreported cases',
-    filename: 'nalt-part2'
+    filename: 'NALT Guide Part 2 - Cases'
   },
   {
-    id: 'nalt-part3',
+    id: 'part3',
     title: 'Part 3: Legislation',
     description: 'Rules for citing constitutions, statutes, and regulations',
-    filename: 'nalt-part3'
+    filename: 'NALT Guide Part 3 - Legislation'
   },
   {
-    id: 'nalt-part4',
+    id: 'part4',
     title: 'Part 4: Secondary Sources',
     description: 'Guidance for citing books, journals, and online resources',
-    filename: 'nalt-part4'
+    filename: 'NALT Guide Part 4 - Secondary Sources'
   }
 ];
 

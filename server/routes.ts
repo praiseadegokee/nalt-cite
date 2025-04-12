@@ -99,15 +99,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // PDF file download endpoints
   app.get(`${apiPrefix}/downloads/:file`, (req: Request, res: Response) => {
     const file = req.params.file;
-    const filePath = path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`);
+    // First try exact filename as provided
+    let filePath = path.resolve(process.cwd(), 'public/pdfs', file);
     
-    // Check if file exists
+    // If file doesn't exist, try with .pdf extension
+    if (!fs.existsSync(filePath)) {
+      filePath = path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`);
+    }
+    
+    // Still doesn't exist
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ message: "File not found" });
     }
     
+    // Extract the original filename for the download
+    const filename = path.basename(filePath);
+    
     // Set headers and send file
-    res.setHeader('Content-Disposition', `attachment; filename="${file}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'application/pdf');
     res.sendFile(filePath);
   });
