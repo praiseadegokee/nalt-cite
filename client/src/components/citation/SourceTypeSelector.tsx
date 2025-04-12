@@ -15,6 +15,10 @@ import JournalArticleForm from './JournalArticleForm';
 import NewspaperForm from './NewspaperForm';
 import OnlineSourceForm from './OnlineSourceForm';
 import StatuteForm from './StatuteForm';
+import ConferencePaperForm from './ConferencePaperForm';
+import ThesisForm from './ThesisForm';
+import LectureForm from './LectureForm';
+import EncyclopediaForm from './EncyclopediaForm';
 
 export default function SourceTypeSelector() {
   const form = useFormContext();
@@ -67,8 +71,12 @@ export default function SourceTypeSelector() {
           {sourceType === 'newspaper' && <NewspaperForm />}
           {sourceType === 'onlineSource' && <OnlineSourceForm />}
           {sourceType === 'statute' && <StatuteForm />}
-          {/* Add other form components for the remaining source types as they are developed */}
-          {!['book', 'bookChapter', 'case', 'journalArticle', 'newspaper', 'onlineSource', 'statute'].includes(sourceType) && (
+          {sourceType === 'conferencePaper' && <ConferencePaperForm />}
+          {sourceType === 'thesis' && <ThesisForm />}
+          {sourceType === 'lecture' && <LectureForm />}
+          {sourceType === 'encyclopedia' && <EncyclopediaForm />}
+          {/* Only display "under development" message for the two remaining source types */}
+          {['monograph', 'lectureNote'].includes(sourceType) && (
             <div className="p-6 border border-dashed border-gray-300 rounded-md bg-gray-50 text-center">
               <p className="text-gray-500">This citation type is under development. Please check back later.</p>
             </div>
