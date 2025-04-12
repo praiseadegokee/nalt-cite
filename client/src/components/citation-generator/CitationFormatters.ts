@@ -108,6 +108,7 @@ export function formatBookBibliography(data: BookFormData): string {
 
 // Book Chapter citation formatters
 export function formatBookChapterCitation(data: BookChapterFormData, footnote = true): string {
+  console.log('Book Chapter formatter data:', data);
   let citation = '';
   
   // Chapter in an edited book
@@ -152,15 +153,20 @@ export function formatBookChapterCitation(data: BookChapterFormData, footnote = 
   if (data.pageRange) citation += ` ${data.pageRange}`;
   
   // Add online source information if applicable
-  if (data.isOnlineSource && data.websiteUrl) {
-    citation += ` <${data.websiteUrl}>`;
-    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  if (data.isOnlineSource) {
+    // Use webAddress if available, fallback to websiteUrl
+    const url = data.webAddress || data.websiteUrl;
+    if (url) {
+      citation += ` <${url}>`;
+      if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+    }
   }
   
   return citation;
 }
 
 export function formatBookChapterBibliography(data: BookChapterFormData): string {
+  console.log('Book Chapter bibliography formatter data:', data);
   let citation = '';
   
   // Chapter in an edited book
@@ -205,9 +211,13 @@ export function formatBookChapterBibliography(data: BookChapterFormData): string
   if (data.pageRange) citation += ` ${data.pageRange}`;
   
   // Add online source information if applicable
-  if (data.isOnlineSource && data.websiteUrl) {
-    citation += ` <${data.websiteUrl}>`;
-    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  if (data.isOnlineSource) {
+    // Use webAddress if available, fallback to websiteUrl
+    const url = data.webAddress || data.websiteUrl;
+    if (url) {
+      citation += ` <${url}>`;
+      if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+    }
   }
   
   return citation;

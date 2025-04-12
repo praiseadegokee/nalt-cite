@@ -70,6 +70,7 @@ export interface BaseFormData {
   title?: string;
   isOnlineSource?: boolean;
   websiteUrl?: string;
+  webAddress?: string;  // Added for compatibility with both naming conventions
   accessDate?: string;
 }
 
