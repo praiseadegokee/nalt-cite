@@ -20,9 +20,9 @@ const guidelineParts = [
   },
   {
     id: 'part1',
-    title: 'Part 1: General Rules',
-    description: 'General rules for citation and formatting in legal documents',
-    filename: 'NALT Guide Part 1 - General Rules'
+    title: 'Part 1: Background Information',
+    description: 'Background information to NALT Format',
+    filename: 'NALT Uniform Format and Citation Guide (Part One - Background Information to NALT Format)'
   },
   {
     id: 'part2',
@@ -79,7 +79,8 @@ export default function GuidelineDownloads() {
           {/* Individual parts */}
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Individual Sections</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {guidelineParts.slice(1).map((part) => (
+            {/* Only show Part 1 for now as it's the only one uploaded besides the complete guide */}
+            {guidelineParts.slice(1, 2).map((part) => (
               <Card key={part.id} className="border border-gray-200 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">{part.title}</CardTitle>
