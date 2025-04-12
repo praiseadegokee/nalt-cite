@@ -176,6 +176,15 @@ export function formatCaseCitation(fields: CaseFields): string {
     citation += ` (${fields.judgmentDate})`;
   }
   
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
+  }
+  
   return citation;
 }
 
@@ -321,6 +330,15 @@ export function formatEncyclopediaCitation(fields: EncyclopediaFields): string {
     citation += ` ${fields.page}`;
   }
   
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
+  }
+  
   return citation;
 }
 
@@ -342,7 +360,7 @@ export function formatMonographCitation(fields: MonographFields): string {
   
   // Add online access information if available
   if (fields.isOnlineSource && fields.webAddress) {
-    citation += ` &lt;${fields.webAddress}&gt;`;
+    citation += ` <${fields.webAddress}>`;
     
     if (fields.accessDate) {
       citation += ` accessed ${fields.accessDate}`;
@@ -374,6 +392,15 @@ export function formatLectureNoteCitation(fields: LectureNoteFields): string {
   // Add page number if provided
   if (fields.page) {
     citation += ` ${fields.page}`;
+  }
+  
+  // Add online access information if applicable
+  if (fields.isOnlineSource && fields.webAddress) {
+    citation += ` <${fields.webAddress}>`;
+    
+    if (fields.accessDate) {
+      citation += ` accessed ${fields.accessDate}`;
+    }
   }
   
   return citation;
