@@ -11,6 +11,7 @@ import FAQ from "@/pages/FAQ";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Resources from "@/pages/Resources";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -24,6 +25,7 @@ function Router() {
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
+        <Route path="/admin/upload" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
