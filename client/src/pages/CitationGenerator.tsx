@@ -953,142 +953,144 @@ export default function CitationGenerator() {
                 
                 <Separator />
                 
-                {/* Authors Section - Hide for case and statute types */}
+                {/* Authors Section - Only visible for types that require authors */}
                 {sourceType !== 'case' && sourceType !== 'statute' && (
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold text-[#1B387A]">Author Information</h3>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => append({ firstName: '', lastName: '', middleName: '', isOrganization: false })}
-                        className="flex items-center text-[#1B387A]"
-                      >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Add Author
-                      </Button>
-                    </div>
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-[#1B387A]">Author Information</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => append({ firstName: '', lastName: '', middleName: '', isOrganization: false })}
+                          className="flex items-center text-[#1B387A]"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Author
+                        </Button>
+                      </div>
 
-                    {fields.map((field, index) => (
-                      <Card key={field.id} className="border border-gray-200">
-                        <CardContent className="p-4">
-                          <div className="flex justify-between items-center mb-4">
-                            <h4 className="font-medium">Author {index + 1}</h4>
-                            {fields.length > 1 && (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => remove(index)}
-                                className="text-red-500 p-1 h-auto"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </div>
-                          
-                          <div className="mb-3">
-                            <FormField
-                              control={form.control}
-                              name={`authors.${index}.isOrganization`}
-                              render={({ field }) => (
-                                <FormItem className="flex items-center space-x-2">
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value}
-                                      onCheckedChange={field.onChange}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">
-                                    This is an organization/institution
-                                  </FormLabel>
-                                </FormItem>
+                      {fields.map((field, index) => (
+                        <Card key={field.id} className="border border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-center mb-4">
+                              <h4 className="font-medium">Author {index + 1}</h4>
+                              {fields.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => remove(index)}
+                                  className="text-red-500 p-1 h-auto"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                               )}
-                            />
-                          </div>
-                          
-                          {form.watch(`authors.${index}.isOrganization`) ? (
-                            <div className="space-y-3">
+                            </div>
+                            
+                            <div className="mb-3">
                               <FormField
                                 control={form.control}
-                                name={`authors.${index}.lastName`}
+                                name={`authors.${index}.isOrganization`}
                                 render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-medium text-gray-700">Organization Name</FormLabel>
+                                  <FormItem className="flex items-center space-x-2">
                                     <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        placeholder="e.g., Nigerian Association of Law Teachers" 
-                                        className="w-full"
+                                      <Checkbox
+                                        checked={field.value}
+                                        onCheckedChange={field.onChange}
                                       />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormLabel className="font-normal cursor-pointer">
+                                      This is an organization/institution
+                                    </FormLabel>
                                   </FormItem>
                                 )}
                               />
                             </div>
-                          ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                              <FormField
-                                control={form.control}
-                                name={`authors.${index}.firstName`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        placeholder="e.g., Oluwole" 
-                                        className="w-full"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              
-                              <FormField
-                                control={form.control}
-                                name={`authors.${index}.middleName`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-medium text-gray-700">Middle Name</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        placeholder="e.g., Akin" 
-                                        className="w-full"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                              
-                              <FormField
-                                control={form.control}
-                                name={`authors.${index}.lastName`}
-                                render={({ field }) => (
-                                  <FormItem>
-                                    <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                                    <FormControl>
-                                      <Input 
-                                        {...field} 
-                                        placeholder="e.g., Oyewo" 
-                                        className="w-full"
-                                      />
-                                    </FormControl>
-                                    <FormMessage />
-                                  </FormItem>
-                                )}
-                              />
-                            </div>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                            
+                            {form.watch(`authors.${index}.isOrganization`) ? (
+                              <div className="space-y-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`authors.${index}.lastName`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-sm font-medium text-gray-700">Organization Name</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          {...field} 
+                                          placeholder="e.g., Nigerian Association of Law Teachers" 
+                                          className="w-full"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`authors.${index}.firstName`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          {...field} 
+                                          placeholder="e.g., Oluwole" 
+                                          className="w-full"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name={`authors.${index}.middleName`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-sm font-medium text-gray-700">Middle Name</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          {...field} 
+                                          placeholder="e.g., Akin" 
+                                          className="w-full"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                                
+                                <FormField
+                                  control={form.control}
+                                  name={`authors.${index}.lastName`}
+                                  render={({ field }) => (
+                                    <FormItem>
+                                      <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
+                                      <FormControl>
+                                        <Input 
+                                          {...field} 
+                                          placeholder="e.g., Oyewo" 
+                                          className="w-full"
+                                        />
+                                      </FormControl>
+                                      <FormMessage />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </>
                 )}
                 
                 <Separator />
