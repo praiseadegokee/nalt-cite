@@ -2,11 +2,14 @@ import { ReactNode } from 'react';
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
+import { useToast } from '@/hooks/use-toast';
+import { validateSourceFields } from '@/lib/citationValidator';
+import { CitationFormValues } from '@/hooks/citation/useCitationForm';
 import SourceTypeSelector from './SourceTypeSelector';
 
 interface CitationFormContainerProps {
-  form: UseFormReturn<any>;
-  onSubmit: (data: any) => void;
+  form: UseFormReturn<CitationFormValues>;
+  onSubmit: (data: CitationFormValues) => void;
   isSubmitting: boolean;
   children?: ReactNode;
 }
@@ -17,11 +20,39 @@ export default function CitationFormContainer({
   isSubmitting,
   children
 }: CitationFormContainerProps) {
+  const { toast } = useToast();
+  
+  const handleSubmit = (data: CitationFormValues) => {
+    const sourceType = data.sourceType;
+    if (!sourceType) {
+      toast({
+        title: "Missing source type",
+        description: "Please select a source type to generate your citation.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate required fields based on source type
+    const { isValid, missingFields } = validateSourceFields(data, sourceType);
+    
+    if (!isValid) {
+      toast({
+        title: "Missing required fields",
+        description: `Please fill in the following fields: ${missingFields.join(', ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // All validation passed, submit the form
+    onSubmit(data);
+  };
   
   return (
     <div className="bg-gray-50 rounded-lg border border-gray-200 shadow-md p-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           <div className="mb-6 pb-4 border-b border-gray-200">
             <h3 className="text-lg font-medium text-[#1B387A]">Citation Details</h3>
             <p className="text-sm text-gray-500 mt-1">
