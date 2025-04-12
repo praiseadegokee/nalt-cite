@@ -33,16 +33,56 @@ export default function CitationFormContainer({
       return;
     }
     
-    // Validate required fields based on source type
-    const { isValid, missingFields } = validateSourceFields(data, sourceType);
-    
-    if (!isValid) {
+    // Check form errors
+    if (Object.keys(form.formState.errors).length > 0) {
+      // Get error messages
+      const errorMessages = Object.entries(form.formState.errors)
+        .map(([field, error]) => `${field}: ${error.message}`)
+        .join(', ');
+      
+      console.log("Form validation errors:", form.formState.errors);
+      
       toast({
-        title: "Missing required fields",
-        description: `Please fill in the following fields: ${missingFields.join(', ')}`,
+        title: "Form validation errors",
+        description: "Please correct the errors in the form before submitting.",
         variant: "destructive",
       });
       return;
+    }
+    
+    // For case citations, do additional validation based on case type
+    if (sourceType === 'case') {
+      const caseType = data.caseType;
+      
+      // Make sure parties are entered properly
+      if (!data.parties || data.parties.length < 2) {
+        toast({
+          title: "Missing party information",
+          description: "Please enter at least two parties (plaintiff and defendant).",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (caseType === 'reported') {
+        if (!data.yearReported || !data.lawReportAbbreviation) {
+          toast({
+            title: "Missing reported case information",
+            description: "For reported cases, please enter the Year and Law Report Abbreviation.",
+            variant: "destructive",
+          });
+          return;
+        }
+      } else if (caseType === 'unreported' && !data.isUnreportedSimple) {
+        if (!data.caseNumber || !data.court) {
+          toast({
+            title: "Missing unreported case information",
+            description: "For detailed unreported cases, please enter the Case Number and Court.",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
     }
     
     // All validation passed, submit the form

@@ -60,23 +60,30 @@ const formSchema = z.object({
   doi: z.string().optional(),
   
   // Case specific fields
-  caseType: z.enum(['reported', 'unreported']).optional(),
-  caseName: z.string().optional(),
+  caseType: z.enum(['reported', 'unreported']),
+  caseName: z.string().min(1, "Case name is required"),
   parties: z.array(
     z.object({
-      role: z.string(),
-      name: z.string()
+      role: z.string().min(1, "Party role is required"),
+      name: z.string().min(1, "Party name is required")
     })
-  ).optional(),
-  yearReported: z.string().optional(),
+  ).min(2, "At least two parties are required"),
+  
+  // Reported case fields
+  yearReported: z.string().optional()
+    .refine(val => val === undefined || val === "" || /^\d{4}$/.test(val), {
+      message: "Year must be a 4-digit number"
+    }),
   volumeNumber: z.string().optional(),
   partNumber: z.string().optional(),
   lawReportAbbreviation: z.string().optional(),
   pageNumber: z.string().optional(),
+  
+  // Unreported case fields
   caseNumber: z.string().optional(),
   court: z.string().optional(),
   judgmentDate: z.string().optional(),
-  isUnreportedSimple: z.boolean().optional(),
+  isUnreportedSimple: z.boolean().default(false),
   
   // Statute specific fields
   statuteTitle: z.string().optional(),
@@ -125,11 +132,45 @@ const formSchema = z.object({
   additionalInfo: z.string().optional(),
 });
 
+// Add custom validation for conditional case fields
+const caseFormSchema = formSchema.refine(
+  (data) => {
+    // Skip validation if not a case citation
+    if (data.sourceType !== 'case') return true;
+    
+    // For reported cases
+    if (data.caseType === 'reported') {
+      const hasYearReported = !!data.yearReported;
+      const hasLawReportAbbreviation = !!data.lawReportAbbreviation;
+      
+      if (!hasYearReported || !hasLawReportAbbreviation) {
+        return false;
+      }
+    }
+    
+    // For unreported cases (not using simple format)
+    if (data.caseType === 'unreported' && !data.isUnreportedSimple) {
+      const hasCaseNumber = !!data.caseNumber;
+      const hasCourt = !!data.court;
+      
+      if (!hasCaseNumber || !hasCourt) {
+        return false;
+      }
+    }
+    
+    return true;
+  },
+  {
+    message: "Missing required fields for the selected case type",
+    path: ["caseType"], // Show error on the case type field
+  }
+);
+
 export type CitationFormValues = z.infer<typeof formSchema>;
 
 export function useCitationForm() {
   const form = useForm<CitationFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(caseFormSchema),
     defaultValues: {
       sourceType: undefined,
       authors: [],

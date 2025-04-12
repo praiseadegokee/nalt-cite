@@ -169,60 +169,87 @@ export class JournalArticleCitationFormatter extends CitationFormatter {
  */
 export class CaseCitationFormatter extends CitationFormatter {
   format(fields: CaseFields): string {
-    // Always start with case name (which is dynamically generated from parties)
-    let citation = `<i>${fields.caseName}</i>`;
-    
-    if (fields.caseType === 'reported') {
-      // Format for reported case
-      // [Year] Volume LawReportAbbreviation (Part if available) PageNumber
-      citation += ` [${fields.yearReported || ''}]`;
-      
-      if (fields.volumeNumber) {
-        citation += ` ${fields.volumeNumber}`;
+    try {
+      // Validate essential fields
+      if (!fields.caseName) {
+        console.error("Case citation error: Missing case name");
+        return "Error: Missing case name";
       }
       
-      if (fields.lawReportAbbreviation) {
-        citation += ` ${fields.lawReportAbbreviation}`;
-      }
+      // Always start with case name (which is dynamically generated from parties)
+      let citation = `<i>${fields.caseName}</i>`;
       
-      if (fields.partNumber) {
-        citation += ` (${fields.partNumber})`;
-      }
-      
-      if (fields.pageNumber) {
-        citation += ` ${fields.pageNumber}`;
-      }
-    } else if (fields.caseType === 'unreported') {
-      // Format for unreported case
-      if (fields.isUnreportedSimple) {
-        // Simple format
-        citation += ` (unreported)`;
-      } else {
-        // Detailed unreported case format
-        if (fields.caseNumber) {
-          citation += ` ${fields.caseNumber}`;
+      if (fields.caseType === 'reported') {
+        // Validate essential fields for reported cases
+        if (!fields.yearReported) {
+          console.warn("Case citation warning: Missing year reported");
+        }
+        if (!fields.lawReportAbbreviation) {
+          console.warn("Case citation warning: Missing law report abbreviation");
         }
         
-        if (fields.court) {
-          citation += ` (${fields.court})`;
+        // Format for reported case
+        // [Year] Volume LawReportAbbreviation (Part if available) PageNumber
+        citation += ` [${fields.yearReported || ''}]`;
+        
+        if (fields.volumeNumber) {
+          citation += ` ${fields.volumeNumber}`;
         }
         
-        if (fields.judgmentDate) {
-          citation += ` (${fields.judgmentDate})`;
+        if (fields.lawReportAbbreviation) {
+          citation += ` ${fields.lawReportAbbreviation}`;
+        }
+        
+        if (fields.partNumber) {
+          citation += ` (${fields.partNumber})`;
+        }
+        
+        if (fields.pageNumber) {
+          citation += ` ${fields.pageNumber}`;
+        }
+      } else if (fields.caseType === 'unreported') {
+        // Format for unreported case
+        if (fields.isUnreportedSimple) {
+          // Simple format
+          citation += ` (unreported)`;
+        } else {
+          // Validate essential fields for detailed unreported cases
+          if (!fields.caseNumber) {
+            console.warn("Case citation warning: Missing case number for unreported case");
+          }
+          if (!fields.court) {
+            console.warn("Case citation warning: Missing court for unreported case");
+          }
+          
+          // Detailed unreported case format
+          if (fields.caseNumber) {
+            citation += ` ${fields.caseNumber}`;
+          }
+          
+          if (fields.court) {
+            citation += ` (${fields.court})`;
+          }
+          
+          if (fields.judgmentDate) {
+            citation += ` (${fields.judgmentDate})`;
+          }
         }
       }
-    }
-    
-    // Add online access information if applicable
-    if (fields.isOnlineSource && fields.webAddress) {
-      citation += ` &lt;${fields.webAddress}&gt;`;
       
-      if (fields.accessDate) {
-        citation += ` accessed ${fields.accessDate}`;
+      // Add online access information if applicable
+      if (fields.isOnlineSource && fields.webAddress) {
+        citation += ` &lt;${fields.webAddress}&gt;`;
+        
+        if (fields.accessDate) {
+          citation += ` accessed ${fields.accessDate}`;
+        }
       }
+      
+      return citation;
+    } catch (error) {
+      console.error("Case citation formatting error:", error);
+      return `Error formatting case citation: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
-    
-    return citation;
   }
 }
 
