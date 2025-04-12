@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { X, Plus } from 'lucide-react';
 import { Party } from '@/lib/types';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 
 const PARTY_ROLES = [
   'Plaintiff',
@@ -34,31 +34,31 @@ interface PartyInputProps {
 export default function PartyInput({ value = [], onChange, onBlur }: PartyInputProps) {
   const parties = value;
   
-  const addParty = () => {
+  const addParty = useCallback(() => {
     onChange([...parties, { role: PARTY_ROLES[0], name: '' }]);
-  };
+  }, [parties, onChange]);
   
-  const removeParty = (index: number) => {
+  const removeParty = useCallback((index: number) => {
     const updatedParties = [...parties];
     updatedParties.splice(index, 1);
     onChange(updatedParties);
-  };
+  }, [parties, onChange]);
   
-  const updateParty = (index: number, field: keyof Party, value: string) => {
+  const updateParty = useCallback((index: number, field: keyof Party, value: string) => {
     const updatedParties = [...parties];
     updatedParties[index] = {
       ...updatedParties[index],
       [field]: value,
     };
     onChange(updatedParties);
-  };
+  }, [parties, onChange]);
   
   useEffect(() => {
     // If there are no parties, add the first one automatically
     if (parties.length === 0) {
       addParty();
     }
-  }, []);
+  }, [parties.length, addParty]);
 
   return (
     <div className="space-y-4">

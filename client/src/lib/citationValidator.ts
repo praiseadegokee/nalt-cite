@@ -17,7 +17,7 @@ export function getRequiredFieldsBySourceType(sourceType: SourceType): string[] 
       return [...commonFields, 'journalTitle'];
       
     case 'case':
-      return ['caseName', 'citation'];
+      return ['caseName', 'caseType', 'parties'];
       
     case 'statute':
       return ['statuteTitle', 'year', 'jurisdiction'];
@@ -81,14 +81,65 @@ export function validateSourceFields(data: any, sourceType: SourceType): { isVal
     }
   }
   
+  // Special handling for case parties
+  if (requiredFields.includes('parties')) {
+    if (!data.parties || data.parties.length === 0) {
+      missingFields.push('parties');
+    } else {
+      // Check that we have at least one plaintiff/appellant and one defendant/respondent
+      const plaintiffFound = data.parties.some((party: any) => 
+        ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(party.role) && party.name
+      );
+      
+      const defendantFound = data.parties.some((party: any) => 
+        ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(party.role) && party.name
+      );
+      
+      if (!plaintiffFound) {
+        missingFields.push('plaintiff party information');
+      }
+      
+      if (!defendantFound) {
+        missingFields.push('defendant party information');
+      }
+    }
+  }
+  
   // Check other required fields
   requiredFields
-    .filter(field => field !== 'authors')
+    .filter(field => field !== 'authors' && field !== 'parties')
     .forEach(field => {
       if (!data[field]) {
         missingFields.push(field);
       }
     });
+  
+  // Special handling for case source types - reported vs unreported
+  if (sourceType === 'case' && data.caseType) {
+    if (data.caseType === 'reported') {
+      // Check for required reported case fields
+      if (!data.yearReported) {
+        missingFields.push('yearReported');
+      }
+      if (!data.lawReportAbbreviation) {
+        missingFields.push('lawReportAbbreviation');
+      }
+      if (!data.pageNumber) {
+        missingFields.push('pageNumber');
+      }
+    } else if (data.caseType === 'unreported' && !data.isUnreportedSimple) {
+      // Check for required unreported case fields (only if not using simplified format)
+      if (!data.caseNumber) {
+        missingFields.push('caseNumber');
+      }
+      if (!data.court) {
+        missingFields.push('court');
+      }
+      if (!data.judgmentDate) {
+        missingFields.push('judgmentDate');
+      }
+    }
+  }
   
   // Special handling for online sources with access date
   if (data.isOnlineSource) {
