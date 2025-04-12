@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ResourceCard from '@/components/ResourceCard';
+import GuidelineDownloads from '@/components/GuidelineDownloads';
 import { Button } from '@/components/ui/button';
 import { resources } from '@/lib/data';
 

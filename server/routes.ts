@@ -96,16 +96,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mock file download endpoints - in production, these would serve actual files
+  // PDF file download endpoints
   app.get(`${apiPrefix}/downloads/:file`, (req: Request, res: Response) => {
     const file = req.params.file;
+    const filePath = path.join(__dirname, '../public/pdfs', `${file}.pdf`);
     
-    // For demonstration purposes - normally would send actual file
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "File not found" });
+    }
+    
+    // Set headers and send file
     res.setHeader('Content-Disposition', `attachment; filename="${file}.pdf"`);
     res.setHeader('Content-Type', 'application/pdf');
-    
-    // Send a placeholder response for demonstration
-    res.send(`This would be the ${file} file content`);
+    res.sendFile(filePath);
   });
 
   // Citation generator API endpoint
