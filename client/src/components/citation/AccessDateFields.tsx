@@ -25,7 +25,6 @@ const years = Array.from({ length: 21 }, (_, i) => currentYear - i);
 
 export default function AccessDateFields() {
   const form = useFormContext();
-  const isOnlineSource = form.watch('isOnlineSource');
   
   // Update the accessDate field when day, month, or year changes
   useEffect(() => {
@@ -51,6 +50,9 @@ export default function AccessDateFields() {
     
     return () => subscription.unsubscribe();
   }, [form]);
+  
+  // Get isOnlineSource value directly to ensure proper reactivity
+  const isOnlineSource = form.watch('isOnlineSource');
   
   if (!isOnlineSource) return null;
   
