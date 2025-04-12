@@ -1,48 +1,25 @@
-import React, { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { CitationProvider } from '@/context/CitationContext';
+import React from 'react';
+import { CitationProvider, useCitation } from '@/context/CitationContext';
 import { useCitationForm, CitationFormValues } from '@/hooks/citation/useCitationForm';
-import { generateCitation } from '@/lib/citationUtils';
 import CitationFormContainer from '@/components/citation/CitationFormContainer';
 import CitationResult from '@/components/citation/CitationResult';
 
-// Main generator component
+// Main generator component that uses CitationContext
 function CitationGeneratorContent() {
-  const [citation, setCitation] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const { toast } = useToast();
+  const { citation, isSubmitting, generateCitationFromData } = useCitation();
   const form = useCitationForm();
   
   async function onSubmit(data: CitationFormValues) {
-    console.log("onSubmit function called with data:", data);
-    try {
-      setIsSubmitting(true);
-      
-      // Add a small delay to show loading state
-      await new Promise(r => setTimeout(r, 500));
-      
-      // Generate citation based on form data
-      console.log("About to generate citation with data:", data);
-      const formattedCitation = generateCitation(data);
-      console.log("Generated citation:", formattedCitation);
-      
-      setCitation(formattedCitation);
-      
-      // Show success message
-      toast({
-        title: "Citation Generated",
-        description: "Your citation has been successfully generated.",
-      });
-    } catch (error) {
-      console.error("Citation generation error:", error);
-      toast({
-        title: "Citation Error",
-        description: "There was an error generating your citation. Please check your inputs.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
+    console.log("CitationGenerator: onSubmit called with data:", data);
+    
+    // Ensure sourceType is set to 'case' for the case form
+    if (form.getValues('caseType') && !data.sourceType) {
+      console.log("CitationGenerator: Setting sourceType to 'case'");
+      data.sourceType = 'case';
     }
+    
+    // Call the context method to generate citation
+    await generateCitationFromData(data);
   }
 
   return (
@@ -69,7 +46,11 @@ function CitationGeneratorContent() {
   );
 }
 
-// Wrapping component for future context usage
+// Wrapping component with CitationProvider
 export default function CitationGenerator() {
-  return <CitationGeneratorContent />;
+  return (
+    <CitationProvider>
+      <CitationGeneratorContent />
+    </CitationProvider>
+  );
 }

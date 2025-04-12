@@ -48,10 +48,16 @@ export default function CaseForm() {
 
   // Set default values on mount - only run once
   useEffect(() => {
+    console.log("CaseForm: Initializing default values");
+    
     // Define all fields with default values to prevent uncontrolled->controlled warnings
     const defaults = {
+      sourceType: 'case', // Ensure sourceType is set to 'case'
       caseType: 'reported',
-      parties: [],
+      parties: [
+        { role: 'Plaintiff', name: '' },
+        { role: 'Defendant', name: '' }
+      ],
       isUnreportedSimple: false,
       caseName: '',
       yearReported: '',
@@ -71,13 +77,22 @@ export default function CaseForm() {
       accessDateYear: new Date().getFullYear().toString()
     };
     
+    console.log("CaseForm: Current sourceType value:", form.getValues('sourceType'));
+    
+    // Explicitly set sourceType to 'case' regardless of current value to ensure consistency
+    form.setValue('sourceType', 'case', { shouldValidate: false });
+    
     // Batch update all fields that aren't already set
     const fieldsToUpdate: Record<string, any> = {};
     Object.entries(defaults).forEach(([key, value]) => {
-      if (form.getValues(key) === undefined) {
+      const currentValue = form.getValues(key);
+      if (currentValue === undefined || 
+          (Array.isArray(currentValue) && currentValue.length === 0)) {
         fieldsToUpdate[key] = value;
       }
     });
+    
+    console.log("CaseForm: Fields to update:", fieldsToUpdate);
     
     // Apply updates in batch to minimize rerenders
     if (Object.keys(fieldsToUpdate).length > 0) {
@@ -85,7 +100,7 @@ export default function CaseForm() {
         form.setValue(key, value, { shouldValidate: false });
       });
     }
-  }, []); // Empty dependency array ensures this only runs once
+  }, [form]); // Include form as dependency for the hook
 
   return (
     <div className="space-y-8">
