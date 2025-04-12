@@ -1,6 +1,7 @@
 import {
   Author,
   BookFormData,
+  BookChapterFormData,
   JournalArticleFormData,
   CaseFormData,
   StatuteFormData,

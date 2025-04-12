@@ -1,6 +1,7 @@
 import React from 'react';
 import { SourceType } from '@/lib/types';
 import { BookFields } from './BookFields';
+import { BookChapterFields } from './BookChapterFields';
 import { JournalArticleFields } from './JournalArticleFields';
 import { CaseFields } from './CaseFields';
 import { StatuteFields } from './StatuteFields';
@@ -22,6 +23,9 @@ export function SourceFields({ sourceType, control, watch, setValue }: SourceFie
   switch (sourceType) {
     case 'book':
       return <BookFields control={control} watch={watch} setValue={setValue} />;
+      
+    case 'bookChapter':
+      return <BookChapterFields control={control} watch={watch} setValue={setValue} />;
       
     case 'journalArticle':
       return <JournalArticleFields control={control} watch={watch} setValue={setValue} />;
