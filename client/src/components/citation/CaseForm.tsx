@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import OnlineAccessFields from './OnlineAccessFields';
 import PartyInput from './PartyInput';
 import { useEffect } from 'react';
+import { Party } from '@/lib/types';
 
 export default function CaseForm() {
   const form = useFormContext();
@@ -25,8 +26,12 @@ export default function CaseForm() {
   useEffect(() => {
     if (parties.length > 0) {
       // Find the first plaintiff/appellant and defendant/respondent
-      const plaintiff = parties.find(p => ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(p.role));
-      const defendant = parties.find(p => ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role));
+      const plaintiff = parties.find((p: Party) => 
+        ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(p.role)
+      );
+      const defendant = parties.find((p: Party) => 
+        ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role)
+      );
       
       if (plaintiff && defendant) {
         // Format the case name

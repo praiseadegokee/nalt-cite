@@ -169,17 +169,48 @@ export class JournalArticleCitationFormatter extends CitationFormatter {
  */
 export class CaseCitationFormatter extends CitationFormatter {
   format(fields: CaseFields): string {
-    // Start with case name and citation
-    let citation = `<i>${fields.caseName}</i> ${fields.citation}`;
+    // Always start with case name (which is dynamically generated from parties)
+    let citation = `<i>${fields.caseName}</i>`;
     
-    // Add court information if provided
-    if (fields.court) {
-      citation += ` (${fields.court})`;
-    }
-    
-    // Add judgment date if provided
-    if (fields.judgmentDate) {
-      citation += ` (${fields.judgmentDate})`;
+    if (fields.caseType === 'reported') {
+      // Format for reported case
+      // [Year] Volume LawReportAbbreviation (Part if available) PageNumber
+      citation += ` [${fields.yearReported || ''}]`;
+      
+      if (fields.volumeNumber) {
+        citation += ` ${fields.volumeNumber}`;
+      }
+      
+      if (fields.lawReportAbbreviation) {
+        citation += ` ${fields.lawReportAbbreviation}`;
+      }
+      
+      if (fields.partNumber) {
+        citation += ` (${fields.partNumber})`;
+      }
+      
+      if (fields.pageNumber) {
+        citation += ` ${fields.pageNumber}`;
+      }
+    } else if (fields.caseType === 'unreported') {
+      // Format for unreported case
+      if (fields.isUnreportedSimple) {
+        // Simple format
+        citation += ` (unreported)`;
+      } else {
+        // Detailed unreported case format
+        if (fields.caseNumber) {
+          citation += ` ${fields.caseNumber}`;
+        }
+        
+        if (fields.court) {
+          citation += ` (${fields.court})`;
+        }
+        
+        if (fields.judgmentDate) {
+          citation += ` (${fields.judgmentDate})`;
+        }
+      }
     }
     
     // Add online access information if applicable
