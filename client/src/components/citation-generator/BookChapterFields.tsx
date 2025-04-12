@@ -24,6 +24,13 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
   const secondEditorFirstName = watch('secondEditorFirstName');
   const secondEditorLastName = watch('secondEditorLastName');
   
+  // Debug field values
+  console.log('BookChapterFields values:', {
+    isOnlineSource,
+    secondEditorFirstName,
+    secondEditorLastName
+  });
+  
   // Auto-set multipleEditors flag when second editor info is provided
   useEffect(() => {
     if ((secondEditorFirstName && secondEditorFirstName.trim() !== '') || 

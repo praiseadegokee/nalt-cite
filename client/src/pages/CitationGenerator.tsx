@@ -311,8 +311,23 @@ export default function CitationGenerator() {
       secondEditorFirstName: '',
       secondEditorLastName: '',
       pageRange: '',
+      // Online source fields
+      isOnlineSource: false,
+      webAddress: '',
+      accessDate: '',
     } as any,
   });
+  
+  // For debugging form state and errors
+  useEffect(() => {
+    const subscription = form.watch(() => {
+      console.log("Form values changed:", form.getValues());
+      if (Object.keys(form.formState.errors).length > 0) {
+        console.error("Form errors:", form.formState.errors);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
 
   // Get the field array for authors
   const { fields, append, remove } = useFieldArray({
@@ -347,7 +362,14 @@ export default function CitationGenerator() {
         secondEditorFirstName: '',
         secondEditorLastName: '',
         pageRange: '',
+        // Online source fields
+        isOnlineSource: false,
+        webAddress: '',
+        websiteUrl: '', // Include both field names for compatibility
+        accessDate: ''
       } as any);
+      
+      console.log('Form reset with default values');
     }
   }, [watchSourceType, form]);
 
