@@ -1,5 +1,4 @@
 import { useFormContext } from 'react-hook-form';
-import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import {
   FormControl,
@@ -35,41 +34,38 @@ export default function OnlineAccessToggle({ sourceType }: OnlineAccessTogglePro
     }
   };
 
-  // Force register the field if it doesn't exist
-  useEffect(() => {
-    if (!form.getValues('isOnlineSource')) {
-      form.register('isOnlineSource');
-    }
-  }, [form]);
-
-  const handleToggleChange = (value: boolean) => {
-    form.setValue('isOnlineSource', value, { shouldValidate: true, shouldDirty: true });
-    // When turning off online access, clear the related fields
-    if (!value) {
-      form.setValue('webAddress', '');
-      form.setValue('accessDay', '');
-      form.setValue('accessMonth', '');
-      form.setValue('accessYear', '');
-      form.setValue('accessDate', '');
-    }
-  };
-
-  const isOnline = form.watch('isOnlineSource');
-
   return (
-    <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm space-y-0 mt-4">
-      <div className="space-y-0.5">
-        <div className="text-sm font-medium text-gray-700">
-          Is this {getSourceTypeDisplay()} accessed online?
-        </div>
-        <div className="text-xs text-gray-500">
-          Select if you accessed this {getSourceTypeDisplay()} from an online source.
-        </div>
-      </div>
-      <Switch
-        checked={!!isOnline}
-        onCheckedChange={handleToggleChange}
-      />
-    </div>
+    <FormField
+      control={form.control}
+      name="isOnlineSource"
+      render={({ field }) => (
+        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm space-y-0 mt-4">
+          <div className="space-y-0.5">
+            <FormLabel className="text-sm font-medium text-gray-700">
+              Is this {getSourceTypeDisplay()} accessed online?
+            </FormLabel>
+            <FormDescription className="text-xs text-gray-500">
+              Select if you accessed this {getSourceTypeDisplay()} from an online source.
+            </FormDescription>
+          </div>
+          <FormControl>
+            <Switch
+              checked={field.value || false}
+              onCheckedChange={(checked) => {
+                field.onChange(checked);
+                // When turning off online access, clear the related fields
+                if (!checked) {
+                  form.setValue('webAddress', '');
+                  form.setValue('accessDay', '');
+                  form.setValue('accessMonth', '');
+                  form.setValue('accessYear', '');
+                  form.setValue('accessDate', '');
+                }
+              }}
+            />
+          </FormControl>
+        </FormItem>
+      )}
+    />
   );
 }
