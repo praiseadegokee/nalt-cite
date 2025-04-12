@@ -7,6 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function CaseForm() {
   const form = useFormContext();
@@ -83,6 +84,13 @@ export default function CaseForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );

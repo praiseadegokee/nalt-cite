@@ -7,6 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import OnlineAccessFields from './OnlineAccessFields';
 
 export default function StatuteForm() {
   const form = useFormContext();
@@ -101,6 +102,13 @@ export default function StatuteForm() {
             <FormMessage />
           </FormItem>
         )}
+      />
+      
+      {/* Online Access Fields */}
+      <OnlineAccessFields 
+        toggleField="isOnlineSource"
+        urlField="webAddress"
+        accessDateField="accessDate"
       />
     </div>
   );
