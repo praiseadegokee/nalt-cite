@@ -171,8 +171,9 @@ export type CitationFormValues = z.infer<typeof formSchema>;
 export function useCitationForm() {
   const form = useForm<CitationFormValues>({
     resolver: zodResolver(caseFormSchema),
+    mode: "onSubmit", // Only validate on submit to prevent premature validation errors
     defaultValues: {
-      sourceType: undefined,
+      sourceType: "case", // Set a default source type to avoid undefined issues
       authors: [],
       title: "",
       year: "",
@@ -191,14 +192,17 @@ export function useCitationForm() {
       accessDate: "",
       
       // Date related fields
-      accessDateDay: "",
-      accessDateMonth: "",
-      accessDateYear: "",
+      accessDateDay: new Date().getDate().toString(),
+      accessDateMonth: (new Date().getMonth() + 1).toString(),
+      accessDateYear: new Date().getFullYear().toString(),
       
       // Case fields
       caseType: "reported",
       caseName: "",
-      parties: [],
+      parties: [
+        { role: "Plaintiff", name: "" },
+        { role: "Defendant", name: "" }
+      ], // Initialize with two parties to satisfy validation
       yearReported: "",
       volumeNumber: "",
       partNumber: "",

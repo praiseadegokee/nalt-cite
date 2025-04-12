@@ -14,6 +14,7 @@ function CitationGeneratorContent() {
   const form = useCitationForm();
   
   async function onSubmit(data: CitationFormValues) {
+    console.log("onSubmit function called with data:", data);
     try {
       setIsSubmitting(true);
       
@@ -21,7 +22,10 @@ function CitationGeneratorContent() {
       await new Promise(r => setTimeout(r, 500));
       
       // Generate citation based on form data
+      console.log("About to generate citation with data:", data);
       const formattedCitation = generateCitation(data);
+      console.log("Generated citation:", formattedCitation);
+      
       setCitation(formattedCitation);
       
       // Show success message

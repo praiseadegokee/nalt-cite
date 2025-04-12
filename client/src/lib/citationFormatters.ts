@@ -170,6 +170,8 @@ export class JournalArticleCitationFormatter extends CitationFormatter {
 export class CaseCitationFormatter extends CitationFormatter {
   format(fields: CaseFields): string {
     try {
+      console.log("CaseCitationFormatter.format called with fields:", fields);
+      
       // Validate essential fields
       if (!fields.caseName) {
         console.error("Case citation error: Missing case name");

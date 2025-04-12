@@ -23,8 +23,12 @@ export default function CitationFormContainer({
   const { toast } = useToast();
   
   const handleSubmit = (data: CitationFormValues) => {
+    // Debug log to see what's in the form data
+    console.log("Form data being submitted:", data);
+    
     const sourceType = data.sourceType;
     if (!sourceType) {
+      console.log("Source type is missing");
       toast({
         title: "Missing source type",
         description: "Please select a source type to generate your citation.",
@@ -41,6 +45,7 @@ export default function CitationFormContainer({
         .join(', ');
       
       console.log("Form validation errors:", form.formState.errors);
+      console.log("Error messages:", errorMessages);
       
       toast({
         title: "Form validation errors",

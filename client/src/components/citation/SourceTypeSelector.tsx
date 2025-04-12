@@ -25,6 +25,11 @@ import LectureNoteForm from './LectureNoteForm';
 export default function SourceTypeSelector() {
   const form = useFormContext();
   const sourceType = form.watch('sourceType') as SourceType;
+  
+  // Log when source type changes for debugging
+  useEffect(() => {
+    console.log("Source type changed to:", sourceType);
+  }, [sourceType]);
 
   return (
     <div className="space-y-6">
