@@ -397,7 +397,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
             <div className="grid grid-cols-1 gap-4 mt-3">
               <FormField
                 control={control}
-                name="websiteUrl"
+                name="webAddress"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Website URL</FormLabel>

@@ -412,19 +412,32 @@ export default function CitationGenerator() {
   }
 
   function onSubmit(data: FormValues) {
+    console.log("Form submitted with data:", data);
+    
     // Use the citation formatter utility to generate properly formatted citations
-    const footnote = generateCitation(data, 'footnote');
-    const bibliography = generateCitation(data, 'bibliography');
-    
-    // Set the formatted citations for display
-    setCitation(footnote);
-    setFormattedCitation(bibliography);
-    
-    // Show success message
-    toast({
-      title: "Citation generated successfully",
-      description: "Your citation has been generated in both footnote and bibliography formats.",
-    });
+    try {
+      const footnote = generateCitation(data, 'footnote');
+      const bibliography = generateCitation(data, 'bibliography');
+      
+      console.log("Generated citations:", { footnote, bibliography });
+      
+      // Set the formatted citations for display
+      setCitation(footnote);
+      setFormattedCitation(bibliography);
+      
+      // Show success message
+      toast({
+        title: "Citation generated successfully",
+        description: "Your citation has been generated in both footnote and bibliography formats.",
+      });
+    } catch (error) {
+      console.error("Error generating citation:", error);
+      toast({
+        title: "Error generating citation",
+        description: "There was an error generating your citation. Please check your input.",
+        variant: "destructive"
+      });
+    }
   }
 
   return (
