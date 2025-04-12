@@ -1,15 +1,12 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
-  FormMessage,
-  FormDescription
+  FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
 import { BookFormData } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,138 +26,16 @@ interface BookFieldsProps {
 }
 
 export function BookFields({ control, watch, setValue }: BookFieldsProps) {
-  const isChapter = watch("isChapter");
   const sourceType = 'book';
 
   return (
     <div className="space-y-4">
-      <div className="mb-3">
-        <FormField
-          control={control}
-          name="isChapter"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="font-normal cursor-pointer">
-                This is a chapter in an edited book
-              </FormLabel>
-            </FormItem>
-          )}
-        />
-      </div>
-      
-      {isChapter ? (
-        <>
-          <FormField
-            control={control}
-            name="chapterTitle"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Chapter Title</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="e.g., The Role of Legal Education in Nigeria" 
-                    className="w-full"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={control}
-            name="editorFirstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-medium text-gray-700">Editor First Name</FormLabel>
-                <FormControl>
-                  <Input 
-                    {...field} 
-                    placeholder="e.g., Emeka" 
-                    className="w-full"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={control}
-              name="editorMiddleName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Editor Middle Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="e.g., Chukwuma" 
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={control}
-              name="editorLastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Editor Last Name</FormLabel>
-                  <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="e.g., Nweze" 
-                      className="w-full"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          
-          <FormField
-            control={control}
-            name="multipleEditors"
-            render={({ field }) => (
-              <FormItem className="flex items-center space-x-2">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <FormLabel className="font-normal cursor-pointer">
-                  Multiple editors (eds)
-                </FormLabel>
-                <FormDescription className="ml-2 text-xs">
-                  Check this if the book has multiple editors
-                </FormDescription>
-              </FormItem>
-            )}
-          />
-        </>
-      ) : null}
-      
       <FormField
         control={control}
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-sm font-medium text-gray-700">
-              {isChapter ? "Book Title" : "Title"}
-            </FormLabel>
+            <FormLabel className="text-sm font-medium text-gray-700">Title</FormLabel>
             <FormControl>
               <Input 
                 {...field} 
@@ -231,11 +106,11 @@ export function BookFields({ control, watch, setValue }: BookFieldsProps) {
       
       <FormField
         control={control}
-        name={isChapter ? "pageRange" : "page"}
+        name="page"
         render={({ field }) => (
           <FormItem>
             <FormLabel className="flex items-center text-sm font-medium text-gray-700">
-              {isChapter ? "Page Range" : "Page Number"}
+              Page Number
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -244,7 +119,7 @@ export function BookFields({ control, watch, setValue }: BookFieldsProps) {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p className="w-60">{isChapter ? "The range of pages the chapter spans (e.g., 120-135)" : "The specific page being cited"}</p>
+                    <p className="w-60">The specific page being cited</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -252,7 +127,7 @@ export function BookFields({ control, watch, setValue }: BookFieldsProps) {
             <FormControl>
               <Input 
                 {...field} 
-                placeholder={isChapter ? "e.g., 120-135" : "e.g., 23"} 
+                placeholder="e.g., 23" 
                 className="w-full"
               />
             </FormControl>

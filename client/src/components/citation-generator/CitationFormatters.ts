@@ -62,49 +62,17 @@ export function formatAuthors(authors: Author[], bibliography = false): string {
 export function formatBookCitation(data: BookFormData, footnote = true): string {
   let citation = '';
   
-  if (data.isChapter) {
-    // Chapter in an edited book
-    citation = formatAuthors(data.authors);
-    if (citation) citation += ', ';
-    
-    if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
-    citation += 'in ';
-    
-    // Format editor information
-    if (data.editorFirstName && data.editorLastName) {
-      const editorInitial = data.editorFirstName.charAt(0);
-      const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
-      
-      if (editorMiddleInitial) {
-        citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
-      } else {
-        citation += `${editorInitial}. ${data.editorLastName}`;
-      }
-      
-      // Use (eds) for multiple editors, otherwise (ed)
-      citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
-    }
-    
-    if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
-    if (data.publisher) citation += ` (${data.publisher}`;
-    if (data.year) citation += `, ${data.year})`;
-    else if (data.publisher) citation += ')';
-    
-    if (data.pageRange) citation += ` ${data.pageRange}`;
-  } else {
-    // Regular book
-    citation = formatAuthors(data.authors);
-    if (citation) citation += ', ';
-    
-    if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
-    if (data.publisher) citation += ` (${data.publisher}`;
-    if (data.year) citation += `, ${data.year})`;
-    else if (data.publisher) citation += ')';
-    
-    if (data.page) citation += ` ${data.page}`;
-  }
+  // Regular book
+  citation = formatAuthors(data.authors);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `<em>${data.title}</em>`;
+  if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
+  if (data.publisher) citation += ` (${data.publisher}`;
+  if (data.year) citation += `, ${data.year})`;
+  else if (data.publisher) citation += ')';
+  
+  if (data.page) citation += ` ${data.page}`;
   
   // Add online source information if applicable
   if (data.isOnlineSource && data.websiteUrl) {
@@ -118,47 +86,100 @@ export function formatBookCitation(data: BookFormData, footnote = true): string 
 export function formatBookBibliography(data: BookFormData): string {
   let citation = '';
   
-  if (data.isChapter) {
-    // Chapter in an edited book
-    citation = formatAuthors(data.authors, true);
-    if (citation) citation += ', ';
+  // Regular book
+  citation = formatAuthors(data.authors, true);
+  if (citation) citation += ', ';
+  
+  if (data.title) citation += `<em>${data.title}</em>`;
+  if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
+  if (data.publisher) citation += ` (${data.publisher}`;
+  if (data.year) citation += `, ${data.year})`;
+  else if (data.publisher) citation += ')';
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+// Book Chapter citation formatters
+export function formatBookChapterCitation(data: BookChapterFormData, footnote = true): string {
+  let citation = '';
+  
+  // Chapter in an edited book
+  citation = formatAuthors(data.authors);
+  if (citation) citation += ', ';
+  
+  if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
+  citation += 'in ';
+  
+  // Format editor information
+  if (data.editorFirstName && data.editorLastName) {
+    const editorInitial = data.editorFirstName.charAt(0);
+    const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
     
-    if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
-    citation += 'in ';
-    
-    // Format editor information
-    if (data.editorFirstName && data.editorLastName) {
-      const editorInitial = data.editorFirstName.charAt(0);
-      const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
-      
-      if (editorMiddleInitial) {
-        citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
-      } else {
-        citation += `${editorInitial}. ${data.editorLastName}`;
-      }
-      
-      // Use (eds) for multiple editors, otherwise (ed)
-      citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
+    if (editorMiddleInitial) {
+      citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
+    } else {
+      citation += `${editorInitial}. ${data.editorLastName}`;
     }
     
-    if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
-    if (data.publisher) citation += ` (${data.publisher}`;
-    if (data.year) citation += `, ${data.year})`;
-    else if (data.publisher) citation += ')';
-    
-    if (data.pageRange) citation += ` ${data.pageRange}`;
-  } else {
-    // Regular book
-    citation = formatAuthors(data.authors, true);
-    if (citation) citation += ', ';
-    
-    if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
-    if (data.publisher) citation += ` (${data.publisher}`;
-    if (data.year) citation += `, ${data.year})`;
-    else if (data.publisher) citation += ')';
+    // Use (eds) for multiple editors, otherwise (ed)
+    citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
   }
+  
+  if (data.bookTitle) citation += `<em>${data.bookTitle}</em>`;
+  if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
+  if (data.publisher) citation += ` (${data.publisher}`;
+  if (data.year) citation += `, ${data.year})`;
+  else if (data.publisher) citation += ')';
+  
+  if (data.pageRange) citation += ` ${data.pageRange}`;
+  
+  // Add online source information if applicable
+  if (data.isOnlineSource && data.websiteUrl) {
+    citation += ` <${data.websiteUrl}>`;
+    if (data.accessDate) citation += ` accessed ${data.accessDate}`;
+  }
+  
+  return citation;
+}
+
+export function formatBookChapterBibliography(data: BookChapterFormData): string {
+  let citation = '';
+  
+  // Chapter in an edited book
+  citation = formatAuthors(data.authors, true);
+  if (citation) citation += ', ';
+  
+  if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
+  citation += 'in ';
+  
+  // Format editor information
+  if (data.editorFirstName && data.editorLastName) {
+    const editorInitial = data.editorFirstName.charAt(0);
+    const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
+    
+    if (editorMiddleInitial) {
+      citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
+    } else {
+      citation += `${editorInitial}. ${data.editorLastName}`;
+    }
+    
+    // Use (eds) for multiple editors, otherwise (ed)
+    citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
+  }
+  
+  if (data.bookTitle) citation += `<em>${data.bookTitle}</em>`;
+  if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
+  if (data.publisher) citation += ` (${data.publisher}`;
+  if (data.year) citation += `, ${data.year})`;
+  else if (data.publisher) citation += ')';
+  
+  if (data.pageRange) citation += ` ${data.pageRange}`;
   
   // Add online source information if applicable
   if (data.isOnlineSource && data.websiteUrl) {
@@ -567,6 +588,11 @@ export function generateCitation(data: any, citationType: 'footnote' | 'bibliogr
       return isFootnote 
         ? formatBookCitation(data as BookFormData) 
         : formatBookBibliography(data as BookFormData);
+        
+    case 'bookChapter':
+      return isFootnote 
+        ? formatBookChapterCitation(data as BookChapterFormData) 
+        : formatBookChapterBibliography(data as BookChapterFormData);
         
     case 'journalArticle':
       return isFootnote 
