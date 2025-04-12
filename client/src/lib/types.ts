@@ -193,6 +193,8 @@ export interface LectureNoteFields extends BaseCitationFields {
   institution: string;
   date: string;
   page?: string;
+  audience?: string;
+  additionalInfo?: string;
 }
 
 // Union type of all citation field types for use in citation generator

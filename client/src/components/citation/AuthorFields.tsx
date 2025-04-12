@@ -1,17 +1,8 @@
-import { useState } from 'react';
 import { useFieldArray, useFormContext } from 'react-hook-form';
-import { Trash2, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Author } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import AuthorInput from './AuthorInput';
 
 interface AuthorFieldsProps {
   namePrefix: string; // The form field prefix, e.g., "authors"
@@ -50,122 +41,13 @@ export default function AuthorFields({ namePrefix }: AuthorFieldsProps) {
       </div>
 
       {fields.map((field, index) => (
-        <div key={field.id} className="p-4 border border-gray-200 rounded-md bg-gray-50">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-medium">Author {index + 1}</h4>
-            {fields.length > 1 && (
-              <Button
-                type="button"
-                onClick={() => remove(index)}
-                variant="ghost"
-                size="sm"
-                className="text-red-500 h-8 w-8 p-0"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name={`${namePrefix}.${index}.isOrganization`}
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="text-sm font-medium">
-                      This is an organization
-                    </FormLabel>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {form.watch(`${namePrefix}.${index}.isOrganization`) ? (
-            <div className="mt-4">
-              <FormField
-                control={form.control}
-                name={`${namePrefix}.${index}.lastName`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Organization Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., Nigerian Association of Law Teachers" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              <FormField
-                control={form.control}
-                name={`${namePrefix}.${index}.firstName`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., Olayinka" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`${namePrefix}.${index}.middleName`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Middle Name (optional)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., Adebayo" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name={`${namePrefix}.${index}.lastName`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="e.g., Oyewo" 
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          )}
-        </div>
+        <AuthorInput 
+          key={field.id}
+          index={index}
+          onRemove={() => remove(index)}
+          namePrefix={namePrefix}
+          showRemoveButton={fields.length > 1}
+        />
       ))}
 
       {fields.length === 0 && (

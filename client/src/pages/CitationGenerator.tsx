@@ -2,13 +2,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Copy } from 'lucide-react';
-import SourceTypeSelector from '@/components/citation/SourceTypeSelector';
 import { generateCitation } from '@/lib/citationUtils';
 import { Author, SourceType } from '@/lib/types';
+import CitationFormContainer from '@/components/citation/CitationFormContainer';
+import CitationResult from '@/components/citation/CitationResult';
 
 // Define base form schema with Zod
 const formSchema = z.object({
@@ -118,6 +116,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function CitationGenerator() {
   const [citation, setCitation] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
 
   const form = useForm<FormValues>({
@@ -138,11 +137,22 @@ export default function CitationGenerator() {
     },
   });
 
-  function onSubmit(data: FormValues) {
+  async function onSubmit(data: FormValues) {
     try {
+      setIsSubmitting(true);
+      
+      // Simulate some processing time
+      await new Promise(r => setTimeout(r, 500));
+      
       // Use our citation utility to generate a properly formatted citation
       const formattedCitation = generateCitation(data);
       setCitation(formattedCitation);
+      
+      // Show success message
+      toast({
+        title: "Citation Generated",
+        description: "Your citation has been successfully generated.",
+      });
     } catch (error) {
       console.error("Citation generation error:", error);
       toast({
@@ -150,77 +160,29 @@ export default function CitationGenerator() {
         description: "There was an error generating your citation. Please check your inputs.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
-  
-  const copyToClipboard = () => {
-    // Strip HTML tags for clipboard
-    const plainTextCitation = citation.replace(/<[^>]*>/g, '');
-    
-    navigator.clipboard.writeText(plainTextCitation)
-      .then(() => {
-        toast({
-          title: "Copied to clipboard",
-          description: "Citation has been copied to your clipboard.",
-        });
-      })
-      .catch(() => {
-        toast({
-          title: "Copy failed",
-          description: "Could not copy to clipboard. Please try again.",
-          variant: "destructive",
-        });
-      });
-  };
 
   return (
     <section id="generator" className="py-16 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3 text-[#1B387A]">NALT Citation Generator</h2>
-          <p className="text-gray-600 mb-8">Generate properly formatted citations based on the Nigerian Association of Law Teachers Uniform Format and Citation Guide.</p>
-          
-          {/* Tool interface */}
-          <div className="bg-gray-50 rounded-lg border border-gray-200 shadow-md p-6">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                {/* Source Type Selection and Dynamic Form Fields */}
-                <SourceTypeSelector />
-                
-                {/* Generate button */}
-                <div className="mt-6">
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-[#1B387A] hover:bg-[#294D98] text-white font-bold py-3 px-4 rounded-md shadow transition duration-150"
-                  >
-                    Generate Citation
-                  </Button>
-                </div>
-              </form>
-            </Form>
-            
-            {/* Result */}
-            {citation && (
-              <div className="mt-8 p-4 bg-[#C3CDE1]/30 border border-[#C3CDE1] rounded-md">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Generated Citation:</h3>
-                <div 
-                  className="p-3 bg-white border border-gray-300 rounded font-mono text-sm"
-                  dangerouslySetInnerHTML={{ __html: citation }}
-                />
-                <div className="mt-4 flex justify-end">
-                  <Button 
-                    type="button" 
-                    onClick={copyToClipboard}
-                    variant="outline" 
-                    className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded border border-gray-300 text-sm flex items-center"
-                  >
-                    <Copy className="h-4 w-4 mr-1" />
-                    Copy to Clipboard
-                  </Button>
-                </div>
-              </div>
-            )}
+          <div className="mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-[#1B387A]">NALT Citation Generator</h2>
+            <p className="text-gray-600">Generate properly formatted citations based on the Nigerian Association of Law Teachers Uniform Format and Citation Guide.</p>
           </div>
+          
+          {/* Citation Form */}
+          <CitationFormContainer 
+            form={form} 
+            onSubmit={onSubmit} 
+            isSubmitting={isSubmitting} 
+          />
+          
+          {/* Citation Result */}
+          {citation && <CitationResult citation={citation} />}
         </div>
       </div>
     </section>
