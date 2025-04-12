@@ -70,12 +70,23 @@ export function formatBookCitation(data: BookFormData, footnote = true): string 
     if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
     citation += 'in ';
     
+    // Format editor information
     if (data.editorFirstName && data.editorLastName) {
-      citation += `${data.editorFirstName.charAt(0)}. ${data.editorLastName} (ed), `;
+      const editorInitial = data.editorFirstName.charAt(0);
+      const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
+      
+      if (editorMiddleInitial) {
+        citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
+      } else {
+        citation += `${editorInitial}. ${data.editorLastName}`;
+      }
+      
+      // Use (eds) for multiple editors, otherwise (ed)
+      citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
     }
     
     if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition) citation += `, ${data.edition}`;
+    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
     if (data.publisher) citation += ` (${data.publisher}`;
     if (data.year) citation += `, ${data.year})`;
     else if (data.publisher) citation += ')';
@@ -87,7 +98,7 @@ export function formatBookCitation(data: BookFormData, footnote = true): string 
     if (citation) citation += ', ';
     
     if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition) citation += `, ${data.edition}`;
+    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
     if (data.publisher) citation += ` (${data.publisher}`;
     if (data.year) citation += `, ${data.year})`;
     else if (data.publisher) citation += ')';
@@ -115,12 +126,23 @@ export function formatBookBibliography(data: BookFormData): string {
     if (data.chapterTitle) citation += `'${data.chapterTitle}'${data.chapterTitle.endsWith('?') ? '' : ','} `;
     citation += 'in ';
     
+    // Format editor information
     if (data.editorFirstName && data.editorLastName) {
-      citation += `${data.editorFirstName.charAt(0)}. ${data.editorLastName} (ed), `;
+      const editorInitial = data.editorFirstName.charAt(0);
+      const editorMiddleInitial = data.editorMiddleName ? data.editorMiddleName.charAt(0) + '.' : '';
+      
+      if (editorMiddleInitial) {
+        citation += `${editorInitial}.${editorMiddleInitial} ${data.editorLastName}`;
+      } else {
+        citation += `${editorInitial}. ${data.editorLastName}`;
+      }
+      
+      // Use (eds) for multiple editors, otherwise (ed)
+      citation += data.multipleEditors ? ' (eds), ' : ' (ed), ';
     }
     
     if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition) citation += `, ${data.edition}`;
+    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
     if (data.publisher) citation += ` (${data.publisher}`;
     if (data.year) citation += `, ${data.year})`;
     else if (data.publisher) citation += ')';
@@ -132,7 +154,7 @@ export function formatBookBibliography(data: BookFormData): string {
     if (citation) citation += ', ';
     
     if (data.title) citation += `<em>${data.title}</em>`;
-    if (data.edition) citation += `, ${data.edition}`;
+    if (data.edition && data.edition.trim() !== '') citation += `, ${data.edition}`;
     if (data.publisher) citation += ` (${data.publisher}`;
     if (data.year) citation += `, ${data.year})`;
     else if (data.publisher) citation += ')';
