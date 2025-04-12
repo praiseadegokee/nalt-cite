@@ -1,8 +1,9 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import path from "path";
 import fs from "fs";
+import multer from "multer";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
@@ -119,6 +120,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'application/pdf');
     res.sendFile(filePath);
+  });
+
+  // File upload endpoint
+  const pdfStorage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      const uploadsDir = path.resolve(process.cwd(), 'public/pdfs');
+      // Ensure directory exists
+      if (!fs.existsSync(uploadsDir)){
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      cb(null, uploadsDir);
+    },
+    filename: function(req, file, cb) {
+      // Keep original filename
+      cb(null, file.originalname);
+    }
+  });
+
+  const upload = multer({ 
+    storage: pdfStorage,
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype === 'application/pdf') {
+        cb(null, true);
+      } else {
+        cb(null, false);
+        return cb(new Error('Only PDF files are allowed'));
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024 // 50MB max file size
+    }
+  });
+
+  app.post(`${apiPrefix}/upload`, upload.single('file'), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded or invalid file type' });
+      }
+      
+      console.log(`File uploaded: ${req.file.originalname}`);
+      res.status(200).json({ 
+        message: 'File uploaded successfully',
+        filename: req.file.originalname
+      });
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      res.status(500).json({ message: 'File upload failed' });
+    }
   });
 
   // Citation generator API endpoint
