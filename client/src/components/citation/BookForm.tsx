@@ -8,8 +8,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
-import OnlineAccessToggle from './OnlineAccessToggle';
-import AccessDateFields from './AccessDateFields';
 
 export default function BookForm() {
   const form = useFormContext();
@@ -107,12 +105,6 @@ export default function BookForm() {
           </FormItem>
         )}
       />
-
-      {/* Online Access Toggle */}
-      <OnlineAccessToggle sourceType="book" />
-      
-      {/* Access Date Fields - Only shown when isOnlineSource is true */}
-      <AccessDateFields />
     </div>
   );
 }

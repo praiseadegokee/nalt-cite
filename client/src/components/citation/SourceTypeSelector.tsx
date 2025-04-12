@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -26,24 +25,6 @@ import LectureNoteForm from './LectureNoteForm';
 export default function SourceTypeSelector() {
   const form = useFormContext();
   const sourceType = form.watch('sourceType') as SourceType;
-  
-  // Reset form fields when source type changes
-  useEffect(() => {
-    if (sourceType) {
-      // Clear any previous source-specific field values
-      form.setValue('isOnlineSource', false);
-      form.setValue('webAddress', '');
-      form.setValue('accessDay', '');
-      form.setValue('accessMonth', '');
-      form.setValue('accessYear', '');
-      form.setValue('accessDate', '');
-      
-      // Special case for online sources - always set isOnlineSource to true
-      if (sourceType === 'onlineSource') {
-        form.setValue('isOnlineSource', true);
-      }
-    }
-  }, [sourceType, form]);
 
   return (
     <div className="space-y-6">

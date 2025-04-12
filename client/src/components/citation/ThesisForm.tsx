@@ -9,8 +9,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
-import OnlineAccessToggle from './OnlineAccessToggle';
-import AccessDateFields from './AccessDateFields';
 
 export default function ThesisForm() {
   const form = useFormContext();
@@ -46,7 +44,7 @@ export default function ThesisForm() {
             <FormControl>
               <Select 
                 onValueChange={field.onChange} 
-                value={field.value || ""}
+                defaultValue={field.value}
               >
                 <SelectTrigger className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
                   <SelectValue placeholder="Select type" />
@@ -119,12 +117,6 @@ export default function ThesisForm() {
           </FormItem>
         )}
       />
-      
-      {/* Online Access Toggle */}
-      <OnlineAccessToggle sourceType="thesis" />
-      
-      {/* Access Date Fields - Only shown when isOnlineSource is true */}
-      <AccessDateFields />
     </div>
   );
 }

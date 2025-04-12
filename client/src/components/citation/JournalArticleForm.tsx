@@ -1,18 +1,19 @@
 import { useFormContext } from 'react-hook-form';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import AuthorFields from './AuthorFields';
-import OnlineAccessToggle from './OnlineAccessToggle';
-import AccessDateFields from './AccessDateFields';
 
 export default function JournalArticleForm() {
   const form = useFormContext();
+  const isOnlineSource = form.watch('isOnlineSource');
 
   return (
     <div className="space-y-6">
@@ -166,11 +167,66 @@ export default function JournalArticleForm() {
         )}
       />
       
-      {/* Online Access Toggle */}
-      <OnlineAccessToggle sourceType="journalArticle" />
+      <FormField
+        control={form.control}
+        name="isOnlineSource"
+        render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <FormLabel className="text-sm font-medium text-gray-700">Online Source</FormLabel>
+              <FormDescription>
+                Is this article accessed online?
+              </FormDescription>
+            </div>
+            <FormControl>
+              <Switch
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
+            </FormControl>
+          </FormItem>
+        )}
+      />
       
-      {/* Access Date Fields - Only shown when isOnlineSource is true */}
-      <AccessDateFields />
+      {isOnlineSource && (
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="webAddress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Web Address (URL)</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., https://journal.example.com/article" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="accessDate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-sm font-medium text-gray-700">Access Date</FormLabel>
+                <FormControl>
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., 15 January 2023" 
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }
