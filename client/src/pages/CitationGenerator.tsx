@@ -536,7 +536,7 @@ export default function CitationGenerator() {
                                   <FormControl>
                                     <Input 
                                       {...field} 
-                                      placeholder="e.g., Chinua" 
+                                      placeholder="e.g., David" 
                                       className="w-full"
                                     />
                                   </FormControl>

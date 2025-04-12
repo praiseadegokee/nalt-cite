@@ -35,7 +35,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., The Impact of Legal Literature" 
+                    placeholder="e.g., The Value of Authorship in the Digital Environment" 
                     className="w-full"
                   />
                 </FormControl>
@@ -59,7 +59,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Nigerian Legal System" 
+                    placeholder="e.g., World Wide Research: Reshaping the Sciences and Humanities in the Century of Information" 
                     className="w-full"
                   />
                 </FormControl>
@@ -101,7 +101,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Oluwakemi" 
+                    placeholder="e.g., Clement" 
                     className="w-full"
                   />
                 </FormControl>
@@ -119,7 +119,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Adebayo" 
+                    placeholder="e.g., Francis" 
                     className="w-full"
                   />
                 </FormControl>
@@ -137,7 +137,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Ogunleye" 
+                    placeholder="e.g., Kwede" 
                     className="w-full"
                   />
                 </FormControl>
@@ -161,7 +161,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., Nigerian Law Publications" 
+                    placeholder="e.g., MIT" 
                     className="w-full"
                   />
                 </FormControl>
@@ -179,7 +179,7 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., 2023" 
+                    placeholder="e.g., 2010" 
                     className="w-full"
                     type="number"
                   />
@@ -225,12 +225,12 @@ export function BookChapterFields({ control, watch, setValue }: BookChapterField
                 <FormControl>
                   <Input 
                     {...field} 
-                    placeholder="e.g., 120-135" 
+                    placeholder="e.g., 62-80" 
                     className="w-full"
                   />
                 </FormControl>
                 <FormDescription>
-                  Format as "120-135" or "p 120"
+                  Format as "62-80" or just "62" for a single page
                 </FormDescription>
                 <FormMessage />
               </FormItem>
