@@ -1,0 +1,69 @@
+ased on the information in the NALT Uniform Format and Citation Guide, the input form for citing cases, with a preference for dynamic input for the names of parties, should be structured to capture the necessary elements for both reported and unreported cases.
+Here's a suggestion for the input form:
+I. Case Type:
+•
+Reported Case: [Radio Button]
+•
+Unreported Case: [Radio Button]
+II. Common Elements for Both Case Types:
+•
+Party Names (Dynamic Input):
+◦
+[+] Add Party Button
+◦
+For each party added:
+▪
+Party Role: [Dropdown Menu: Plaintiff, Defendant, Appellant, Respondent, Applicant, Petitioner, Accused, Objector, etc.]
+▪
+Party Name: [Text Input Field]
+▪
+[Remove Party] Button (for each added party)
+◦
+(The system should use this information to format the party names in italics and lowercase, separated by an italicized, unpunctuated 'v' between the principal opposing parties, e.g., . For multiple parties on one side, their names should be listed as provided in the source.)
+III. Specific Elements for Reported Cases (appear if "Reported Case" is selected):
+•
+Year Reported: [Text Input Field] (e.g., 2007)
+•
+Law Report Details:
+◦
+Volume Number: [Text Input Field] (e.g., 30)
+◦
+Part Number: [Text Input Field] (e.g., Pt 4)
+◦
+Law Report Abbreviation: [Text Input Field] (e.g., NSCQR, NWLR, FWLR - the system could provide a list of common abbreviations for reference)
+•
+Page Number(s): [Text Input Field] (e.g., 915 or 115 or 265)
+IV. Specific Elements for Unreported Cases (appear if "Unreported Case" is selected):
+•
+Party Names (already covered in the common elements)
+•
+Suit/Case Number: [Text Input Field] (e.g., FHC/J/CRC/10/2015)
+•
+Court Name: [Text Input Field] (e.g., Federal High Court Jos Judicial Division)
+•
+Date of Decision: [Date Input Field or Text Input Field with format guidance (e.g., Day Month Year)] (e.g., 17 June 2016)
+•
+[Checkbox] Alternatively, simply add "(unreported)"
+V. Output Preview:
+•
+A preview section that dynamically displays the formatted case citation based on the input provided, following the NALT guidelines. This would help users verify the citation before final use.
+Explanation and Considerations for Dynamic Input of Party Names:
+•
+Flexibility: The dynamic "Add Party" feature allows for cases with multiple plaintiffs, defendants, appellants, respondents, etc..
+•
+Role Specification: The "Party Role" dropdown helps in understanding the context of the parties involved. While the NALT format primarily uses the names of the opposing sides separated by 'v', knowing the roles can be useful for organizing the input.
+•
+Formatting Logic: The system would need to implement logic to:
+◦
+Iterate through the entered parties.
+◦
+Identify the principal opposing parties (e.g., typically the first Plaintiff/Appellant and the first Defendant/Respondent).
+◦
+Format their names in italics and lowercase (except for the initial letter) separated by an italicized, unpunctuated 'v'.
+◦
+For cases with "and [specify number] others", the system would need to count the additional parties on each side and format accordingly, using the surname of the first party.
+◦
+Omit forenames and initials for individual parties in unreported cases, inserting only the surname.
+◦
+Handle abbreviations like "Co" without a full stop.
+By using such a dynamic input form, users can easily input the details of a case, and the system can automatically format it according to the NALT Uniform Format and Citation Guide, including the specific requirements for party names. This approach addresses the user's preference for dynamic input and ensures adherence to the citation style.
