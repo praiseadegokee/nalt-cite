@@ -67,7 +67,7 @@ export default function PartyInput({ value = [], onChange, onBlur }: PartyInputP
         { role: 'Defendant', name: '' }
       ]);
     }
-  }, []);
+  }, [parties.length, onChange]);
 
   return (
     <div className="space-y-4">

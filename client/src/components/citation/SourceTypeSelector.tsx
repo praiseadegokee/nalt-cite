@@ -26,10 +26,8 @@ export default function SourceTypeSelector() {
   const form = useFormContext();
   const sourceType = form.watch('sourceType') as SourceType;
   
-  // Log when source type changes for debugging
-  useEffect(() => {
-    console.log("Source type changed to:", sourceType);
-  }, [sourceType]);
+  // Simple debugging log 
+  console.log("Current source type:", sourceType);
 
   return (
     <div className="space-y-6">
