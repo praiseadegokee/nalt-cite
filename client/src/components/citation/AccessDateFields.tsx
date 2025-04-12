@@ -49,21 +49,16 @@ export default function AccessDateFields({ fieldPrefix, label = 'Access Date' }:
     if (monthName) {
       // Format the date as "15 January 2023"
       const formattedDate = `${day} ${monthName} ${year}`;
-      form.setValue(fieldPrefix, formattedDate);
-      
-      // Also set individual fields if they're not set
-      if (!form.getValues(dayField)) form.setValue(dayField, day);
-      if (!form.getValues(monthField)) form.setValue(monthField, monthNum);
-      if (!form.getValues(yearField)) form.setValue(yearField, year);
+      form.setValue(fieldPrefix, formattedDate, { shouldValidate: true });
     }
   };
   
   // Initialize the combined field when the component mounts
   useEffect(() => {
-    // Set default values for individual fields
-    if (!form.getValues(dayField)) form.setValue(dayField, currentDay);
-    if (!form.getValues(monthField)) form.setValue(monthField, currentMonth);
-    if (!form.getValues(yearField)) form.setValue(yearField, currentYear);
+    // Register all fields with default values
+    form.register(dayField, { value: currentDay });
+    form.register(monthField, { value: currentMonth });
+    form.register(yearField, { value: currentYear });
     
     // After a short delay to allow the form to fully render, update the combined field
     const timeoutId = setTimeout(() => {

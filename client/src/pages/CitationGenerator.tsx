@@ -83,6 +83,11 @@ const formSchema = z.object({
   isOnlineSource: z.boolean().optional(),
   webAddress: z.string().optional(),
   
+  // Date related fields for access dates
+  accessDateDay: z.string().optional(),
+  accessDateMonth: z.string().optional(),
+  accessDateYear: z.string().optional(),
+  
   // Conference paper specific fields
   conferenceName: z.string().optional(),
   conferenceLocation: z.string().optional(),
@@ -127,13 +132,85 @@ export default function CitationGenerator() {
       title: "",
       year: "",
       
-      // Initialize other fields
+      // Common fields
       edition: "",
       publisher: "",
       page: "",
       
+      // Toggle fields
       multipleEditors: false,
       isOnlineSource: false,
+      
+      // Online access fields
+      webAddress: "",
+      accessDate: "",
+      
+      // Date related fields
+      accessDateDay: "",
+      accessDateMonth: "",
+      accessDateYear: "",
+      
+      // Case fields
+      caseName: "",
+      citation: "",
+      court: "",
+      judgmentDate: "",
+      
+      // Statute fields
+      statuteTitle: "",
+      jurisdiction: "",
+      section: "",
+      cap: "",
+      
+      // Book chapter fields
+      bookTitle: "",
+      chapterTitle: "",
+      editorFirstName: "",
+      editorMiddleName: "",
+      editorLastName: "",
+      secondEditorFirstName: "",
+      secondEditorLastName: "",
+      pageRange: "",
+      
+      // Journal article fields
+      journalTitle: "",
+      volume: "",
+      issue: "",
+      startPage: "",
+      endPage: "",
+      doi: "",
+      
+      // Online source fields
+      websiteTitle: "",
+      url: "",
+      
+      // Conference paper fields
+      conferenceName: "",
+      conferenceLocation: "",
+      conferenceDate: "",
+      
+      // Newspaper fields
+      newspaperTitle: "",
+      date: "",
+      
+      // Thesis fields
+      thesisType: "",
+      institution: "",
+      
+      // Lecture fields
+      lectureType: "",
+      location: "",
+      
+      // Encyclopedia fields
+      encyclopediaTitle: "",
+      
+      // Monograph fields
+      series: "",
+      
+      // Lecture note fields
+      course: "",
+      audience: "",
+      additionalInfo: "",
     },
   });
 
