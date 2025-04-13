@@ -99,38 +99,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // PDF file download endpoints
   app.get(`${apiPrefix}/downloads/:file`, (req: Request, res: Response) => {
-    const file = req.params.file;
-    // First try exact filename as provided
-    let filePath = path.resolve(process.cwd(), 'public/pdfs', file);
-    
-    // If file doesn't exist, try with .pdf extension
-    if (!fs.existsSync(filePath)) {
-      filePath = path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`);
+    try {
+      const file = req.params.file;
+      
+      // Define valid locations to look for files
+      const possibleLocations = [
+        // Try exact filename as provided
+        path.resolve(process.cwd(), 'public/pdfs', file),
+        // Try with .pdf extension
+        path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`),
+        // Try in other potential directories
+        path.resolve(process.cwd(), 'public/downloads', file),
+        path.resolve(process.cwd(), 'public/downloads', `${file}.pdf`)
+      ];
+      
+      // Find the first existing file
+      const filePath = possibleLocations.find(location => fs.existsSync(location));
+      
+      // Handle file not found
+      if (!filePath) {
+        console.log(`File not found: ${file}`);
+        return res.status(404).json({ 
+          message: "File not found",
+          requestedFile: file,
+          checkedLocations: possibleLocations.map(p => path.relative(process.cwd(), p))
+        });
+      }
+      
+      // Extract the original filename for the download
+      const filename = path.basename(filePath);
+      
+      // Determine content type based on extension
+      const ext = path.extname(filePath).toLowerCase();
+      let contentType = 'application/octet-stream'; // Default
+      
+      // Set proper content type
+      if (ext === '.pdf') contentType = 'application/pdf';
+      else if (ext === '.docx') contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      else if (ext === '.xlsx') contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      
+      // Set headers and send file
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', contentType);
+      res.sendFile(filePath);
+      
+      console.log(`File successfully sent: ${filename}`);
+    } catch (error) {
+      console.error('Error serving file:', error);
+      res.status(500).json({ message: "Error serving file" });
     }
-    
-    // Still doesn't exist
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: "File not found" });
-    }
-    
-    // Extract the original filename for the download
-    const filename = path.basename(filePath);
-    
-    // Set headers and send file
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.sendFile(filePath);
   });
 
-  // File upload endpoint
-  const pdfStorage = multer.diskStorage({
+  // File upload endpoint with improved error handling
+  const fileStorage = multer.diskStorage({
     destination: function(req, file, cb) {
-      const uploadsDir = path.resolve(process.cwd(), 'public/pdfs');
-      // Ensure directory exists
-      if (!fs.existsSync(uploadsDir)){
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      // Determine destination based on file type
+      let uploadDir;
+      
+      if (file.mimetype === 'application/pdf') {
+        uploadDir = path.resolve(process.cwd(), 'public/pdfs');
+      } else {
+        // For other document types
+        uploadDir = path.resolve(process.cwd(), 'public/downloads');
       }
-      cb(null, uploadsDir);
+      
+      // Ensure directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      
+      cb(null, uploadDir);
     },
     filename: function(req, file, cb) {
       // Keep original filename
@@ -139,13 +177,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const upload = multer({ 
-    storage: pdfStorage,
+    storage: fileStorage,
     fileFilter: (req, file, cb) => {
-      if (file.mimetype === 'application/pdf') {
+      // Allow PDF, Word docs, and Excel spreadsheets
+      const allowedMimeTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+      ];
+      
+      if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
         cb(null, false);
-        return cb(new Error('Only PDF files are allowed'));
+        return cb(new Error('Only PDF, DOCX, and XLSX files are allowed'));
       }
     },
     limits: {
@@ -155,18 +200,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(`${apiPrefix}/upload`, upload.single('file'), (req: Request, res: Response) => {
     try {
+      // Handle missing file or validation errors
       if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded or invalid file type' });
+        return res.status(400).json({ 
+          success: false,
+          message: 'No file uploaded or invalid file type',
+          allowedTypes: ['PDF', 'DOCX', 'XLSX'],
+          maxSize: '50MB'
+        });
       }
       
-      console.log(`File uploaded: ${req.file.originalname}`);
+      // Log successful upload
+      console.log(`File uploaded successfully: ${req.file.originalname} (${req.file.size} bytes)`);
+      
+      // Return success response with details
       res.status(200).json({ 
+        success: true,
         message: 'File uploaded successfully',
-        filename: req.file.originalname
+        file: {
+          filename: req.file.originalname,
+          size: req.file.size,
+          mimetype: req.file.mimetype,
+          destination: path.relative(process.cwd(), req.file.destination)
+        }
       });
     } catch (error) {
+      // Log and return error details
       console.error('Error uploading file:', error);
-      res.status(500).json({ message: 'File upload failed' });
+      res.status(500).json({ 
+        success: false,
+        message: 'File upload failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

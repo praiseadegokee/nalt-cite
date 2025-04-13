@@ -6,7 +6,7 @@ import {
   Newspaper, 
   Download
 } from 'lucide-react';
-import { Feature, GlossaryTerm, FAQ, BlogPost, Resource } from './types';
+import { Feature, GlossaryTerm, FAQ, BlogPost, Resource, GuidelinePart } from './types';
 
 // Features for homepage
 export const features: Feature[] = [
@@ -149,6 +149,51 @@ export const blogPosts: BlogPost[] = [
     tags: ['Dissertation Writing', 'Research Structure', 'Academic Standards', 'Legal Methodology']
   }
 ];
+
+// NALT Guideline Parts
+export const guidelineParts: GuidelinePart[] = [
+  {
+    id: 'complete-guide',
+    title: 'NALT Citation Guidelines - Complete',
+    description: 'The complete NALT Uniform Format and Citation Guide document',
+    filename: 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria'
+  },
+  {
+    id: 'part1',
+    title: 'Part 1: Background Information',
+    description: 'Background information to NALT Format',
+    filename: 'NALT Uniform Format and Citation Guide (Part One - Background Information to NALT Format)'
+  },
+  {
+    id: 'part2',
+    title: 'Part 2: NALT Format and Research Topics',
+    description: 'NALT Format and the Structuring of Research Topics',
+    filename: 'NALT Uniform Format and Citation Guide (Part Two - NALT Format and the Structuring of Research Topics)'
+  },
+  {
+    id: 'part3',
+    title: 'Part 3: NALT Citation Guidelines',
+    description: 'NALT Citation Guidelines for Style of Referencing',
+    filename: 'NALT Uniform Format and Citation Guide (Part Three - NALT Citation Guidelines for Style of Referencing)'
+  },
+  {
+    id: 'part4',
+    title: 'Part 4: Format for Journal Articles',
+    description: 'Format for Articles in Journal for Publication',
+    filename: 'NALT Uniform Format and Citation Guide (Part Four - Format for Articles in Journal for Publication)'
+  }
+];
+
+/**
+ * Helper function to check which guideline parts are available based on the uploaded files
+ * This function is meant to be used server-side, but for the demo we'll assume all parts are available
+ */
+export function getAvailableGuidelineParts(): GuidelinePart[] {
+  // In a real application, this would check if the files exist
+  // For this demo, we're returning all parts but in a real app
+  // you might filter based on file existence
+  return guidelineParts;
+}
 
 // Resources
 export const resources: Resource[] = [

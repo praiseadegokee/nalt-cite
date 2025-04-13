@@ -34,17 +34,23 @@ export default function FileUpload() {
 
     if (e.dataTransfer.files) {
       const newFiles = Array.from(e.dataTransfer.files);
-      const pdfFiles = newFiles.filter(file => file.type === 'application/pdf');
+      const allowedTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+      ];
       
-      if (pdfFiles.length < newFiles.length) {
+      const validFiles = newFiles.filter(file => allowedTypes.includes(file.type));
+      
+      if (validFiles.length < newFiles.length) {
         toast({
-          title: "Non-PDF files ignored",
-          description: "Only PDF files are accepted",
+          title: "Some files ignored",
+          description: "Only PDF, DOCX, and XLSX files are accepted",
           variant: "destructive"
         });
       }
       
-      setFiles(prev => [...prev, ...pdfFiles]);
+      setFiles(prev => [...prev, ...validFiles]);
     }
   };
 
@@ -125,7 +131,7 @@ export default function FileUpload() {
               <input
                 type="file"
                 multiple
-                accept="application/pdf"
+                accept=".pdf,.docx,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileChange}

@@ -2,6 +2,13 @@
 
 import { LucideIcon } from 'lucide-react';
 
+export interface GuidelinePart {
+  id: string;
+  title: string;
+  description: string;
+  filename: string;
+}
+
 export interface Feature {
   title: string;
   description: string;

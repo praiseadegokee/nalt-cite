@@ -9,42 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-// Define the guideline parts
-const guidelineParts = [
-  {
-    id: 'complete-guide',
-    title: 'NALT Citation Guidelines - Complete',
-    description: 'The complete NALT Uniform Format and Citation Guide document',
-    filename: 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria'
-  },
-  {
-    id: 'part1',
-    title: 'Part 1: Background Information',
-    description: 'Background information to NALT Format',
-    filename: 'NALT Uniform Format and Citation Guide (Part One - Background Information to NALT Format)'
-  },
-  {
-    id: 'part2',
-    title: 'Part 2: NALT Format and Research Topics',
-    description: 'NALT Format and the Structuring of Research Topics',
-    filename: 'NALT Uniform Format and Citation Guide (Part Two - NALT Format and the Structuring of Research Topics)'
-  },
-  {
-    id: 'part3',
-    title: 'Part 3: NALT Citation Guidelines',
-    description: 'NALT Citation Guidelines for Style of Referencing',
-    filename: 'NALT Uniform Format and Citation Guide (Part Three - NALT Citation Guidelines for Style of Referencing)'
-  },
-  {
-    id: 'part4',
-    title: 'Part 4: Format for Journal Articles',
-    description: 'Format for Articles in Journal for Publication',
-    filename: 'NALT Uniform Format and Citation Guide (Part Four - Format for Articles in Journal for Publication)'
-  }
-];
+import { guidelineParts } from '@/lib/data';
 
 export default function GuidelineDownloads() {
+  // Complete guide (first item) and individual parts (rest of the items)
+  const completeGuide = guidelineParts[0];
+  const individualParts = guidelineParts.slice(1);
+
   return (
     <div className="py-12 bg-slate-50">
       <div className="container mx-auto px-4">
@@ -60,15 +31,15 @@ export default function GuidelineDownloads() {
             <CardHeader className="bg-primary/5">
               <CardTitle className="flex items-center gap-2 text-primary">
                 <FileText className="h-5 w-5" />
-                {guidelineParts[0].title}
+                {completeGuide.title}
               </CardTitle>
               <CardDescription>
-                {guidelineParts[0].description}
+                {completeGuide.description}
               </CardDescription>
             </CardHeader>
             <CardFooter className="pt-6 flex justify-end">
               <Button className="gap-2" asChild>
-                <a href={`/api/downloads/${guidelineParts[0].filename}`} download>
+                <a href={`/api/downloads/${completeGuide.filename}`} download>
                   <Download className="h-4 w-4" />
                   Download Complete Guide
                 </a>
@@ -79,8 +50,7 @@ export default function GuidelineDownloads() {
           {/* Individual parts */}
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Individual Sections</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Show all parts (1-4) that have been uploaded */}
-            {guidelineParts.slice(1, 5).map((part) => (
+            {individualParts.map((part) => (
               <Card key={part.id} className="border border-gray-200 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">{part.title}</CardTitle>
