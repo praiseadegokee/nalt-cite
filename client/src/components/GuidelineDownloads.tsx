@@ -33,18 +33,12 @@ export default function GuidelineDownloads() {
               <div className="w-full md:w-1/3 bg-primary/5 flex items-center justify-center p-4">
                 <div className="relative w-full aspect-[3/4] max-w-[240px] shadow-lg">
                   <img 
-                    src="/pdfs/nalt-cover.png" 
+                    src="/cover-image" 
                     alt="NALT Guide Cover" 
                     className="object-cover w-full h-full rounded border border-gray-200"
                     onError={(e) => {
-                      // Try jpg if png fails, then fallback to placeholder
-                      const imgElement = e.target as HTMLImageElement;
-                      if (imgElement.src.endsWith('nalt-cover.png')) {
-                        imgElement.src = "/pdfs/nalt-cover.jpg";
-                      } else {
-                        // Final fallback to placeholder
-                        imgElement.src = "https://placehold.co/240x320/e2e8f0/64748b?text=NALT+Guide";
-                      }
+                      // Fallback to placeholder if image fails to load
+                      (e.target as HTMLImageElement).src = "https://placehold.co/240x320/e2e8f0/64748b?text=NALT+Guide";
                     }}
                   />
                 </div>

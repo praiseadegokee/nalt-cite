@@ -9,6 +9,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
   const apiPrefix = "/api";
   
+  // Serve cover image directly
+  app.get('/cover-image', (req: Request, res: Response) => {
+    const coverPath = path.resolve(process.cwd(), 'public/pdfs/nalt-cover.png');
+    if (fs.existsSync(coverPath)) {
+      res.sendFile(coverPath);
+    } else {
+      res.status(404).send('Cover image not found');
+    }
+  });
+  
   // Health check endpoint
   app.get(`${apiPrefix}/health`, (req: Request, res: Response) => {
     res.json({ status: "ok", message: "NALT Cite API is running" });
