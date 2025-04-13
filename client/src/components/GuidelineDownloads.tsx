@@ -31,14 +31,15 @@ export default function GuidelineDownloads() {
             <div className="flex flex-col md:flex-row">
               {/* Cover image section */}
               <div className="w-full md:w-1/3 bg-primary/5 flex items-center justify-center p-4">
-                <div className="relative w-full aspect-[3/4] max-w-[240px] shadow-lg">
+                <div className="relative w-full max-w-[300px] shadow-lg">
                   <img 
                     src="/cover-image" 
                     alt="NALT Guide Cover" 
-                    className="object-cover w-full h-full rounded border border-gray-200"
+                    className="object-contain w-full rounded border border-gray-200"
+                    style={{ maxHeight: '360px' }}
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
-                      (e.target as HTMLImageElement).src = "https://placehold.co/240x320/e2e8f0/64748b?text=NALT+Guide";
+                      (e.target as HTMLImageElement).src = "https://placehold.co/400x300/e2e8f0/64748b?text=NALT+Guide";
                     }}
                   />
                 </div>
