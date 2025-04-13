@@ -179,18 +179,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const upload = multer({ 
     storage: fileStorage,
     fileFilter: (req, file, cb) => {
-      // Allow PDF, Word docs, and Excel spreadsheets
+      // Allow PDF, Word docs, Excel spreadsheets, and common image formats
       const allowedMimeTypes = [
         'application/pdf',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'image/jpeg',  // .jpg, .jpeg
+        'image/png',   // .png
+        'image/gif',   // .gif
+        'image/webp'   // .webp
       ];
       
       if (allowedMimeTypes.includes(file.mimetype)) {
         cb(null, true);
       } else {
         cb(null, false);
-        return cb(new Error('Only PDF, DOCX, and XLSX files are allowed'));
+        return cb(new Error('Only PDF, DOCX, XLSX, and image files (JPG, PNG, GIF, WEBP) are allowed'));
       }
     },
     limits: {
@@ -205,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ 
           success: false,
           message: 'No file uploaded or invalid file type',
-          allowedTypes: ['PDF', 'DOCX', 'XLSX'],
+          allowedTypes: ['PDF', 'DOCX', 'XLSX', 'JPG/JPEG', 'PNG', 'GIF', 'WEBP'],
           maxSize: '50MB'
         });
       }

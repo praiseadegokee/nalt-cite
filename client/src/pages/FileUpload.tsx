@@ -37,7 +37,11 @@ export default function FileUpload() {
       const allowedTypes = [
         'application/pdf',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'image/jpeg',  // .jpg, .jpeg
+        'image/png',   // .png
+        'image/gif',   // .gif
+        'image/webp'   // .webp
       ];
       
       const validFiles = newFiles.filter(file => allowedTypes.includes(file.type));
@@ -45,7 +49,7 @@ export default function FileUpload() {
       if (validFiles.length < newFiles.length) {
         toast({
           title: "Some files ignored",
-          description: "Only PDF, DOCX, and XLSX files are accepted",
+          description: "Only PDF, DOCX, XLSX, and image files (JPG, PNG, GIF, WEBP) are accepted",
           variant: "destructive"
         });
       }
@@ -110,9 +114,9 @@ export default function FileUpload() {
     <div className="py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Upload PDF Files</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-6">Upload Files</h1>
           <p className="text-gray-600 mb-8">
-            Upload PDF files for the NALT guidelines. Only PDF files are accepted.
+            Upload PDF files for the NALT guidelines or image files for cover art and illustrations.
           </p>
           
           {/* File upload area */}
@@ -126,12 +130,12 @@ export default function FileUpload() {
               <Upload className="h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">Drag & Drop Files</h3>
               <p className="text-sm text-gray-500 mb-4 text-center">
-                Drop your PDF files here, or click to browse
+                Drop your files here, or click to browse
               </p>
               <input
                 type="file"
                 multiple
-                accept=".pdf,.docx,.xlsx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png,.gif,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/gif,image/webp"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleFileChange}
