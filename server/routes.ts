@@ -9,13 +9,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
   const apiPrefix = "/api";
   
-  // Serve cover image directly
+  // Serve cover image directly - will use the first image found in the pdfs directory
   app.get('/cover-image', (req: Request, res: Response) => {
-    const coverPath = path.resolve(process.cwd(), 'public/pdfs/nalt-cover.png');
-    if (fs.existsSync(coverPath)) {
-      res.sendFile(coverPath);
-    } else {
-      res.status(404).send('Cover image not found');
+    const pdfsDir = path.resolve(process.cwd(), 'public/pdfs');
+    
+    try {
+      // Get all files in the pdfs directory
+      const files = fs.readdirSync(pdfsDir);
+      
+      // Find the first image file (jpg, jpeg, png, gif, webp)
+      const imageFile = files.find(file => {
+        const ext = path.extname(file).toLowerCase();
+        return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext);
+      });
+      
+      if (imageFile) {
+        const imagePath = path.join(pdfsDir, imageFile);
+        console.log(`Serving cover image: ${imageFile}`);
+        
+        // Set content type based on extension
+        const ext = path.extname(imageFile).toLowerCase();
+        let contentType = 'image/png'; // Default
+        
+        if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+        else if (ext === '.png') contentType = 'image/png';
+        else if (ext === '.gif') contentType = 'image/gif';
+        else if (ext === '.webp') contentType = 'image/webp';
+        
+        res.setHeader('Content-Type', contentType);
+        res.sendFile(imagePath);
+      } else {
+        res.status(404).send('No image found in pdfs directory');
+      }
+    } catch (error) {
+      console.error('Error serving cover image:', error);
+      res.status(500).send('Error finding cover image');
     }
   });
   
@@ -166,10 +194,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Determine destination based on file type
       let uploadDir;
       
-      if (file.mimetype === 'application/pdf') {
+      // Image files and PDFs go to the pdfs directory, other files to downloads
+      if (file.mimetype === 'application/pdf' || 
+          file.mimetype.startsWith('image/')) {
         uploadDir = path.resolve(process.cwd(), 'public/pdfs');
       } else {
-        // For other document types
         uploadDir = path.resolve(process.cwd(), 'public/downloads');
       }
       
