@@ -26,9 +26,9 @@ const guidelineParts = [
   },
   {
     id: 'part2',
-    title: 'Part 2: Cases',
-    description: 'Guidelines for citing reported and unreported cases',
-    filename: 'NALT Guide Part 2 - Cases'
+    title: 'Part 2: NALT Format and Research Topics',
+    description: 'NALT Format and the Structuring of Research Topics',
+    filename: 'NALT Uniform Format and Citation Guide (Part Two - NALT Format and the Structuring of Research Topics)'
   },
   {
     id: 'part3',
@@ -79,8 +79,8 @@ export default function GuidelineDownloads() {
           {/* Individual parts */}
           <h3 className="text-xl font-semibold text-gray-800 mb-4">Individual Sections</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Only show Part 1 for now as it's the only one uploaded besides the complete guide */}
-            {guidelineParts.slice(1, 2).map((part) => (
+            {/* Only show Parts 1 and 2 as they're the only ones uploaded besides the complete guide */}
+            {guidelineParts.slice(1, 3).map((part) => (
               <Card key={part.id} className="border border-gray-200 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">{part.title}</CardTitle>
