@@ -23,13 +23,13 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/citation-generator" component={CitationGenerator} />
         <Route path="/glossary" component={Glossary} />
-        <Route path="/glossary/add" component={AddGlossaryTerm} />
         <Route path="/faq" component={FAQ} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
         <Route path="/admin/upload" component={FileUpload} />
         <Route path="/admin/blog" component={AdminBlogPosts} />
+        <Route path="/admin/glossary/add" component={AddGlossaryTerm} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

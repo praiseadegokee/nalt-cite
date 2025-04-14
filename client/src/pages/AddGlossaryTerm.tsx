@@ -62,7 +62,7 @@ export default function AddGlossaryTerm() {
         description: 'Your glossary term has been added.',
         variant: 'default',
       });
-      setLocation('/glossary');
+      setLocation('/admin');
     },
     onError: (error: Error) => {
       toast({
@@ -85,10 +85,10 @@ export default function AddGlossaryTerm() {
             <Button 
               variant="ghost" 
               className="text-[#294D98] flex items-center" 
-              onClick={() => setLocation('/glossary')}
+              onClick={() => setLocation('/admin')}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Glossary
+              Back to Admin Dashboard
             </Button>
           </div>
           

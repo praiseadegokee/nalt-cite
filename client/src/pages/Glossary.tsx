@@ -72,13 +72,8 @@ export default function Glossary() {
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
-          <div className="flex justify-between items-center mb-3">
+          <div className="mb-3">
             <h2 className="text-2xl md:text-3xl font-bold text-[#1B387A]">Legal Citation Glossary</h2>
-            <Link href="/glossary/add">
-              <Button className="bg-[#294D98] hover:bg-[#1B387A]">
-                Add New Term
-              </Button>
-            </Link>
           </div>
           <p className="text-gray-600 mb-8">Browse or search terminology related to legal citation and research methodology in Nigeria.</p>
           
@@ -155,12 +150,7 @@ export default function Glossary() {
               </div>
             ) : (
               <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
-                <p className="text-gray-600">No terms found for this selection. Try changing your filters or add a new term.</p>
-                <Link href="/glossary/add">
-                  <Button variant="outline" className="mt-4">
-                    Add New Term
-                  </Button>
-                </Link>
+                <p className="text-gray-600">No terms found for this selection. Try changing your filters.</p>
               </div>
             )}
           </div>
