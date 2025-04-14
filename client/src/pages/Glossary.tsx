@@ -175,78 +175,103 @@ export default function Glossary() {
           <p className="text-gray-600 mb-6">Browse or search terminology related to legal citation and research methodology in Nigeria.</p>
           
           {/* Action buttons */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <Button 
-              variant="outline" 
-              className="flex items-center text-[#294D98] border-[#294D98]"
-              onClick={exportGlossary}
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export Terms
-            </Button>
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center bg-white hover:bg-gray-50 text-[#294D98] border-gray-200"
+                onClick={exportGlossary}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export Terms
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center bg-white hover:bg-gray-50 text-[#294D98] border-gray-200"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                <ArrowUpDown className="mr-2 h-4 w-4" />
+                {sortOrder === 'asc' ? 'Sort Z-A' : 'Sort A-Z'}
+              </Button>
+            </div>
             
-            <Button 
-              variant="outline" 
-              className="flex items-center text-[#294D98] border-[#294D98]"
-              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            >
-              <ArrowUpDown className="mr-2 h-4 w-4" />
-              {sortOrder === 'asc' ? 'Sort Z-A' : 'Sort A-Z'}
-            </Button>
-            
-            <Button 
-              className="flex items-center bg-[#294D98] hover:bg-[#1B387A] ml-auto"
-              onClick={() => setShowAddDialog(true)}
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Add Term
-            </Button>
+            <div>
+              <span className="text-sm text-gray-500 hidden md:inline">
+                {terms.length} terms in database
+              </span>
+            </div>
           </div>
           
-          {/* Search and Filter */}
-          <div className="mb-8 flex flex-col md:flex-row gap-4">
-            <div className="flex-grow">
+          {/* Search and Filter Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div className="mb-5">
+              <h3 className="text-lg font-medium text-[#1B387A] mb-2">Search Glossary</h3>
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search terms..."
+                  placeholder="Enter term or definition..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
                 />
                 <Search className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                    aria-label="Clear search"
+                  >
+                    ×
+                  </button>
+                )}
               </div>
+              <p className="text-xs text-gray-500 mt-1.5">
+                Search by term name or definition content. Press Enter to search.
+              </p>
             </div>
-          </div>
-          
-          {/* Alphabet Filter */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
-            <AlphabetFilter 
-              selectedLetter={selectedLetter}
-              onSelectLetter={setSelectedLetter}
-            />
+            
+            <div>
+              <h3 className="text-lg font-medium text-[#1B387A] mb-3">Browse by Letter</h3>
+              <AlphabetFilter 
+                selectedLetter={selectedLetter}
+                onSelectLetter={(letter) => {
+                  setSelectedLetter(letter);
+                  setSearchTerm(''); // Clear search when selecting a letter
+                }}
+              />
+            </div>
           </div>
           
           {/* Term List with Loading State */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-[#1B387A] border-b-2 border-[#C3CDE1] pb-2 mb-4">
-                {debouncedSearchTerm ? "Search Results" : `Terms: ${selectedLetter}`}
-              </h3>
-              <span className="text-sm text-gray-500">{filteredAndSortedTerms.length} terms found</span>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-[#1B387A]">
+                  {debouncedSearchTerm ? "Search Results" : selectedLetter ? `Terms: ${selectedLetter}` : "All Terms"}
+                </h3>
+                <div className="h-1 w-24 bg-[#C3CDE1] rounded mt-2"></div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {filteredAndSortedTerms.length} {filteredAndSortedTerms.length === 1 ? 'term' : 'terms'} found
+                </span>
+              </div>
             </div>
             
             {isLoading ? (
-              <div className="flex justify-center items-center p-12">
+              <div className="flex justify-center items-center p-12 border border-dashed border-gray-200 rounded-lg bg-gray-50">
                 <Loader2 className="h-8 w-8 animate-spin text-[#294D98]" />
                 <span className="ml-2 text-[#294D98]">Loading glossary terms...</span>
               </div>
             ) : isError ? (
-              <div className="p-8 text-center bg-white rounded-lg border border-red-200">
-                <p className="text-red-600">Error loading glossary terms. Please try again.</p>
+              <div className="p-8 text-center rounded-lg border border-dashed border-red-200 bg-red-50">
+                <p className="text-red-600 mb-3">Error loading glossary terms.</p>
                 <Button 
                   variant="outline" 
-                  className="mt-4"
+                  className="bg-white"
                   onClick={() => refetch()}
                 >
                   Retry
@@ -264,18 +289,10 @@ export default function Glossary() {
                 ))}
               </div>
             ) : (
-              <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
+              <div className="p-8 text-center rounded-lg border border-dashed border-gray-200 bg-gray-50">
                 <BookOpen className="h-10 w-10 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-3">No terms found for this selection.</p>
-                <p className="text-gray-500 mb-4">Try changing your filters or add a new term to the glossary.</p>
-                <Button 
-                  variant="outline"
-                  onClick={() => setShowAddDialog(true)}
-                  className="bg-white text-[#294D98] border-[#294D98]"
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add New Term
-                </Button>
+                <p className="text-gray-500">Try changing your filters or selecting a different letter.</p>
               </div>
             )}
           </div>
