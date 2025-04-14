@@ -82,18 +82,32 @@ export default function BlogPost() {
           </div>
           
           {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
+          {post.tags && (
             <div className="mt-10 pt-6 border-t border-gray-200">
               <h2 className="text-sm font-semibold text-gray-900 mb-3">Related Topics:</h2>
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag: string, index: number) => (
-                  <span 
-                    key={index} 
-                    className="text-xs font-medium py-1 px-2 rounded-full bg-gray-100 text-gray-800"
-                  >
-                    {tag}
-                  </span>
-                ))}
+                {(() => {
+                  let tagsArray: string[] = [];
+                  try {
+                    // Try to parse the tags if they're stored as a JSON string
+                    if (typeof post.tags === 'string') {
+                      tagsArray = JSON.parse(post.tags);
+                    } else if (Array.isArray(post.tags)) {
+                      tagsArray = post.tags;
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse tags', e);
+                  }
+                  
+                  return tagsArray.map((tag: string, index: number) => (
+                    <span 
+                      key={index} 
+                      className="text-xs font-medium py-1 px-2 rounded-full bg-gray-100 text-gray-800"
+                    >
+                      {tag}
+                    </span>
+                  ));
+                })()}
               </div>
             </div>
           )}
