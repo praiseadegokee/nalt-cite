@@ -46,7 +46,6 @@ import { GlossaryTerm } from '@/lib/types';
 const glossaryTermFormSchema = z.object({
   term: z.string().min(1, 'Term is required').max(100, 'Term must be less than 100 characters'),
   definition: z.string().min(1, 'Definition is required').max(1000, 'Definition must be less than 1000 characters'),
-  category: z.string().default('general'), // Default category, not required anymore
 });
 
 type GlossaryTermFormValues = z.infer<typeof glossaryTermFormSchema>;
@@ -74,7 +73,6 @@ export default function AdminGlossary() {
     defaultValues: {
       term: '',
       definition: '',
-      category: '',
     },
   });
 
@@ -192,7 +190,6 @@ export default function AdminGlossary() {
     form.reset({
       term: '',
       definition: '',
-      category: 'general', // Default value
     });
     setEditingTerm(null);
     setIsOpen(true);
@@ -255,7 +252,6 @@ export default function AdminGlossary() {
                             form.reset({
                               term: term.term,
                               definition: term.definition,
-                              category: term.category,
                             });
                             setIsOpen(true);
                           }}
