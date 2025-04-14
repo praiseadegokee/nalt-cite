@@ -3,20 +3,21 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import BlogCard from '@/components/BlogCard';
 import { Button } from '@/components/ui/button';
-import { blogPosts } from '@/lib/data';
 import { BlogPost } from '@/lib/types';
 
 export default function Blog() {
   const [featuredPost, setFeaturedPost] = useState<BlogPost | null>(null);
   const [recentPosts, setRecentPosts] = useState<BlogPost[]>([]);
 
-  // Fetch blog posts
+  // Fetch blog posts from the API
   const { data: posts, isLoading } = useQuery({
     queryKey: ['/api/blog/posts'],
     queryFn: async () => {
-      // In a real application, this would fetch from an API
-      // For now, we'll use the mock data directly
-      return blogPosts;
+      const response = await fetch('/api/blog/posts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch blog posts');
+      }
+      return response.json();
     },
   });
 

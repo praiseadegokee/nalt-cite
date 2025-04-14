@@ -126,6 +126,32 @@ export class MemStorage implements IStorage {
     ];
     
     sampleFaqs.forEach(faq => this.createFaqItem(faq));
+    
+    // Sample blog posts
+    const sampleBlogPosts: InsertBlogPost[] = [
+      {
+        title: 'Understanding the New NALT Citation Rules for Online Sources',
+        excerpt: 'The digital age has brought new challenges for legal citation. Learn how the latest NALT Guide addresses electronic resources, social media citations, and other digital materials in legal writing.',
+        content: '<p>The digital revolution has transformed legal research and writing, bringing with it new challenges for citation standards. The Nigerian Association of Law Teachers has responded by updating the NALT Citation Guide to address electronic resources, online databases, social media content, and other digital materials that are increasingly being cited in legal scholarship.</p><p>This article explores the key changes in the latest edition of the NALT Guide, providing practical examples and clarity on how to properly cite everything from online journal articles to social media posts in your legal writing.</p>',
+        date: '2023-09-15',
+        author: 'Dr. Amina Bello',
+        readTime: 8,
+        category: 'Citation Tips',
+        tags: JSON.stringify(['Digital Resources', 'Online Citation', 'NALT Updates', 'Legal Writing'])
+      },
+      {
+        title: 'Common Citation Mistakes in Nigerian Legal Writing',
+        excerpt: 'Explore the most frequent errors in legal citations and how to avoid them in your academic papers and legal documents.',
+        content: '<p>Even experienced legal scholars can make citation errors that may diminish the credibility and clarity of their work. This article identifies the most common citation mistakes found in Nigerian legal writing and provides guidance on how to avoid them.</p><p>From inconsistent formatting of case names to incorrect abbreviations of law reports, understanding these pitfalls will help you produce more professional and accurate legal documents that adhere properly to NALT citation standards.</p>',
+        date: '2023-10-05',
+        author: 'Prof. Emmanuel Okonkwo',
+        readTime: 6,
+        category: 'Best Practices',
+        tags: JSON.stringify(['Common Errors', 'Citation Format', 'Legal Writing', 'NALT Standards'])
+      }
+    ];
+    
+    sampleBlogPosts.forEach(post => this.createBlogPost(post));
   }
 
   // User methods

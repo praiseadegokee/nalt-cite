@@ -107,6 +107,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post(`${apiPrefix}/blog/posts`, async (req: Request, res: Response) => {
+    try {
+      const { title, excerpt, content, date, author, readTime, category, tags } = req.body;
+      
+      // Create the blog post
+      const newPost = await storage.createBlogPost({
+        title,
+        excerpt,
+        content,
+        date,
+        author,
+        readTime,
+        category,
+        tags
+      });
+      
+      res.status(201).json(newPost);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ 
+        message: "Failed to create blog post",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.get(`${apiPrefix}/blog/posts/:id`, async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     

@@ -12,6 +12,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Resources from "@/pages/Resources";
 import FileUpload from "@/pages/FileUpload";
+import AdminBlogPosts from "@/pages/AdminBlogPosts";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
         <Route path="/admin/upload" component={FileUpload} />
+        <Route path="/admin/blog" component={AdminBlogPosts} />
         <Route component={NotFound} />
       </Switch>
     </Layout>

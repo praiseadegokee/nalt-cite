@@ -1,21 +1,19 @@
 import { useParams, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft } from 'lucide-react';
-import { blogPosts } from '@/lib/data';
 
 export default function BlogPost() {
   const { id } = useParams();
   
-  // Fetch blog post
+  // Fetch blog post from the API
   const { data: post, isLoading, isError } = useQuery({
     queryKey: [`/api/blog/posts/${id}`],
     queryFn: async () => {
-      // In a real application, this would fetch from an API
-      const post = blogPosts.find(post => post.id.toString() === id);
-      if (!post) {
+      const response = await fetch(`/api/blog/posts/${id}`);
+      if (!response.ok) {
         throw new Error('Post not found');
       }
-      return post;
+      return response.json();
     },
   });
 
