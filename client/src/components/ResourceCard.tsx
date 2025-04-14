@@ -117,13 +117,9 @@ export default function ResourceCard({ resource }: ResourceCardProps) {
       
       <CardFooter className="p-4 pt-0 flex justify-between items-center">
         <Button 
-          variant={resource.type === 'video' ? "outline" : "default"}
+          variant="default"
           size="sm"
-          className={`gap-2 w-full ${
-            resource.type === 'video' 
-              ? 'border-amber-200 text-amber-700 hover:bg-amber-50' 
-              : ''
-          }`}
+          className="gap-2 w-full"
           asChild={!isDownloading && !downloadComplete}
           onClick={resource.type !== 'video' ? handleDownload : undefined}
           disabled={isDownloading}
