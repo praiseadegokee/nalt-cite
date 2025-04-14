@@ -14,6 +14,7 @@ import BlogPost from "@/pages/BlogPost";
 import Resources from "@/pages/Resources";
 import FileUpload from "@/pages/FileUpload";
 import AdminBlogPosts from "@/pages/AdminBlogPosts";
+import AdminGlossaryTerms from "@/pages/AdminGlossaryTerms";
 import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/admin/upload" component={FileUpload} />
         <Route path="/admin/blog" component={AdminBlogPosts} />
         <Route path="/admin/glossary/add" component={AddGlossaryTerm} />
+        <Route path="/admin/glossary" component={AdminGlossaryTerms} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
