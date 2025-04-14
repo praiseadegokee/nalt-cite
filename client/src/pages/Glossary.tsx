@@ -19,7 +19,7 @@ import {
 
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLetter, setSelectedLetter] = useState('A');
+  const [selectedLetter, setSelectedLetter] = useState(''); // Changed to empty string to show all terms
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
