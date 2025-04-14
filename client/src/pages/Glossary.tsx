@@ -17,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Removed category filter
   const [selectedLetter, setSelectedLetter] = useState('A');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
@@ -32,16 +32,12 @@ export default function Glossary() {
   
   // Fetch data from API
   const { data: terms = [], isLoading, isError } = useQuery({
-    queryKey: ['/api/glossary', selectedLetter, selectedCategory, debouncedSearchTerm],
+    queryKey: ['/api/glossary', selectedLetter, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
       
       if (selectedLetter) {
         params.append('letter', selectedLetter);
-      }
-      
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory);
       }
       
       if (debouncedSearchTerm) {
@@ -62,10 +58,9 @@ export default function Glossary() {
     const matchesSearch = debouncedSearchTerm ? 
       (term.term.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
        term.definition.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) : true;
-    const matchesCategory = selectedCategory === 'all' || term.category === selectedCategory;
     const matchesLetter = !selectedLetter || term.term.charAt(0).toUpperCase() === selectedLetter.toUpperCase();
     
-    return matchesSearch && matchesCategory && matchesLetter;
+    return matchesSearch && matchesLetter;
   });
 
   return (
@@ -93,22 +88,7 @@ export default function Glossary() {
                 </svg>
               </div>
             </div>
-            <div>
-              <Select 
-                value={selectedCategory} 
-                onValueChange={setSelectedCategory}
-              >
-                <SelectTrigger className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="legal">Legal Term</SelectItem>
-                  <SelectItem value="citation">Citation Term</SelectItem>
-                  <SelectItem value="research">Research Term</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Category filter removed */}
           </div>
           
           {/* Alphabet Filter */}
@@ -144,7 +124,6 @@ export default function Glossary() {
                     key={index}
                     term={term.term}
                     definition={term.definition}
-                    category={term.category}
                   />
                 ))}
               </div>

@@ -22,6 +22,8 @@ export const glossaryTerms = pgTable("glossary_terms", {
   id: serial("id").primaryKey(),
   term: text("term").notNull(),
   definition: text("definition").notNull(),
+  // Category field is kept in database schema for backward compatibility
+  // but no longer used in the application
   category: text("category").default(''),
 });
 
@@ -72,7 +74,7 @@ export const insertCitationSourceSchema = createInsertSchema(citationSources).pi
 export const insertGlossaryTermSchema = createInsertSchema(glossaryTerms).pick({
   term: true,
   definition: true,
-  category: true,
+  // category removed from insert schema
 });
 
 export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
