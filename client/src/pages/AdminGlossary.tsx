@@ -95,7 +95,10 @@ export default function AdminGlossary() {
       return response.json();
     },
     onSuccess: () => {
+      // Properly invalidate all glossary related queries
       queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
+      // Force refetch of any glossary queries regardless of parameters
+      queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
       toast({
         title: 'Success',
         description: 'Glossary term has been added',
@@ -130,7 +133,10 @@ export default function AdminGlossary() {
       return response.json();
     },
     onSuccess: () => {
+      // Properly invalidate all glossary related queries
       queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
+      // Force refetch of any glossary queries regardless of parameters
+      queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
       toast({
         title: 'Success',
         description: 'Glossary term has been updated',
@@ -161,7 +167,10 @@ export default function AdminGlossary() {
       return true;
     },
     onSuccess: () => {
+      // Properly invalidate all glossary related queries
       queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
+      // Force refetch of any glossary queries regardless of parameters
+      queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
       toast({
         title: 'Success',
         description: 'Glossary term has been deleted',

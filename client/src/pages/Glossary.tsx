@@ -24,7 +24,7 @@ export default function Glossary() {
   }, [searchTerm]);
   
   // Fetch data from API
-  const { data: terms = [], isLoading, isError } = useQuery({
+  const { data: terms = [], isLoading, isError, refetch } = useQuery({
     queryKey: ['/api/glossary', selectedLetter, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -37,6 +37,9 @@ export default function Glossary() {
         params.append('query', debouncedSearchTerm);
       }
       
+      // Add cache-busting timestamp to ensure fresh data
+      params.append('_t', Date.now().toString());
+      
       const response = await fetch(`/api/glossary?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch glossary terms');
@@ -44,7 +47,19 @@ export default function Glossary() {
       return response.json();
     },
     enabled: true,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    staleTime: 0 // Always consider data stale to force refresh
   });
+  
+  // Add an effect to periodically refresh data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 5000); // Refresh every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [refetch]);
   
   // Filtered terms (client-side filtering as backup if server filtering is incomplete)
   const filteredTerms = terms.filter((term: GlossaryTermType) => {
