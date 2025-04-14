@@ -16,7 +16,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const formSchema = z.object({
   term: z.string().min(1, 'Term is required').max(100, 'Term must be less than 100 characters'),
   definition: z.string().min(1, 'Definition is required').max(1000, 'Definition must be less than 1000 characters'),
-  category: z.string().min(1, 'Category is required'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,7 +31,6 @@ export default function AddGlossaryTerm() {
     defaultValues: {
       term: '',
       definition: '',
-      category: '',
     },
   });
   
@@ -112,35 +110,6 @@ export default function AddGlossaryTerm() {
                       </FormControl>
                       <FormDescription>
                         The legal or citation term you want to define.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-[#1B387A] font-medium">Category</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="focus:ring-[#294D98] focus:border-[#294D98]">
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="legal">Legal Term</SelectItem>
-                          <SelectItem value="citation">Citation Term</SelectItem>
-                          <SelectItem value="research">Research Term</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        The category this term belongs to.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

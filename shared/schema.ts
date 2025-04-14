@@ -22,7 +22,7 @@ export const glossaryTerms = pgTable("glossary_terms", {
   id: serial("id").primaryKey(),
   term: text("term").notNull(),
   definition: text("definition").notNull(),
-  category: text("category").notNull(),
+  category: text("category").default(''),
 });
 
 // Blog posts table

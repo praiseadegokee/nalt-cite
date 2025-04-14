@@ -87,16 +87,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiPrefix}/glossary`, async (req: Request, res: Response) => {
     try {
-      const { term, definition, category } = req.body;
+      const { term, definition, category = '' } = req.body;
       
       // Basic validation
-      if (!term || !definition || !category) {
+      if (!term || !definition) {
         return res.status(400).json({ 
           message: "Missing required fields", 
           details: {
             term: !term ? "Term is required" : null,
-            definition: !definition ? "Definition is required" : null,
-            category: !category ? "Category is required" : null
+            definition: !definition ? "Definition is required" : null
           }
         });
       }
