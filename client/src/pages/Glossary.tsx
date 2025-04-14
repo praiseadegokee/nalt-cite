@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import AlphabetFilter from '@/components/AlphabetFilter';
 import GlossaryTerm from '@/components/GlossaryTerm';
 import { GlossaryTerm as GlossaryTermType } from '@/lib/types';

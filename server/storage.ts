@@ -87,22 +87,18 @@ export class MemStorage implements IStorage {
       {
         term: 'Ab Initio',
         definition: 'Latin term meaning "from the beginning" or "from inception." In legal contexts, it is used to indicate that something was invalid, void, or otherwise ineffective from the very start.',
-        category: 'legal',
       },
       {
         term: 'Abbreviation',
         definition: 'A shortened form of a written word or phrase used in a citation. The NALT Guide provides specific rules for standard abbreviations of legal sources, journals, and courts.',
-        category: 'citation',
       },
       {
         term: 'Academic Journal',
         definition: 'A scholarly periodical publication containing articles written by researchers, professors, and other experts. Legal academic journals publish articles on legal analysis, legal developments, and jurisprudence.',
-        category: 'research',
       },
       {
         term: 'All Nigeria Law Reports (All NLR)',
         definition: 'A series of law reports that contain selected judgments of Nigerian courts. Citations to All NLR include the year, volume, and page number.',
-        category: 'citation',
       },
     ];
     

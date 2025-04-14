@@ -87,7 +87,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiPrefix}/glossary`, async (req: Request, res: Response) => {
     try {
-      const { term, definition, category = '' } = req.body;
+      const { term, definition } = req.body;
       
       // Basic validation
       if (!term || !definition) {
@@ -103,8 +103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create the new glossary term
       const newTerm = await storage.createGlossaryTerm({
         term,
-        definition,
-        category
+        definition
       });
       
       res.status(201).json(newTerm);
@@ -118,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     try {
-      const { term, definition, category = '' } = req.body;
+      const { term, definition } = req.body;
       
       // Basic validation
       if (!term || !definition) {
@@ -134,8 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update the glossary term
       const updatedTerm = await storage.updateGlossaryTerm(id, {
         term,
-        definition,
-        category
+        definition
       });
       
       if (!updatedTerm) {
