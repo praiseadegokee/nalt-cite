@@ -66,10 +66,15 @@ export default function AdminDashboard() {
               <span>Add and edit citation terminology</span>
             </div>
           </CardContent>
-          <CardFooter className="pt-0">
+          <CardFooter className="pt-0 flex flex-col space-y-2">
             <Button asChild className="w-full">
+              <Link href="/admin/glossary">
+                Manage Glossary Terms
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
               <Link href="/admin/glossary/add">
-                Add New Glossary Term
+                Add New Term
               </Link>
             </Button>
           </CardFooter>
