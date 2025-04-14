@@ -199,9 +199,7 @@ export class MemStorage implements IStorage {
       terms = terms.filter(term => term.term.charAt(0).toUpperCase() === letter.toUpperCase());
     }
     
-    if (category && category !== 'all') {
-      terms = terms.filter(term => term.category === category);
-    }
+    // Category filter removed as we no longer use it
     
     return terms;
   }
@@ -215,7 +213,7 @@ export class MemStorage implements IStorage {
     const glossaryTerm: GlossaryTerm = { 
       ...term, 
       id,
-      category: term.category || null
+      category: null // Category is no longer used but kept for database compatibility
     };
     this.glossaryTerms.set(id, glossaryTerm);
     return glossaryTerm;
@@ -232,8 +230,8 @@ export class MemStorage implements IStorage {
     const updatedTerm: GlossaryTerm = {
       ...existingTerm,
       term: term.term,
-      definition: term.definition,
-      category: term.category || null
+      definition: term.definition
+      // Keep existing category (null) from existingTerm
     };
     
     this.glossaryTerms.set(id, updatedTerm);
