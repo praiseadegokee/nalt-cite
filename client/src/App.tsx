@@ -14,6 +14,7 @@ import BlogPost from "@/pages/BlogPost";
 import Resources from "@/pages/Resources";
 import FileUpload from "@/pages/FileUpload";
 import AdminBlogPosts from "@/pages/AdminBlogPosts";
+import AdminDashboard from "@/pages/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
+        <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/upload" component={FileUpload} />
         <Route path="/admin/blog" component={AdminBlogPosts} />
         <Route path="/admin/glossary/add" component={AddGlossaryTerm} />

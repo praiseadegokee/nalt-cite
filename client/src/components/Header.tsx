@@ -31,6 +31,12 @@ export default function Header() {
             <Link href="/">
               <span className="text-white font-bold text-xl sm:text-2xl cursor-pointer">NALT Cite</span>
             </Link>
+            {/* Admin link - not prominent, only for administrator use */}
+            <Link href="/admin">
+              <span className="ml-2 text-white opacity-30 hover:opacity-80 text-xs cursor-pointer transition-opacity">
+                Admin
+              </span>
+            </Link>
           </div>
           
           {/* Desktop Navigation */}
