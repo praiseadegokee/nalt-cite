@@ -18,9 +18,10 @@ export interface Feature {
 }
 
 export interface GlossaryTerm {
+  id: number;
   term: string;
   definition: string;
-  category: string;
+  category?: string;
 }
 
 export interface FAQ {
