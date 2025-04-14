@@ -17,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  // Category filter removed as requested
   const [selectedLetter, setSelectedLetter] = useState('A');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   

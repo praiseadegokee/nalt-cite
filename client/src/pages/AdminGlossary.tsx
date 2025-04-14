@@ -46,7 +46,7 @@ import { GlossaryTerm } from '@/lib/types';
 const glossaryTermFormSchema = z.object({
   term: z.string().min(1, 'Term is required').max(100, 'Term must be less than 100 characters'),
   definition: z.string().min(1, 'Definition is required').max(1000, 'Definition must be less than 1000 characters'),
-  category: z.string().min(1, 'Category is required'),
+  category: z.string().default('general'), // Default category, not required anymore
 });
 
 type GlossaryTermFormValues = z.infer<typeof glossaryTermFormSchema>;
@@ -192,20 +192,10 @@ export default function AdminGlossary() {
     form.reset({
       term: '',
       definition: '',
-      category: '',
+      category: 'general', // Default value
     });
     setEditingTerm(null);
     setIsOpen(true);
-  }
-
-  // Get category display name
-  function getCategoryDisplay(category: string) {
-    const categories: Record<string, string> = {
-      'legal': 'Legal Term',
-      'citation': 'Citation Term',
-      'research': 'Research Term',
-    };
-    return categories[category] || category;
   }
 
   return (
@@ -242,7 +232,6 @@ export default function AdminGlossary() {
             <TableHeader>
               <TableRow>
                 <TableHead>Term</TableHead>
-                <TableHead>Category</TableHead>
                 <TableHead>Definition</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
@@ -252,7 +241,6 @@ export default function AdminGlossary() {
                 terms.map((term: GlossaryTerm) => (
                   <TableRow key={term.id}>
                     <TableCell className="font-medium">{term.term}</TableCell>
-                    <TableCell>{getCategoryDisplay(term.category)}</TableCell>
                     <TableCell className="max-w-md truncate">
                       {term.definition.length > 100 ? term.definition.substring(0, 100) + '...' : term.definition}
                     </TableCell>
@@ -292,7 +280,7 @@ export default function AdminGlossary() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-4">
+                  <TableCell colSpan={3} className="text-center py-4">
                     No glossary terms yet. Click "Add New Term" to create your first glossary term.
                   </TableCell>
                 </TableRow>
@@ -322,32 +310,6 @@ export default function AdminGlossary() {
                     <FormControl>
                       <Input placeholder="Enter the term" {...field} />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="legal">Legal Term</SelectItem>
-                        <SelectItem value="citation">Citation Term</SelectItem>
-                        <SelectItem value="research">Research Term</SelectItem>
-                      </SelectContent>
-                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

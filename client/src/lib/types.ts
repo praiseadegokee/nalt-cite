@@ -21,7 +21,7 @@ export interface GlossaryTerm {
   id?: number;
   term: string;
   definition: string;
-  category: string;
+  category?: string; // Made optional
 }
 
 export interface FAQ {
