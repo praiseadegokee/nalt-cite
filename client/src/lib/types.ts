@@ -18,10 +18,9 @@ export interface Feature {
 }
 
 export interface GlossaryTerm {
-  id: number;
   term: string;
   definition: string;
-  category: string | null; // Kept for backward compatibility but may be null
+  category: string;
 }
 
 export interface FAQ {

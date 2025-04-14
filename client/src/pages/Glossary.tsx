@@ -1,27 +1,18 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
 import AlphabetFilter from '@/components/AlphabetFilter';
 import GlossaryTerm from '@/components/GlossaryTerm';
 import { GlossaryTerm as GlossaryTermType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 import { Link } from 'wouter';
-import { 
-  Loader2, 
-  Search, 
-  BookOpen, 
-  X, 
-  ArrowUpDown, 
-  SortAsc, 
-  SortDesc 
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedLetter, setSelectedLetter] = useState(''); // Changed to empty string to show all terms
+  // Removed category filter
+  const [selectedLetter, setSelectedLetter] = useState('A');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   
   // Set up debounced search term
   useEffect(() => {
@@ -33,7 +24,7 @@ export default function Glossary() {
   }, [searchTerm]);
   
   // Fetch data from API
-  const { data: terms = [], isLoading, isError, refetch } = useQuery({
+  const { data: terms = [], isLoading, isError } = useQuery({
     queryKey: ['/api/glossary', selectedLetter, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -55,153 +46,53 @@ export default function Glossary() {
     enabled: true,
   });
   
-  // Get a list of all available first letters for the terms
-  const availableLetters = useMemo(() => {
-    if (!terms || terms.length === 0) return [];
-    const letters = new Set();
-    terms.forEach((term: GlossaryTermType) => {
-      if (term.term && term.term.length > 0) {
-        letters.add(term.term.charAt(0).toUpperCase());
-      }
-    });
-    return Array.from(letters) as string[];
-  }, [terms]);
-  
-  // Filtered and sorted terms
-  const filteredAndSortedTerms = useMemo(() => {
-    // Filter terms
-    const filtered = terms.filter((term: GlossaryTermType) => {
-      const matchesSearch = debouncedSearchTerm ? 
-        (term.term.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
-        term.definition.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) : true;
-      const matchesLetter = !selectedLetter || term.term.charAt(0).toUpperCase() === selectedLetter.toUpperCase();
-      
-      return matchesSearch && matchesLetter;
-    });
+  // Filtered terms (client-side filtering as backup if server filtering is incomplete)
+  const filteredTerms = terms.filter((term: GlossaryTermType) => {
+    const matchesSearch = debouncedSearchTerm ? 
+      (term.term.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
+       term.definition.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) : true;
+    const matchesLetter = !selectedLetter || term.term.charAt(0).toUpperCase() === selectedLetter.toUpperCase();
     
-    // Sort terms
-    return filtered.sort((a: GlossaryTermType, b: GlossaryTermType) => {
-      if (sortDirection === 'asc') {
-        return a.term.localeCompare(b.term);
-      } else {
-        return b.term.localeCompare(a.term);
-      }
-    });
-  }, [terms, selectedLetter, debouncedSearchTerm, sortDirection]);
-
-  // Clear search
-  const handleClearSearch = () => {
-    setSearchTerm('');
-    setDebouncedSearchTerm('');
-  };
-  
-  // Toggle sort direction
-  const toggleSortDirection = () => {
-    setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
-  };
+    return matchesSearch && matchesLetter;
+  });
 
   return (
-    <motion.section 
-      className="py-16 bg-gray-50 min-h-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
+    <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto">
           <div className="mb-3">
-            <motion.h2 
-              className="text-2xl md:text-3xl font-bold text-[#1B387A]"
-              initial={{ y: -20 }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              Legal Citation Glossary
-            </motion.h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#1B387A]">Legal Citation Glossary</h2>
           </div>
-          <motion.p 
-            className="text-gray-600 mb-8"
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            Browse or search terminology related to legal citation and research methodology in Nigeria.
-          </motion.p>
+          <p className="text-gray-600 mb-8">Browse or search terminology related to legal citation and research methodology in Nigeria.</p>
           
           {/* Search and Filter */}
-          <motion.div 
-            className="mb-8 flex flex-col md:flex-row gap-4"
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <div className="flex-grow relative">
-              <div className="relative flex items-center">
-                <Search className="h-5 w-5 text-gray-400 absolute left-3" />
+          <div className="mb-8 flex flex-col md:flex-row gap-4">
+            <div className="flex-grow">
+              <div className="relative">
                 <Input
                   type="text"
                   placeholder="Search terms..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-10 focus:ring-[#294D98] focus:border-[#294D98]"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
                 />
-                {searchTerm && (
-                  <button 
-                    onClick={handleClearSearch}
-                    className="absolute right-3 text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                )}
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
               </div>
             </div>
-            
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleSortDirection}
-              className="hidden md:flex"
-              title={`Sort ${sortDirection === 'asc' ? 'descending' : 'ascending'}`}
-            >
-              {sortDirection === 'asc' ? (
-                <SortAsc className="h-4 w-4" />
-              ) : (
-                <SortDesc className="h-4 w-4" />
-              )}
-            </Button>
-          </motion.div>
+            {/* Category filter removed */}
+          </div>
           
           {/* Alphabet Filter */}
-          <motion.div
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <AlphabetFilter 
-              selectedLetter={selectedLetter}
-              onSelectLetter={setSelectedLetter}
-              availableLetters={availableLetters}
-              showAll={true}
-            />
-          </motion.div>
+          <AlphabetFilter 
+            selectedLetter={selectedLetter}
+            onSelectLetter={setSelectedLetter}
+          />
           
           {/* Term List with Loading State */}
-          <motion.div 
-            className="mb-8"
-            initial={{ y: -10, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <div className="flex justify-between items-center border-b-2 border-[#C3CDE1] pb-2 mb-4">
-              <h3 className="text-xl font-semibold text-[#1B387A]">
-                {selectedLetter ? `Terms Starting with "${selectedLetter}"` : 'All Terms'}
-              </h3>
-              
-              <div className="flex items-center space-x-1 text-sm text-gray-500">
-                <BookOpen className="h-4 w-4" />
-                <span>{filteredAndSortedTerms.length} term{filteredAndSortedTerms.length !== 1 ? 's' : ''}</span>
-              </div>
-            </div>
+          <div className="mb-2">
+            <h3 className="text-xl font-semibold text-[#1B387A] border-b-2 border-[#C3CDE1] pb-2 mb-4">{selectedLetter}</h3>
             
             {isLoading ? (
               <div className="flex justify-center items-center p-12">
@@ -214,16 +105,16 @@ export default function Glossary() {
                 <Button 
                   variant="outline" 
                   className="mt-4"
-                  onClick={() => refetch()}
+                  onClick={() => window.location.reload()}
                 >
                   Retry
                 </Button>
               </div>
-            ) : filteredAndSortedTerms.length > 0 ? (
+            ) : filteredTerms.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
-                {filteredAndSortedTerms.map((term: GlossaryTermType) => (
+                {filteredTerms.map((term: GlossaryTermType, index: number) => (
                   <GlossaryTerm 
-                    key={term.id}
+                    key={index}
                     term={term.term}
                     definition={term.definition}
                   />
@@ -231,22 +122,14 @@ export default function Glossary() {
               </div>
             ) : (
               <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
-                <p className="text-gray-600">No terms found for this selection.</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => {
-                    setSelectedLetter('');
-                    setSearchTerm('');
-                  }}
-                >
-                  Clear Filters
-                </Button>
+                <p className="text-gray-600">No terms found for this selection. Try changing your filters.</p>
               </div>
             )}
-          </motion.div>
+          </div>
+          
+          {/* Pagination removed for now since API doesn't support it yet */}
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }
