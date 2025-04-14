@@ -68,8 +68,8 @@ export default function AdminDashboard() {
           </CardContent>
           <CardFooter className="pt-0">
             <Button asChild className="w-full">
-              <Link href="/admin/glossary">
-                Manage Glossary Terms
+              <Link href="/admin/glossary/add">
+                Add New Glossary Term
               </Link>
             </Button>
           </CardFooter>

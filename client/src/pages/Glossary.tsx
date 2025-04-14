@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import AlphabetFilter from '@/components/AlphabetFilter';
 import GlossaryTerm from '@/components/GlossaryTerm';
 import { GlossaryTerm as GlossaryTermType } from '@/lib/types';
@@ -10,7 +17,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function Glossary() {
   const [searchTerm, setSearchTerm] = useState('');
-  // Category filter removed as requested
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLetter, setSelectedLetter] = useState('A');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
@@ -24,8 +31,8 @@ export default function Glossary() {
   }, [searchTerm]);
   
   // Fetch data from API
-  const { data: terms = [], isLoading, isError, refetch } = useQuery({
-    queryKey: ['/api/glossary', selectedLetter, debouncedSearchTerm],
+  const { data: terms = [], isLoading, isError } = useQuery({
+    queryKey: ['/api/glossary', selectedLetter, selectedCategory, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
       
@@ -33,12 +40,13 @@ export default function Glossary() {
         params.append('letter', selectedLetter);
       }
       
+      if (selectedCategory !== 'all') {
+        params.append('category', selectedCategory);
+      }
+      
       if (debouncedSearchTerm) {
         params.append('query', debouncedSearchTerm);
       }
-      
-      // Add cache-busting timestamp to ensure fresh data
-      params.append('_t', Date.now().toString());
       
       const response = await fetch(`/api/glossary?${params.toString()}`);
       if (!response.ok) {
@@ -47,28 +55,17 @@ export default function Glossary() {
       return response.json();
     },
     enabled: true,
-    refetchOnWindowFocus: true,
-    refetchOnMount: true,
-    staleTime: 0 // Always consider data stale to force refresh
   });
-  
-  // Add an effect to periodically refresh data
-  useEffect(() => {
-    const interval = setInterval(() => {
-      refetch();
-    }, 5000); // Refresh every 5 seconds
-    
-    return () => clearInterval(interval);
-  }, [refetch]);
   
   // Filtered terms (client-side filtering as backup if server filtering is incomplete)
   const filteredTerms = terms.filter((term: GlossaryTermType) => {
     const matchesSearch = debouncedSearchTerm ? 
       (term.term.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
        term.definition.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) : true;
+    const matchesCategory = selectedCategory === 'all' || term.category === selectedCategory;
     const matchesLetter = !selectedLetter || term.term.charAt(0).toUpperCase() === selectedLetter.toUpperCase();
     
-    return matchesSearch && matchesLetter;
+    return matchesSearch && matchesCategory && matchesLetter;
   });
 
   return (
@@ -80,19 +77,37 @@ export default function Glossary() {
           </div>
           <p className="text-gray-600 mb-8">Browse or search terminology related to legal citation and research methodology in Nigeria.</p>
           
-          {/* Search */}
-          <div className="mb-8">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="Search terms..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-              />
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+          {/* Search and Filter */}
+          <div className="mb-8 flex flex-col md:flex-row gap-4">
+            <div className="flex-grow">
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search terms..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
+                />
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <Select 
+                value={selectedCategory} 
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="legal">Legal Term</SelectItem>
+                  <SelectItem value="citation">Citation Term</SelectItem>
+                  <SelectItem value="research">Research Term</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
@@ -124,12 +139,12 @@ export default function Glossary() {
               </div>
             ) : filteredTerms.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
-                {filteredTerms.map((term: GlossaryTermType) => (
+                {filteredTerms.map((term: GlossaryTermType, index: number) => (
                   <GlossaryTerm 
-                    key={term.id || term.term} // Use id if available, fallback to term text
+                    key={index}
                     term={term.term}
                     definition={term.definition}
-                    category={term.category || "general"}
+                    category={term.category}
                   />
                 ))}
               </div>

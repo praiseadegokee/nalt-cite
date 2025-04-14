@@ -87,15 +87,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiPrefix}/glossary`, async (req: Request, res: Response) => {
     try {
-      const { term, definition, category = 'general' } = req.body;
+      const { term, definition, category } = req.body;
       
       // Basic validation
-      if (!term || !definition) {
+      if (!term || !definition || !category) {
         return res.status(400).json({ 
           message: "Missing required fields", 
           details: {
             term: !term ? "Term is required" : null,
-            definition: !definition ? "Definition is required" : null
+            definition: !definition ? "Definition is required" : null,
+            category: !category ? "Category is required" : null
           }
         });
       }
@@ -111,62 +112,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating glossary term:", error);
       res.status(500).json({ message: "Failed to create glossary term" });
-    }
-  });
-  
-  app.put(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      const { term, definition, category = 'general' } = req.body;
-      
-      // Basic validation
-      if (!term || !definition) {
-        return res.status(400).json({ 
-          message: "Missing required fields", 
-          details: {
-            term: !term ? "Term is required" : null,
-            definition: !definition ? "Definition is required" : null
-          }
-        });
-      }
-      
-      // Check if the term exists
-      const existingTerm = await storage.getGlossaryTerm(id);
-      if (!existingTerm) {
-        return res.status(404).json({ message: "Glossary term not found" });
-      }
-      
-      // Update the term
-      const updatedTerm = await storage.updateGlossaryTerm(id, {
-        term,
-        definition,
-        category
-      });
-      
-      res.json(updatedTerm);
-    } catch (error) {
-      console.error(`Error updating glossary term:`, error);
-      res.status(500).json({ message: "Failed to update glossary term" });
-    }
-  });
-  
-  app.delete(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
-    try {
-      const id = parseInt(req.params.id);
-      
-      // Check if the term exists
-      const existingTerm = await storage.getGlossaryTerm(id);
-      if (!existingTerm) {
-        return res.status(404).json({ message: "Glossary term not found" });
-      }
-      
-      // Delete the term
-      await storage.deleteGlossaryTerm(id);
-      
-      res.status(204).send();
-    } catch (error) {
-      console.error(`Error deleting glossary term:`, error);
-      res.status(500).json({ message: "Failed to delete glossary term" });
     }
   });
 
