@@ -50,7 +50,7 @@ export default function Resources() {
   };
 
   return (
-    <Layout>
+    <>
       {/* NALT Guidelines Section */}
       <GuidelineDownloads />
       
@@ -171,6 +171,6 @@ export default function Resources() {
           </div>
         </div>
       </section>
-    </Layout>
+    </>
   );
 }
