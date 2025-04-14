@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import AlphabetFilter from '@/components/AlphabetFilter';
 import GlossaryTerm from '@/components/GlossaryTerm';
 import { GlossaryTerm as GlossaryTermType } from '@/lib/types';
@@ -32,16 +25,12 @@ export default function Glossary() {
   
   // Fetch data from API
   const { data: terms = [], isLoading, isError } = useQuery({
-    queryKey: ['/api/glossary', selectedLetter, selectedCategory, debouncedSearchTerm],
+    queryKey: ['/api/glossary', selectedLetter, debouncedSearchTerm],
     queryFn: async () => {
       const params = new URLSearchParams();
       
       if (selectedLetter) {
         params.append('letter', selectedLetter);
-      }
-      
-      if (selectedCategory !== 'all') {
-        params.append('category', selectedCategory);
       }
       
       if (debouncedSearchTerm) {
@@ -62,10 +51,9 @@ export default function Glossary() {
     const matchesSearch = debouncedSearchTerm ? 
       (term.term.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) || 
        term.definition.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) : true;
-    const matchesCategory = selectedCategory === 'all' || term.category === selectedCategory;
     const matchesLetter = !selectedLetter || term.term.charAt(0).toUpperCase() === selectedLetter.toUpperCase();
     
-    return matchesSearch && matchesCategory && matchesLetter;
+    return matchesSearch && matchesLetter;
   });
 
   return (
@@ -77,37 +65,19 @@ export default function Glossary() {
           </div>
           <p className="text-gray-600 mb-8">Browse or search terminology related to legal citation and research methodology in Nigeria.</p>
           
-          {/* Search and Filter */}
-          <div className="mb-8 flex flex-col md:flex-row gap-4">
-            <div className="flex-grow">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search terms..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
-                />
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-            </div>
-            <div>
-              <Select 
-                value={selectedCategory} 
-                onValueChange={setSelectedCategory}
-              >
-                <SelectTrigger className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="legal">Legal Term</SelectItem>
-                  <SelectItem value="citation">Citation Term</SelectItem>
-                  <SelectItem value="research">Research Term</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Search */}
+          <div className="mb-8">
+            <div className="relative">
+              <Input
+                type="text"
+                placeholder="Search terms..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
           
@@ -144,7 +114,7 @@ export default function Glossary() {
                     key={term.id || term.term} // Use id if available, fallback to term text
                     term={term.term}
                     definition={term.definition}
-                    category={term.category}
+                    category={term.category || "general"}
                   />
                 ))}
               </div>

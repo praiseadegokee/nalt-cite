@@ -1,7 +1,7 @@
 interface GlossaryTermProps {
   term: string;
   definition: string;
-  category: string;
+  category?: string;
 }
 
 export default function GlossaryTerm({ term, definition, category }: GlossaryTermProps) {
@@ -16,9 +16,11 @@ export default function GlossaryTerm({ term, definition, category }: GlossaryTer
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 hover:shadow-md transition">
       <h4 className="font-bold text-[#294D98] mb-1">{term}</h4>
       <p className="text-gray-700">{definition}</p>
-      <span className="inline-block mt-2 text-xs font-medium py-1 px-2 rounded bg-[#C3CDE1]/40 text-[#1B387A]">
-        {categoryDisplayMap[category] || category}
-      </span>
+      {category && (
+        <span className="inline-block mt-2 text-xs font-medium py-1 px-2 rounded bg-[#C3CDE1]/40 text-[#1B387A]">
+          {category in categoryDisplayMap ? categoryDisplayMap[category as keyof typeof categoryDisplayMap] : category}
+        </span>
+      )}
     </div>
   );
 }
