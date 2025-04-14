@@ -1,6 +1,10 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { dbStorage } from "./dbStorage";
+
+// Use database storage instead of memory storage
+const activeStorage = dbStorage;
 import path from "path";
 import fs from "fs";
 import multer from "multer";
@@ -59,9 +63,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       let terms;
       if (query) {
-        terms = await storage.searchGlossaryTerms(query as string);
+        terms = await activeStorage.searchGlossaryTerms(query as string);
       } else {
-        terms = await storage.getGlossaryTerms(letter as string, category as string);
+        terms = await activeStorage.getGlossaryTerms(letter as string, category as string);
       }
       res.json(terms);
     } catch (error) {
@@ -74,7 +78,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const id = parseInt(req.params.id);
     
     try {
-      const term = await storage.getGlossaryTerm(id);
+      const term = await activeStorage.getGlossaryTerm(id);
       if (!term) {
         return res.status(404).json({ message: "Glossary term not found" });
       }
@@ -101,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Create the new glossary term
-      const newTerm = await storage.createGlossaryTerm({
+      const newTerm = await activeStorage.createGlossaryTerm({
         term,
         definition
       });
@@ -131,7 +135,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update the glossary term
-      const updatedTerm = await storage.updateGlossaryTerm(id, {
+      const updatedTerm = await activeStorage.updateGlossaryTerm(id, {
         term,
         definition
       });
@@ -151,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     try {
-      const result = await storage.deleteGlossaryTerm(id);
+      const result = await activeStorage.deleteGlossaryTerm(id);
       
       if (!result) {
         return res.status(404).json({ message: "Glossary term not found" });
@@ -167,7 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // FAQ API endpoints
   app.get(`${apiPrefix}/faq`, async (req: Request, res: Response) => {
     try {
-      const faqItems = await storage.getFaqItems();
+      const faqItems = await activeStorage.getFaqItems();
       res.json(faqItems);
     } catch (error) {
       console.error("Error fetching FAQ items:", error);
@@ -178,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blog API endpoints
   app.get(`${apiPrefix}/blog/posts`, async (req: Request, res: Response) => {
     try {
-      const posts = await storage.getBlogPosts();
+      const posts = await activeStorage.getBlogPosts();
       res.json(posts);
     } catch (error) {
       console.error("Error fetching blog posts:", error);
@@ -191,7 +195,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { title, excerpt, content, date, author, readTime, category, tags } = req.body;
       
       // Create the blog post
-      const newPost = await storage.createBlogPost({
+      const newPost = await activeStorage.createBlogPost({
         title,
         excerpt,
         content,
@@ -216,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const id = parseInt(req.params.id);
     
     try {
-      const post = await storage.getBlogPost(id);
+      const post = await activeStorage.getBlogPost(id);
       if (!post) {
         return res.status(404).json({ message: "Blog post not found" });
       }
@@ -232,7 +236,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const { category } = req.query;
     
     try {
-      const resources = await storage.getResources(category as string);
+      const resources = await activeStorage.getResources(category as string);
       res.json(resources);
     } catch (error) {
       console.error("Error fetching resources:", error);
