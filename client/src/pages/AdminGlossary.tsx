@@ -112,10 +112,79 @@ export default function AdminGlossary() {
       });
     },
   });
+  
+  // Update mutation
+  const updateGlossaryTerm = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: GlossaryTermFormValues }) => {
+      const response = await fetch(`/api/glossary/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update glossary term');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
+      toast({
+        title: 'Success',
+        description: 'Glossary term has been updated',
+      });
+      setIsOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update glossary term',
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Delete mutation
+  const deleteGlossaryTerm = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/glossary/${id}`, {
+        method: 'DELETE',
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete glossary term');
+      }
+      
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
+      toast({
+        title: 'Success',
+        description: 'Glossary term has been deleted',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to delete glossary term',
+        variant: 'destructive',
+      });
+    },
+  });
 
   // Handle form submission
   function onSubmit(data: GlossaryTermFormValues) {
-    createGlossaryTerm.mutate(data);
+    if (editingTerm) {
+      updateGlossaryTerm.mutate({ id: editingTerm.id!, data });
+    } else {
+      createGlossaryTerm.mutate(data);
+    }
   }
 
   // Reset form and open dialog

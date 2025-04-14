@@ -23,6 +23,8 @@ export interface IStorage {
   getGlossaryTerms(letter?: string, category?: string): Promise<GlossaryTerm[]>;
   getGlossaryTerm(id: number): Promise<GlossaryTerm | undefined>;
   createGlossaryTerm(term: InsertGlossaryTerm): Promise<GlossaryTerm>;
+  updateGlossaryTerm(id: number, term: InsertGlossaryTerm): Promise<GlossaryTerm>;
+  deleteGlossaryTerm(id: number): Promise<void>;
   searchGlossaryTerms(query: string): Promise<GlossaryTerm[]>;
   
   // Blog post methods
@@ -226,6 +228,28 @@ export class MemStorage implements IStorage {
       term.term.toLowerCase().includes(query.toLowerCase()) || 
       term.definition.toLowerCase().includes(query.toLowerCase())
     );
+  }
+  
+  async updateGlossaryTerm(id: number, updates: InsertGlossaryTerm): Promise<GlossaryTerm> {
+    const existing = await this.getGlossaryTerm(id);
+    
+    if (!existing) {
+      throw new Error(`Glossary term with id ${id} not found`);
+    }
+    
+    const updated: GlossaryTerm = { ...updates, id };
+    this.glossaryTerms.set(id, updated);
+    return updated;
+  }
+  
+  async deleteGlossaryTerm(id: number): Promise<void> {
+    const exists = this.glossaryTerms.has(id);
+    
+    if (!exists) {
+      throw new Error(`Glossary term with id ${id} not found`);
+    }
+    
+    this.glossaryTerms.delete(id);
   }
   
   // Blog post methods
