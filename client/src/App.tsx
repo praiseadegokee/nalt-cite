@@ -7,6 +7,7 @@ import Layout from "@/components/Layout";
 import Home from "@/pages/Home";
 import CitationGenerator from "@/pages/CitationGenerator";
 import Glossary from "@/pages/Glossary";
+import AddGlossaryTerm from "@/pages/AddGlossaryTerm";
 import FAQ from "@/pages/FAQ";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
@@ -22,6 +23,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/citation-generator" component={CitationGenerator} />
         <Route path="/glossary" component={Glossary} />
+        <Route path="/glossary/add" component={AddGlossaryTerm} />
         <Route path="/faq" component={FAQ} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:id" component={BlogPost} />

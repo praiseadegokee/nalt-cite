@@ -84,6 +84,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch glossary term" });
     }
   });
+  
+  app.post(`${apiPrefix}/glossary`, async (req: Request, res: Response) => {
+    try {
+      const { term, definition, category } = req.body;
+      
+      // Basic validation
+      if (!term || !definition || !category) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            term: !term ? "Term is required" : null,
+            definition: !definition ? "Definition is required" : null,
+            category: !category ? "Category is required" : null
+          }
+        });
+      }
+      
+      // Create the new glossary term
+      const newTerm = await storage.createGlossaryTerm({
+        term,
+        definition,
+        category
+      });
+      
+      res.status(201).json(newTerm);
+    } catch (error) {
+      console.error("Error creating glossary term:", error);
+      res.status(500).json({ message: "Failed to create glossary term" });
+    }
+  });
 
   // FAQ API endpoints
   app.get(`${apiPrefix}/faq`, async (req: Request, res: Response) => {
