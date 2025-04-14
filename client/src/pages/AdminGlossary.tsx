@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,16 +56,29 @@ export default function AdminGlossary() {
   const queryClient = useQueryClient();
 
   // Fetch glossary terms
-  const { data: terms = [], isLoading } = useQuery({
-    queryKey: ['/api/glossary'],
+  const { data: terms = [], isLoading, refetch } = useQuery({
+    queryKey: ['/api/glossary', 'admin'],
     queryFn: async () => {
-      const response = await fetch('/api/glossary');
+      // Add cache-busting query parameter
+      const response = await fetch(`/api/glossary?_t=${Date.now()}`);
       if (!response.ok) {
         throw new Error('Failed to fetch glossary terms');
       }
       return response.json();
     },
+    staleTime: 0, // Always consider data stale to force refresh
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
+  
+  // Use effect to periodically refresh data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      refetch();
+    }, 5000); // Refresh every 5 seconds
+    
+    return () => clearInterval(interval);
+  }, [refetch]);
 
   // Form setup
   const form = useForm<GlossaryTermFormValues>({
@@ -94,16 +107,31 @@ export default function AdminGlossary() {
       
       return response.json();
     },
-    onSuccess: () => {
-      // Properly invalidate all glossary related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
-      // Force refetch of any glossary queries regardless of parameters
+    onSuccess: (newTerm) => {
+      // Invalidate and refresh all glossary queries
+      queryClient.invalidateQueries();
       queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
+      
+      // Also manually update the cache to ensure immediate update
+      queryClient.setQueryData(['/api/glossary', 'admin'], (oldData: any) => {
+        return oldData ? [...oldData, newTerm] : [newTerm];
+      });
+      
+      // Update the regular glossary page cache too
+      queryClient.setQueryData(['/api/glossary'], (oldData: any) => {
+        return oldData ? [...oldData, newTerm] : [newTerm];
+      });
+      
       toast({
         title: 'Success',
         description: 'Glossary term has been added',
       });
       setIsOpen(false);
+      
+      // Manually trigger refetch after a short delay
+      setTimeout(() => {
+        refetch();
+      }, 500);
     },
     onError: (error: Error) => {
       toast({
@@ -132,16 +160,37 @@ export default function AdminGlossary() {
       
       return response.json();
     },
-    onSuccess: () => {
-      // Properly invalidate all glossary related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
-      // Force refetch of any glossary queries regardless of parameters
+    onSuccess: (updatedTerm) => {
+      // Invalidate and refresh all glossary queries
+      queryClient.invalidateQueries();
       queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
+      
+      // Also manually update the cache to ensure immediate update
+      queryClient.setQueryData(['/api/glossary', 'admin'], (oldData: any) => {
+        if (!oldData) return [updatedTerm];
+        return oldData.map((term: GlossaryTerm) => 
+          term.id === updatedTerm.id ? updatedTerm : term
+        );
+      });
+      
+      // Update the regular glossary page cache too
+      queryClient.setQueryData(['/api/glossary'], (oldData: any) => {
+        if (!oldData) return [updatedTerm];
+        return oldData.map((term: GlossaryTerm) => 
+          term.id === updatedTerm.id ? updatedTerm : term
+        );
+      });
+      
       toast({
         title: 'Success',
         description: 'Glossary term has been updated',
       });
       setIsOpen(false);
+      
+      // Manually trigger refetch after a short delay
+      setTimeout(() => {
+        refetch();
+      }, 500);
     },
     onError: (error: Error) => {
       toast({
@@ -166,15 +215,32 @@ export default function AdminGlossary() {
       
       return true;
     },
-    onSuccess: () => {
-      // Properly invalidate all glossary related queries
-      queryClient.invalidateQueries({ queryKey: ['/api/glossary'] });
-      // Force refetch of any glossary queries regardless of parameters
+    onSuccess: (_data, deletedId) => {
+      // Invalidate and refresh all glossary queries
+      queryClient.invalidateQueries();
       queryClient.refetchQueries({ queryKey: ['/api/glossary'] });
+      
+      // Also manually update the cache to ensure immediate update
+      queryClient.setQueryData(['/api/glossary', 'admin'], (oldData: any) => {
+        if (!oldData) return [];
+        return oldData.filter((term: GlossaryTerm) => term.id !== deletedId);
+      });
+      
+      // Update the regular glossary page cache too
+      queryClient.setQueryData(['/api/glossary'], (oldData: any) => {
+        if (!oldData) return [];
+        return oldData.filter((term: GlossaryTerm) => term.id !== deletedId);
+      });
+      
       toast({
         title: 'Success',
         description: 'Glossary term has been deleted',
       });
+      
+      // Manually trigger refetch after a short delay
+      setTimeout(() => {
+        refetch();
+      }, 500);
     },
     onError: (error: Error) => {
       toast({
