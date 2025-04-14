@@ -53,8 +53,8 @@ export default function Blog() {
                     </div>
                     <div className="p-6 md:p-8 md:w-3/5">
                       <div className="uppercase tracking-wide text-sm text-[#294D98] font-semibold">Featured Article</div>
-                      <Link href={`/blog/${featuredPost.id}`}>
-                        <a className="block mt-1 text-xl font-semibold text-gray-900 hover:underline">{featuredPost.title}</a>
+                      <Link href={`/blog/${featuredPost.id}`} className="block mt-1 text-xl font-semibold text-gray-900 hover:underline">
+                        {featuredPost.title}
                       </Link>
                       <p className="mt-3 text-gray-600">{featuredPost.excerpt}</p>
                       <div className="mt-4 flex items-center">

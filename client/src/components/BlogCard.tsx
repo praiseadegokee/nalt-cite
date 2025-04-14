@@ -16,8 +16,8 @@ export default function BlogCard({ post }: BlogCardProps) {
             {new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
           </time>
         </div>
-        <Link href={`/blog/${post.id}`}>
-          <a className="block text-lg font-semibold text-gray-900 hover:underline mb-2">{post.title}</a>
+        <Link href={`/blog/${post.id}`} className="block text-lg font-semibold text-gray-900 hover:underline mb-2">
+          {post.title}
         </Link>
         <p className="text-gray-600 text-sm">{post.excerpt}</p>
         <div className="mt-4 flex items-center">

@@ -43,11 +43,9 @@ export default function BlogPost() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           {/* Back to blog link */}
-          <Link href="/blog">
-            <a className="inline-flex items-center text-[#294D98] hover:text-[#1B387A] mb-8">
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back to all articles
-            </a>
+          <Link href="/blog" className="inline-flex items-center text-[#294D98] hover:text-[#1B387A] mb-8">
+            <ChevronLeft className="h-4 w-4 mr-1" />
+            Back to all articles
           </Link>
           
           {/* Article header */}
@@ -88,7 +86,7 @@ export default function BlogPost() {
             <div className="mt-10 pt-6 border-t border-gray-200">
               <h2 className="text-sm font-semibold text-gray-900 mb-3">Related Topics:</h2>
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag, index) => (
+                {post.tags.map((tag: string, index: number) => (
                   <span 
                     key={index} 
                     className="text-xs font-medium py-1 px-2 rounded-full bg-gray-100 text-gray-800"
