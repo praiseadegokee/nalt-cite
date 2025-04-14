@@ -46,6 +46,7 @@ export default function EncyclopediaForm() {
                 {...field} 
                 placeholder="e.g., Encyclopedia of Nigerian Law" 
                 className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#294D98] focus:border-[#294D98]"
+                required
               />
             </FormControl>
             <FormMessage />

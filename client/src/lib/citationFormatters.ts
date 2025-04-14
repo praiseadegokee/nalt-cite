@@ -449,8 +449,13 @@ export class LectureCitationFormatter extends CitationFormatter {
  */
 export class EncyclopediaCitationFormatter extends CitationFormatter {
   format(fields: EncyclopediaFields): string {
+    // Determine author display - handle empty authors array more elegantly
+    const authorText = (fields.authors && fields.authors.length > 0) ? 
+      formatAuthors(fields.authors) : 
+      "Author Unknown";
+    
     // Format citation for encyclopedia entry
-    let citation = `${formatAuthors(fields.authors)}, '${fields.title}' in <i>${fields.encyclopediaTitle}</i>`;
+    let citation = `${authorText}, '${fields.title}' in <i>${fields.encyclopediaTitle || 'Encyclopedia'}</i>`;
     
     // Add volume if provided
     if (fields.volume) {

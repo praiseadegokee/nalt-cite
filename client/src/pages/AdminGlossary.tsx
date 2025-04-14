@@ -25,6 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -295,6 +296,9 @@ export default function AdminGlossary() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Delete Glossary Term</DialogTitle>
+            <DialogDescription>
+              Confirm deletion of the selected glossary term.
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             Are you sure you want to delete the term "<strong>{termToDelete?.term}</strong>"? 
@@ -329,6 +333,9 @@ export default function AdminGlossary() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Glossary Term</DialogTitle>
+            <DialogDescription>
+              Update the term's name and definition.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
