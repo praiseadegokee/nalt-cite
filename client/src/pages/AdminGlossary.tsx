@@ -8,6 +8,9 @@ import {
   Edit, 
   Trash2,
   Loader2,
+  BookOpen,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,16 +30,11 @@ import {
   DialogFooter,
   DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import { motion } from 'framer-motion';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { GlossaryTerm } from '@shared/schema';
 
 export default function AdminGlossary() {
@@ -50,6 +48,7 @@ export default function AdminGlossary() {
     term: '',
     definition: '',
   });
+  const [formError, setFormError] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -58,6 +57,7 @@ export default function AdminGlossary() {
     data: terms = [],
     isLoading,
     isError,
+    refetch
   } = useQuery({
     queryKey: ['/api/glossary'],
     queryFn: async () => {
@@ -65,16 +65,18 @@ export default function AdminGlossary() {
       if (!response.ok) {
         throw new Error('Failed to fetch glossary terms');
       }
-      return response.json();
+      return response.json() as Promise<GlossaryTerm[]>;
     },
   });
 
-  // Filtered terms based on search input
-  const filteredTerms = terms.filter(
-    (term: GlossaryTerm) =>
-      term.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      term.definition.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtered and sorted terms based on search input
+  const filteredTerms = terms
+    .filter(
+      (term: GlossaryTerm) =>
+        term.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        term.definition.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a: GlossaryTerm, b: GlossaryTerm) => a.term.localeCompare(b.term));
 
   // Delete term mutation
   const deleteMutation = useMutation({
@@ -117,6 +119,12 @@ export default function AdminGlossary() {
       id: number;
       data: { term: string; definition: string };
     }) => {
+      setFormError(null);
+
+      if (!data.term || !data.definition) {
+        throw new Error('Term name and definition are required');
+      }
+
       const response = await fetch(`/api/glossary/${id}`, {
         method: 'PUT',
         headers: {
@@ -143,6 +151,7 @@ export default function AdminGlossary() {
       setTermToEdit(null);
     },
     onError: (error: Error) => {
+      setFormError(error.message || 'Failed to update term. Please try again.');
       toast({
         title: 'Error',
         description: error.message || 'Failed to update term. Please try again.',
@@ -163,6 +172,7 @@ export default function AdminGlossary() {
   };
 
   const handleEditClick = (term: GlossaryTerm) => {
+    setFormError(null);
     setTermToEdit(term);
     setEditFormData({
       term: term.term,
@@ -172,26 +182,31 @@ export default function AdminGlossary() {
   };
 
   const handleSaveEdit = () => {
-    if (termToEdit && editFormData.term && editFormData.definition) {
+    if (termToEdit) {
       updateMutation.mutate({
         id: termToEdit.id,
         data: editFormData,
       });
-    } else {
-      toast({
-        title: 'Validation Error',
-        description: 'Term name and definition are required.',
-        variant: 'destructive',
-      });
     }
   };
 
-  // This function was used to map category to display name 
-  // (removed as category is no longer used)
+  const handleClearSearch = () => {
+    setSearchTerm('');
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+    <motion.div 
+      className="container mx-auto px-4 py-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div 
+        className="flex justify-between items-center mb-6"
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+      >
         <Button
           variant="ghost"
           className="text-[#294D98] flex items-center"
@@ -207,10 +222,18 @@ export default function AdminGlossary() {
           <Plus className="mr-2 h-4 w-4" />
           Add New Term
         </Button>
-      </div>
+      </motion.div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-2xl font-bold text-[#1B387A] mb-6">Manage Glossary Terms</h1>
+      <motion.div 
+        className="bg-white rounded-lg shadow p-6"
+        initial={{ y: 10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <div className="flex items-center mb-6">
+          <BookOpen className="h-6 w-6 text-[#294D98] mr-2" />
+          <h1 className="text-2xl font-bold text-[#1B387A]">Manage Glossary Terms</h1>
+        </div>
 
         {/* Search Bar */}
         <div className="relative mb-6">
@@ -219,8 +242,24 @@ export default function AdminGlossary() {
             placeholder="Search terms..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            className="pl-10 pr-10"
           />
+          {searchTerm && (
+            <button 
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Count Display */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-sm text-gray-500">
+            {filteredTerms.length} term{filteredTerms.length !== 1 ? 's' : ''} 
+            {searchTerm ? ` matching "${searchTerm}"` : ''}
+          </div>
         </div>
 
         {/* Terms Table */}
@@ -231,10 +270,14 @@ export default function AdminGlossary() {
           </div>
         ) : isError ? (
           <div className="text-center py-8">
-            <p className="text-red-600 mb-2">Failed to load glossary terms</p>
+            <Alert variant="destructive" className="max-w-md mx-auto mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>Failed to load glossary terms</AlertDescription>
+            </Alert>
             <Button
               variant="outline"
-              onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/glossary'] })}
+              onClick={() => refetch()}
             >
               Retry
             </Button>
@@ -271,6 +314,7 @@ export default function AdminGlossary() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEditClick(term)}
+                          title="Edit term"
                         >
                           <Edit className="h-4 w-4 text-gray-500" />
                         </Button>
@@ -278,6 +322,7 @@ export default function AdminGlossary() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteClick(term)}
+                          title="Delete term"
                         >
                           <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
@@ -289,7 +334,7 @@ export default function AdminGlossary() {
             </Table>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
@@ -337,6 +382,15 @@ export default function AdminGlossary() {
               Update the term's name and definition.
             </DialogDescription>
           </DialogHeader>
+          
+          {formError && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{formError}</AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="term">Term</Label>
@@ -348,6 +402,7 @@ export default function AdminGlossary() {
                 }
                 placeholder="Enter term name"
               />
+              {!editFormData.term && <p className="text-sm text-red-500">Term is required</p>}
             </div>
 
             <div className="grid gap-2">
@@ -361,8 +416,10 @@ export default function AdminGlossary() {
                 placeholder="Enter definition"
                 rows={5}
               />
+              {!editFormData.definition && <p className="text-sm text-red-500">Definition is required</p>}
             </div>
           </div>
+          
           <DialogFooter className="flex justify-between sm:justify-between">
             <Button
               type="button"
@@ -374,7 +431,7 @@ export default function AdminGlossary() {
             <Button
               type="button"
               onClick={handleSaveEdit}
-              disabled={updateMutation.isPending}
+              disabled={updateMutation.isPending || !editFormData.term || !editFormData.definition}
               className="ml-2 bg-[#294D98] hover:bg-[#1B387A]"
             >
               {updateMutation.isPending && (
@@ -385,6 +442,6 @@ export default function AdminGlossary() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </motion.div>
   );
 }

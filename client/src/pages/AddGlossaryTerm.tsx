@@ -9,13 +9,21 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, ArrowLeft } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Loader2, ArrowLeft, BookOpen, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Define the form validation schema
 const formSchema = z.object({
-  term: z.string().min(1, 'Term is required').max(100, 'Term must be less than 100 characters'),
-  definition: z.string().min(1, 'Definition is required').max(1000, 'Definition must be less than 1000 characters'),
+  term: z.string()
+    .min(1, 'Term is required')
+    .max(100, 'Term must be less than 100 characters')
+    .refine(val => /^[A-Za-z]/.test(val), {
+      message: "Term must start with a letter"
+    }),
+  definition: z.string()
+    .min(1, 'Definition is required')
+    .max(1000, 'Definition must be less than 1000 characters'),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -24,6 +32,7 @@ export default function AddGlossaryTerm() {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [formError, setFormError] = useState<string | null>(null);
   
   // Initialize form with react-hook-form
   const form = useForm<FormValues>({
@@ -32,6 +41,7 @@ export default function AddGlossaryTerm() {
       term: '',
       definition: '',
     },
+    mode: 'onChange',
   });
   
   // Mutation for adding a new glossary term
@@ -63,6 +73,7 @@ export default function AddGlossaryTerm() {
       setLocation('/admin/glossary');
     },
     onError: (error: Error) => {
+      setFormError(error.message || 'Failed to add glossary term. Please try again.');
       toast({
         title: 'Error',
         description: error.message || 'Failed to add glossary term. Please try again.',
@@ -72,14 +83,25 @@ export default function AddGlossaryTerm() {
   });
   
   const onSubmit = (data: FormValues) => {
+    setFormError(null);
     mutation.mutate(data);
   };
   
   return (
-    <section className="py-16 bg-gray-50">
+    <motion.section 
+      className="py-16 bg-gray-50 min-h-screen"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
-          <div className="mb-6">
+          <motion.div 
+            className="mb-6"
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
             <Button 
               variant="ghost" 
               className="text-[#294D98] flex items-center" 
@@ -88,11 +110,33 @@ export default function AddGlossaryTerm() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Glossary Management
             </Button>
-          </div>
+          </motion.div>
           
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 text-[#1B387A]">Add New Glossary Term</h2>
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <div className="flex items-center mb-6">
+              <BookOpen className="h-7 w-7 text-[#294D98] mr-2" />
+              <h2 className="text-2xl md:text-3xl font-bold text-[#1B387A]">Add New Glossary Term</h2>
+            </div>
+          </motion.div>
           
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <motion.div 
+            className="bg-white p-6 rounded-lg shadow-sm border border-gray-200"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            {formError && (
+              <Alert variant="destructive" className="mb-6">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
@@ -137,24 +181,40 @@ export default function AddGlossaryTerm() {
                   )}
                 />
                 
-                
-                <Button 
-                  type="submit" 
-                  className="bg-[#294D98] hover:bg-[#1B387A] w-full"
-                  disabled={mutation.isPending}
-                >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Adding Term...
-                    </>
-                  ) : 'Add Glossary Term'}
-                </Button>
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    className="bg-[#294D98] hover:bg-[#1B387A] w-full"
+                    disabled={mutation.isPending || !form.formState.isValid}
+                  >
+                    {mutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Adding Term...
+                      </>
+                    ) : 'Add Glossary Term'}
+                  </Button>
+                </div>
               </form>
             </Form>
-          </div>
+          </motion.div>
+          
+          <motion.div
+            className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h3 className="text-sm font-medium text-blue-800 mb-2">Tips for creating quality glossary terms:</h3>
+            <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
+              <li>Make terms clear and concise</li>
+              <li>Use proper legal terminology and Nigerian legal context</li>
+              <li>Include relevant citation examples when helpful</li>
+              <li>Define abbreviations and Latin phrases when used</li>
+            </ul>
+          </motion.div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
