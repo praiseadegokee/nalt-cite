@@ -113,6 +113,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to create glossary term" });
     }
   });
+  
+  // Update glossary term
+  app.put(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const { term, definition, category = '' } = req.body;
+      
+      // Basic validation
+      if (!term || !definition) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            term: !term ? "Term is required" : null,
+            definition: !definition ? "Definition is required" : null
+          }
+        });
+      }
+      
+      // Update the glossary term
+      const updatedTerm = await storage.updateGlossaryTerm(id, {
+        term,
+        definition,
+        category
+      });
+      
+      if (!updatedTerm) {
+        return res.status(404).json({ message: "Glossary term not found" });
+      }
+      
+      res.json(updatedTerm);
+    } catch (error) {
+      console.error(`Error updating glossary term ${id}:`, error);
+      res.status(500).json({ message: "Failed to update glossary term" });
+    }
+  });
+  
+  // Delete glossary term
+  app.delete(`${apiPrefix}/glossary/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const result = await storage.deleteGlossaryTerm(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "Glossary term not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error(`Error deleting glossary term ${id}:`, error);
+      res.status(500).json({ message: "Failed to delete glossary term" });
+    }
+  });
 
   // FAQ API endpoints
   app.get(`${apiPrefix}/faq`, async (req: Request, res: Response) => {

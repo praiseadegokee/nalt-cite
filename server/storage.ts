@@ -23,6 +23,8 @@ export interface IStorage {
   getGlossaryTerms(letter?: string, category?: string): Promise<GlossaryTerm[]>;
   getGlossaryTerm(id: number): Promise<GlossaryTerm | undefined>;
   createGlossaryTerm(term: InsertGlossaryTerm): Promise<GlossaryTerm>;
+  updateGlossaryTerm(id: number, term: InsertGlossaryTerm): Promise<GlossaryTerm | undefined>;
+  deleteGlossaryTerm(id: number): Promise<boolean>;
   searchGlossaryTerms(query: string): Promise<GlossaryTerm[]>;
   
   // Blog post methods
@@ -214,9 +216,42 @@ export class MemStorage implements IStorage {
   
   async createGlossaryTerm(term: InsertGlossaryTerm): Promise<GlossaryTerm> {
     const id = this.nextId.glossaryTerms++;
-    const glossaryTerm: GlossaryTerm = { ...term, id };
+    const glossaryTerm: GlossaryTerm = { 
+      ...term, 
+      id,
+      category: term.category || null
+    };
     this.glossaryTerms.set(id, glossaryTerm);
     return glossaryTerm;
+  }
+  
+  async updateGlossaryTerm(id: number, term: InsertGlossaryTerm): Promise<GlossaryTerm | undefined> {
+    // Check if the term exists
+    const existingTerm = this.glossaryTerms.get(id);
+    if (!existingTerm) {
+      return undefined;
+    }
+    
+    // Update the term
+    const updatedTerm: GlossaryTerm = {
+      ...existingTerm,
+      term: term.term,
+      definition: term.definition,
+      category: term.category || null
+    };
+    
+    this.glossaryTerms.set(id, updatedTerm);
+    return updatedTerm;
+  }
+  
+  async deleteGlossaryTerm(id: number): Promise<boolean> {
+    // Check if the term exists
+    if (!this.glossaryTerms.has(id)) {
+      return false;
+    }
+    
+    // Delete the term
+    return this.glossaryTerms.delete(id);
   }
   
   async searchGlossaryTerms(query: string): Promise<GlossaryTerm[]> {
