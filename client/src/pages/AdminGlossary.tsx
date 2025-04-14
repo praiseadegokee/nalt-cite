@@ -48,7 +48,6 @@ export default function AdminGlossary() {
   const [editFormData, setEditFormData] = useState({
     term: '',
     definition: '',
-    category: '',
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -115,7 +114,7 @@ export default function AdminGlossary() {
       data,
     }: {
       id: number;
-      data: { term: string; definition: string; category: string };
+      data: { term: string; definition: string };
     }) => {
       const response = await fetch(`/api/glossary/${id}`, {
         method: 'PUT',
@@ -167,7 +166,6 @@ export default function AdminGlossary() {
     setEditFormData({
       term: term.term,
       definition: term.definition,
-      category: term.category || '',
     });
     setIsEditDialogOpen(true);
   };
@@ -187,16 +185,8 @@ export default function AdminGlossary() {
     }
   };
 
-  // Map category to display name
-  const getCategoryDisplay = (category: string | null) => {
-    const categoryMap: Record<string, string> = {
-      'legal': 'Legal Term',
-      'citation': 'Citation Term',
-      'research': 'Research Term',
-    };
-    
-    return category ? (categoryMap[category] || category) : '';
-  };
+  // This function was used to map category to display name 
+  // (removed as category is no longer used)
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -261,7 +251,6 @@ export default function AdminGlossary() {
               <TableHeader>
                 <TableRow>
                   <TableHead className="w-[200px]">Term</TableHead>
-                  <TableHead className="w-[100px]">Category</TableHead>
                   <TableHead>Definition</TableHead>
                   <TableHead className="w-[120px] text-right">Actions</TableHead>
                 </TableRow>
@@ -270,7 +259,6 @@ export default function AdminGlossary() {
                 {filteredTerms.map((term: GlossaryTerm) => (
                   <TableRow key={term.id}>
                     <TableCell className="font-medium">{term.term}</TableCell>
-                    <TableCell>{getCategoryDisplay(term.category)}</TableCell>
                     <TableCell className="truncate max-w-[400px]">
                       {term.definition.length > 100
                         ? `${term.definition.substring(0, 100)}...`
@@ -354,24 +342,7 @@ export default function AdminGlossary() {
                 placeholder="Enter term name"
               />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={editFormData.category}
-                onValueChange={(value) =>
-                  setEditFormData({ ...editFormData, category: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="legal">Legal Term</SelectItem>
-                  <SelectItem value="citation">Citation Term</SelectItem>
-                  <SelectItem value="research">Research Term</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="definition">Definition</Label>
               <Textarea
