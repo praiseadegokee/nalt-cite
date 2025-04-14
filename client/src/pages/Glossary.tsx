@@ -139,9 +139,9 @@ export default function Glossary() {
               </div>
             ) : filteredTerms.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
-                {filteredTerms.map((term: GlossaryTermType, index: number) => (
+                {filteredTerms.map((term: GlossaryTermType) => (
                   <GlossaryTerm 
-                    key={index}
+                    key={term.id || term.term} // Use id if available, fallback to term text
                     term={term.term}
                     definition={term.definition}
                     category={term.category}

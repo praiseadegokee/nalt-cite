@@ -279,8 +279,9 @@ export default function AdminGlossary() {
                           size="sm"
                           className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
                           onClick={() => {
-                            console.log('Delete term', term.id);
-                            // Set up delete functionality here if needed
+                            if (window.confirm(`Are you sure you want to delete the term "${term.term}"?`)) {
+                              deleteGlossaryTerm.mutate(term.id!);
+                            }
                           }}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -381,9 +382,14 @@ export default function AdminGlossary() {
                 <Button
                   type="submit"
                   className="bg-[#294D98] hover:bg-[#1B387A]"
-                  disabled={createGlossaryTerm.isPending}
+                  disabled={createGlossaryTerm.isPending || updateGlossaryTerm.isPending}
                 >
-                  {createGlossaryTerm.isPending ? 'Saving...' : 'Save Term'}
+                  {createGlossaryTerm.isPending || updateGlossaryTerm.isPending
+                    ? 'Saving...'
+                    : editingTerm
+                      ? 'Update Term'
+                      : 'Save Term'
+                  }
                 </Button>
               </div>
             </form>
