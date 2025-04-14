@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import CitationGenerator from "@/pages/CitationGenerator";
 import Glossary from "@/pages/Glossary";
 import AddGlossaryTerm from "@/pages/AddGlossaryTerm";
+import AdminGlossary from "@/pages/AdminGlossary";
 import FAQ from "@/pages/FAQ";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
@@ -31,6 +32,7 @@ function Router() {
         <Route path="/admin" component={AdminDashboard} />
         <Route path="/admin/upload" component={FileUpload} />
         <Route path="/admin/blog" component={AdminBlogPosts} />
+        <Route path="/admin/glossary" component={AdminGlossary} />
         <Route path="/admin/glossary/add" component={AddGlossaryTerm} />
         <Route component={NotFound} />
       </Switch>
