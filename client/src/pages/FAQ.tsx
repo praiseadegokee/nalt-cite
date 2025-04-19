@@ -17,41 +17,41 @@ export default function FAQPage() {
 
   // Fetch FAQ categories
   const { 
-    data: categories,
+    data: categories = [],
     isLoading: categoriesLoading,
     error: categoriesError
-  } = useQuery({
+  } = useQuery<FaqCategory[]>({
     queryKey: ['/api/faq/categories'],
     retry: 1,
   });
 
   // Fetch FAQ items
   const { 
-    data: faqItems,
+    data: faqItems = [],
     isLoading: faqItemsLoading,
     error: faqItemsError
-  } = useQuery({
+  } = useQuery<FAQItem[]>({
     queryKey: ['/api/faq/items'],
     retry: 1,
   });
 
   // Group FAQ items by category
-  const groupedFaqItems = faqItems ? faqItems.reduce((groups: Record<number, FAQItem[]>, item: FAQItem) => {
+  const groupedFaqItems = faqItems.reduce((groups: Record<number, FAQItem[]>, item: FAQItem) => {
     if (!groups[item.categoryId]) {
       groups[item.categoryId] = [];
     }
     groups[item.categoryId].push(item);
     return groups;
-  }, {}) : {};
+  }, {} as Record<number, FAQItem[]>);
 
   // Filter FAQ items based on selected category
   const filteredFaqItems = selectedCategory === "all" 
     ? faqItems
-    : faqItems?.filter((item: FAQItem) => item.categoryId === parseInt(selectedCategory));
+    : faqItems.filter((item: FAQItem) => item.categoryId === parseInt(selectedCategory));
 
   // Get category name by ID
   const getCategoryName = (categoryId: number) => {
-    const category = categories?.find((cat: FaqCategory) => cat.id === categoryId);
+    const category = categories.find((cat: FaqCategory) => cat.id === categoryId);
     return category ? category.name : "Uncategorized";
   };
 
@@ -102,7 +102,7 @@ export default function FAQPage() {
           <p className="text-gray-600 mb-8">Find answers to common questions about NALT citation format and legal research standards.</p>
           
           {/* Category Tabs */}
-          {categories && categories.length > 0 && (
+          {categories.length > 0 && (
             <Tabs defaultValue="all" className="mb-8" onValueChange={setSelectedCategory}>
               <TabsList className="mb-6 flex flex-wrap border-b border-gray-200 pb-1 w-full justify-start">
                 <TabsTrigger
@@ -131,7 +131,7 @@ export default function FAQPage() {
                   onValueChange={(value) => setOpenItem(value)}
                   className="space-y-4"
                 >
-                  {faqItems && faqItems.map((item: FAQ, index: number) => (
+                  {faqItems.map((item: FAQItem, index: number) => (
                     <AccordionItem 
                       key={item.id}
                       value={`item-${item.id}`}
@@ -160,7 +160,7 @@ export default function FAQPage() {
                     onValueChange={(value) => setOpenItem(value)}
                     className="space-y-4"
                   >
-                    {groupedFaqItems[category.id]?.map((item: FAQ) => (
+                    {groupedFaqItems[category.id]?.map((item: FAQItem) => (
                       <AccordionItem 
                         key={item.id}
                         value={`item-${item.id}`}
