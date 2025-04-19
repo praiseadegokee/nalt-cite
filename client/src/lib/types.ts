@@ -24,9 +24,19 @@ export interface GlossaryTerm {
   category?: string;
 }
 
+export interface FaqCategory {
+  id: number;
+  name: string;
+  description: string | null;
+  order: number;
+}
+
 export interface FAQ {
+  id: number;
   question: string;
   answer: string;
+  categoryId: number;
+  order: number;
 }
 
 export interface BlogPost {
