@@ -5,7 +5,8 @@ import {
   type GlossaryTerm, type InsertGlossaryTerm,
   type BlogPost, type InsertBlogPost,
   type Resource, type InsertResource,
-  type FaqItem, type InsertFaqItem
+  type FaqItem, type InsertFaqItem,
+  type FaqCategory, type InsertFaqCategory
 } from "@shared/schema";
 import { IStorage } from './storage';
 
@@ -184,10 +185,85 @@ export class DbStorage implements IStorage {
     return result[0] as Resource;
   }
   
-  // FAQ methods
-  async getFaqItems(): Promise<FaqItem[]> {
-    const items = await sqlClient`SELECT * FROM faq_items ORDER BY order_num ASC`;
-    return items as FaqItem[];
+  // FAQ Category methods
+  async getFaqCategories(): Promise<FaqCategory[]> {
+    const categories = await sqlClient`SELECT * FROM faq_categories ORDER BY order_num ASC`;
+    return categories as FaqCategory[];
+  }
+  
+  async getFaqCategory(id: number): Promise<FaqCategory | undefined> {
+    const categories = await sqlClient`SELECT * FROM faq_categories WHERE id = ${id}`;
+    return categories[0] as FaqCategory | undefined;
+  }
+  
+  async createFaqCategory(category: InsertFaqCategory): Promise<FaqCategory> {
+    const result = await sqlClient`
+      INSERT INTO faq_categories (name, description, order_num)
+      VALUES (${category.name}, ${category.description || null}, ${category.order || 0})
+      RETURNING *
+    `;
+    return result[0] as FaqCategory;
+  }
+  
+  async updateFaqCategory(id: number, category: InsertFaqCategory): Promise<FaqCategory | undefined> {
+    // First check if the category exists
+    const exists = await this.getFaqCategory(id);
+    if (!exists) {
+      return undefined;
+    }
+    
+    // Update the category
+    const result = await sqlClient`
+      UPDATE faq_categories 
+      SET name = ${category.name}, 
+          description = ${category.description || null}, 
+          order_num = ${category.order || 0}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return result[0] as FaqCategory | undefined;
+  }
+  
+  async deleteFaqCategory(id: number): Promise<boolean> {
+    // First check if the category exists
+    const exists = await this.getFaqCategory(id);
+    if (!exists) {
+      return false;
+    }
+    
+    // Check if any items reference this category
+    const itemsInCategory = await sqlClient`
+      SELECT COUNT(*) as count FROM faq_items WHERE category_id = ${id}
+    `;
+    
+    if (parseInt(itemsInCategory[0].count) > 0) {
+      // Cannot delete a category that has items
+      return false;
+    }
+    
+    // Delete the category
+    await sqlClient`DELETE FROM faq_categories WHERE id = ${id}`;
+    return true;
+  }
+  
+  // FAQ Item methods
+  async getFaqItems(categoryId?: number): Promise<FaqItem[]> {
+    let result;
+    
+    if (categoryId) {
+      // Filter by category
+      result = await sqlClient`
+        SELECT * FROM faq_items 
+        WHERE category_id = ${categoryId}
+        ORDER BY order_num ASC
+      `;
+    } else {
+      // Get all items
+      result = await sqlClient`SELECT * FROM faq_items ORDER BY order_num ASC`;
+    }
+    
+    return result as FaqItem[];
   }
   
   async getFaqItem(id: number): Promise<FaqItem | undefined> {
@@ -197,11 +273,44 @@ export class DbStorage implements IStorage {
   
   async createFaqItem(item: InsertFaqItem): Promise<FaqItem> {
     const result = await sqlClient`
-      INSERT INTO faq_items (question, answer, order_num)
-      VALUES (${item.question}, ${item.answer}, ${item.order})
+      INSERT INTO faq_items (question, answer, category_id, order_num)
+      VALUES (${item.question}, ${item.answer}, ${item.categoryId}, ${item.order || 0})
       RETURNING *
     `;
     return result[0] as FaqItem;
+  }
+  
+  async updateFaqItem(id: number, item: InsertFaqItem): Promise<FaqItem | undefined> {
+    // First check if the item exists
+    const exists = await this.getFaqItem(id);
+    if (!exists) {
+      return undefined;
+    }
+    
+    // Update the item
+    const result = await sqlClient`
+      UPDATE faq_items 
+      SET question = ${item.question}, 
+          answer = ${item.answer}, 
+          category_id = ${item.categoryId},
+          order_num = ${item.order || exists.order}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    
+    return result[0] as FaqItem | undefined;
+  }
+  
+  async deleteFaqItem(id: number): Promise<boolean> {
+    // First check if the item exists
+    const exists = await this.getFaqItem(id);
+    if (!exists) {
+      return false;
+    }
+    
+    // Delete the item
+    await sqlClient`DELETE FROM faq_items WHERE id = ${id}`;
+    return true;
   }
 }
 

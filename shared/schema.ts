@@ -56,7 +56,7 @@ export const faqCategories = pgTable("faq_categories", {
   id: serial("id").primaryKey(),
   name: text("name").notNull().unique(),
   description: text("description"),
-  order: integer("order").notNull().default(0),
+  order: integer("order_num").notNull().default(0),
 });
 
 // FAQ items table
@@ -64,8 +64,8 @@ export const faqItems = pgTable("faq_items", {
   id: serial("id").primaryKey(),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
-  categoryId: integer("category_id").notNull(),
-  order: integer("order").notNull().default(0),
+  categoryId: integer("category_id").notNull().default(1),
+  order: integer("order_num").notNull().default(0),
 });
 
 // Create insert schemas

@@ -188,29 +188,44 @@ export async function initializeDatabase() {
     if (faqCount[0].count === '0') {
       console.log('Adding sample FAQ items...');
       
-      // Sample FAQ items
+      // Sample FAQ items - using different category IDs (1=General, 2=Citation Formats, 3=Technical Help)
       const sampleFaqs: InsertFaqItem[] = [
         {
           question: 'What is the NALT Citation Guide?',
           answer: 'The NALT Citation Guide is the official standard published by the Nigerian Association of Law Teachers for formatting legal citations in academic writing, research papers, and publications in Nigeria. It provides comprehensive rules for citing various legal sources including cases, statutes, books, journal articles, and other materials relevant to Nigerian legal scholarship.',
+          categoryId: 1, // General category
           order: 1,
         },
         {
           question: 'How does NALT citation differ from OSCOLA?',
           answer: 'While NALT citation format shares some similarities with the Oxford Standard for Citation of Legal Authorities (OSCOLA), it has been specifically adapted for the Nigerian legal system. Key differences include specialized rules for citing Nigerian cases, statutes, and legal materials, as well as variations in punctuation, abbreviation conventions, and formatting requirements tailored to Nigerian legal scholarship practices.',
+          categoryId: 1, // General category
           order: 2,
         },
         {
           question: 'How do I cite Nigerian court cases?',
           answer: 'Nigerian court cases should be cited following this format: <i>Case Name</i> [Year] Volume Law Report Abbreviation Starting Page. For example: <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550. If citing a specific page, add the page number after the starting page, e.g., <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550, 575.',
-          order: 3,
+          categoryId: 2, // Citation Formats category
+          order: 1,
         },
+        {
+          question: 'How do I cite Nigerian statutes?',
+          answer: 'Nigerian statutes should be cited as follows: Short Title Year (if not in the short title), section number. For example: Constitution of the Federal Republic of Nigeria 1999, s 5. When citing subsidiary legislation, include the statutory instrument number in parentheses where available.',
+          categoryId: 2, // Citation Formats category
+          order: 2,
+        },
+        {
+          question: 'Why am I getting an error message when generating a citation?',
+          answer: 'Error messages typically appear when required fields are missing or contain invalid data. Ensure all mandatory fields are completed and check for any special characters that might cause formatting issues. If problems persist, try clearing your browser cache or using a different browser.',
+          categoryId: 3, // Technical Help category
+          order: 1,
+        }
       ];
       
       for (const faq of sampleFaqs) {
         await sql`
-          INSERT INTO faq_items (question, answer, order_num)
-          VALUES (${faq.question}, ${faq.answer}, ${faq.order})
+          INSERT INTO faq_items (question, answer, category_id, order_num)
+          VALUES (${faq.question}, ${faq.answer}, ${faq.categoryId}, ${faq.order})
         `;
       }
       
