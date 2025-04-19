@@ -51,12 +51,21 @@ export const resources = pgTable("resources", {
   category: text("category").notNull(),
 });
 
+// FAQ categories table
+export const faqCategories = pgTable("faq_categories", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  order: integer("order").notNull().default(0),
+});
+
 // FAQ items table
 export const faqItems = pgTable("faq_items", {
   id: serial("id").primaryKey(),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
-  order: integer("order").notNull(),
+  categoryId: integer("category_id").notNull(),
+  order: integer("order").notNull().default(0),
 });
 
 // Create insert schemas
@@ -97,9 +106,16 @@ export const insertResourceSchema = createInsertSchema(resources).pick({
   category: true,
 });
 
+export const insertFaqCategorySchema = createInsertSchema(faqCategories).pick({
+  name: true,
+  description: true,
+  order: true,
+});
+
 export const insertFaqItemSchema = createInsertSchema(faqItems).pick({
   question: true,
   answer: true,
+  categoryId: true,
   order: true,
 });
 
@@ -118,6 +134,9 @@ export type BlogPost = typeof blogPosts.$inferSelect;
 
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type Resource = typeof resources.$inferSelect;
+
+export type InsertFaqCategory = z.infer<typeof insertFaqCategorySchema>;
+export type FaqCategory = typeof faqCategories.$inferSelect;
 
 export type InsertFaqItem = z.infer<typeof insertFaqItemSchema>;
 export type FaqItem = typeof faqItems.$inferSelect;

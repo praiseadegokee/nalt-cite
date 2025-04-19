@@ -4,7 +4,8 @@ import {
   glossaryTerms, type GlossaryTerm, type InsertGlossaryTerm,
   blogPosts, type BlogPost, type InsertBlogPost,
   resources, type Resource, type InsertResource,
-  faqItems, type FaqItem, type InsertFaqItem
+  faqItems, type FaqItem, type InsertFaqItem,
+  faqCategories, type FaqCategory, type InsertFaqCategory
 } from "@shared/schema";
 
 // Expanded storage interface with all the CRUD operations for our models
@@ -37,10 +38,19 @@ export interface IStorage {
   getResource(id: number): Promise<Resource | undefined>;
   createResource(resource: InsertResource): Promise<Resource>;
   
-  // FAQ methods
-  getFaqItems(): Promise<FaqItem[]>;
+  // FAQ category methods
+  getFaqCategories(): Promise<FaqCategory[]>;
+  getFaqCategory(id: number): Promise<FaqCategory | undefined>;
+  createFaqCategory(category: InsertFaqCategory): Promise<FaqCategory>;
+  updateFaqCategory(id: number, category: InsertFaqCategory): Promise<FaqCategory | undefined>;
+  deleteFaqCategory(id: number): Promise<boolean>;
+  
+  // FAQ item methods
+  getFaqItems(categoryId?: number): Promise<FaqItem[]>;
   getFaqItem(id: number): Promise<FaqItem | undefined>;
   createFaqItem(item: InsertFaqItem): Promise<FaqItem>;
+  updateFaqItem(id: number, item: InsertFaqItem): Promise<FaqItem | undefined>;
+  deleteFaqItem(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -49,6 +59,7 @@ export class MemStorage implements IStorage {
   private glossaryTerms: Map<number, GlossaryTerm>;
   private blogPosts: Map<number, BlogPost>;
   private resources: Map<number, Resource>;
+  private faqCategories: Map<number, FaqCategory>;
   private faqItems: Map<number, FaqItem>;
   
   private nextId: {
@@ -57,6 +68,7 @@ export class MemStorage implements IStorage {
     glossaryTerms: number;
     blogPosts: number;
     resources: number;
+    faqCategories: number;
     faqItems: number;
   };
 
@@ -66,6 +78,7 @@ export class MemStorage implements IStorage {
     this.glossaryTerms = new Map();
     this.blogPosts = new Map();
     this.resources = new Map();
+    this.faqCategories = new Map();
     this.faqItems = new Map();
     
     this.nextId = {
@@ -74,6 +87,7 @@ export class MemStorage implements IStorage {
       glossaryTerms: 1,
       blogPosts: 1,
       resources: 1,
+      faqCategories: 1,
       faqItems: 1,
     };
     
