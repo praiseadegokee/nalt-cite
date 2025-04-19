@@ -9,7 +9,8 @@ import CitationGenerator from "@/pages/CitationGenerator";
 import Glossary from "@/pages/Glossary";
 import AddGlossaryTerm from "@/pages/AddGlossaryTerm";
 import AdminGlossary from "@/pages/AdminGlossary";
-import FAQ from "@/pages/FAQ";
+import FAQPage from "@/pages/FAQ";
+import AdminFAQ from "@/pages/AdminFAQ";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Resources from "@/pages/Resources";
@@ -25,7 +26,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/citation-generator" component={CitationGenerator} />
         <Route path="/glossary" component={Glossary} />
-        <Route path="/faq" component={FAQ} />
+        <Route path="/faq" component={FAQPage} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
@@ -34,6 +35,7 @@ function Router() {
         <Route path="/admin/blog" component={AdminBlogPosts} />
         <Route path="/admin/glossary" component={AdminGlossary} />
         <Route path="/admin/glossary/add" component={AddGlossaryTerm} />
+        <Route path="/admin/faq" component={AdminFAQ} />
         <Route component={NotFound} />
       </Switch>
     </Layout>
