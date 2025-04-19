@@ -8,7 +8,8 @@ import {
   glossaryTerms, type GlossaryTerm, type InsertGlossaryTerm,
   blogPosts, type BlogPost, type InsertBlogPost,
   resources, type Resource, type InsertResource,
-  faqItems, type FaqItem, type InsertFaqItem
+  faqItems, type FaqItem, type InsertFaqItem,
+  faqCategories, type FaqCategory, type InsertFaqCategory
 } from "@shared/schema";
 
 // Environment variables
@@ -90,17 +91,62 @@ export async function initializeDatabase() {
       );
     `;
 
-    // Create faq_items table
+    // Create faq_categories table
+    await sql`
+      CREATE TABLE IF NOT EXISTS faq_categories (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        order_num INTEGER NOT NULL DEFAULT 0
+      );
+    `;
+
+    // Create faq_items table with category reference
     await sql`
       CREATE TABLE IF NOT EXISTS faq_items (
         id SERIAL PRIMARY KEY,
         question TEXT NOT NULL,
         answer TEXT NOT NULL,
-        order_num INTEGER NOT NULL
+        category_id INTEGER NOT NULL DEFAULT 1,
+        order_num INTEGER NOT NULL DEFAULT 0
       );
     `;
 
     console.log('Database tables initialized successfully.');
+    
+    // Check if the faq_categories table is empty and add sample data if needed
+    const faqCategoriesCount = await sql`SELECT COUNT(*) FROM faq_categories`;
+    if (faqCategoriesCount[0].count === '0') {
+      console.log('Adding sample FAQ categories...');
+      
+      // Sample FAQ categories
+      const sampleCategories: InsertFaqCategory[] = [
+        {
+          name: 'General',
+          description: 'General information about NALT Citation Guide',
+          order: 1,
+        },
+        {
+          name: 'Citation Formats',
+          description: 'Specific information about different citation formats',
+          order: 2,
+        },
+        {
+          name: 'Technical Help',
+          description: 'Technical assistance with using the citation tool',
+          order: 3,
+        },
+      ];
+      
+      for (const category of sampleCategories) {
+        await sql`
+          INSERT INTO faq_categories (name, description, order_num)
+          VALUES (${category.name}, ${category.description || null}, ${category.order})
+        `;
+      }
+      
+      console.log('Sample FAQ categories added successfully.');
+    }
     
     // Check if the glossary_terms table is empty and add sample data if needed
     const glossaryCount = await sql`SELECT COUNT(*) FROM glossary_terms`;

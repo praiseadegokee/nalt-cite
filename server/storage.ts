@@ -118,21 +118,53 @@ export class MemStorage implements IStorage {
     
     sampleTerms.forEach(term => this.createGlossaryTerm(term));
     
+    // Sample FAQ categories
+    const sampleCategories: InsertFaqCategory[] = [
+      {
+        name: 'General',
+        description: 'General information about NALT Citation Guide',
+        order: 1,
+      },
+      {
+        name: 'Citation Formats',
+        description: 'Specific information about different citation formats',
+        order: 2,
+      },
+      {
+        name: 'Technical Help',
+        description: 'Technical assistance with using the citation tool',
+        order: 3,
+      },
+    ];
+    
+    // Create categories and store their IDs
+    const categoryIds: Record<string, number> = {};
+    sampleCategories.forEach(async (category) => {
+      const newCategory = await this.createFaqCategory(category);
+      categoryIds[category.name] = newCategory.id;
+    });
+    
+    // Ensure at least one category exists for sample data
+    const defaultCategoryId = 1;
+    
     // Sample FAQ items
     const sampleFaqs: InsertFaqItem[] = [
       {
         question: 'What is the NALT Citation Guide?',
         answer: 'The NALT Citation Guide is the official standard published by the Nigerian Association of Law Teachers for formatting legal citations in academic writing, research papers, and publications in Nigeria. It provides comprehensive rules for citing various legal sources including cases, statutes, books, journal articles, and other materials relevant to Nigerian legal scholarship.',
+        categoryId: defaultCategoryId,
         order: 1,
       },
       {
         question: 'How does NALT citation differ from OSCOLA?',
         answer: 'While NALT citation format shares some similarities with the Oxford Standard for Citation of Legal Authorities (OSCOLA), it has been specifically adapted for the Nigerian legal system. Key differences include specialized rules for citing Nigerian cases, statutes, and legal materials, as well as variations in punctuation, abbreviation conventions, and formatting requirements tailored to Nigerian legal scholarship practices.',
+        categoryId: defaultCategoryId,
         order: 2,
       },
       {
         question: 'How do I cite Nigerian court cases?',
         answer: 'Nigerian court cases should be cited following this format: <i>Case Name</i> [Year] Volume Law Report Abbreviation Starting Page. For example: <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550. If citing a specific page, add the page number after the starting page, e.g., <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550, 575.',
+        categoryId: defaultCategoryId,
         order: 3,
       },
     ];
@@ -317,9 +349,71 @@ export class MemStorage implements IStorage {
     return newResource;
   }
   
-  // FAQ methods
-  async getFaqItems(): Promise<FaqItem[]> {
-    return Array.from(this.faqItems.values()).sort((a, b) => a.order - b.order);
+  // FAQ Category methods
+  async getFaqCategories(): Promise<FaqCategory[]> {
+    return Array.from(this.faqCategories.values()).sort((a, b) => a.order - b.order);
+  }
+  
+  async getFaqCategory(id: number): Promise<FaqCategory | undefined> {
+    return this.faqCategories.get(id);
+  }
+  
+  async createFaqCategory(category: InsertFaqCategory): Promise<FaqCategory> {
+    const id = this.nextId.faqCategories++;
+    const faqCategory: FaqCategory = { 
+      ...category, 
+      id,
+      description: category.description ?? null,
+    };
+    this.faqCategories.set(id, faqCategory);
+    return faqCategory;
+  }
+  
+  async updateFaqCategory(id: number, category: InsertFaqCategory): Promise<FaqCategory | undefined> {
+    // Check if the category exists
+    const existingCategory = this.faqCategories.get(id);
+    if (!existingCategory) {
+      return undefined;
+    }
+    
+    // Update the category
+    const updatedCategory: FaqCategory = {
+      ...existingCategory,
+      name: category.name,
+      description: category.description ?? null,
+      order: category.order,
+    };
+    
+    this.faqCategories.set(id, updatedCategory);
+    return updatedCategory;
+  }
+  
+  async deleteFaqCategory(id: number): Promise<boolean> {
+    // Check if the category exists and there are no items using it
+    if (!this.faqCategories.has(id)) {
+      return false;
+    }
+    
+    // Check if any FAQ items are using this category
+    const itemsInCategory = Array.from(this.faqItems.values()).filter(item => item.categoryId === id);
+    if (itemsInCategory.length > 0) {
+      // Cannot delete a category that has items
+      return false;
+    }
+    
+    // Delete the category
+    return this.faqCategories.delete(id);
+  }
+  
+  // FAQ Item methods
+  async getFaqItems(categoryId?: number): Promise<FaqItem[]> {
+    let items = Array.from(this.faqItems.values());
+    
+    if (categoryId) {
+      items = items.filter(item => item.categoryId === categoryId);
+    }
+    
+    return items.sort((a, b) => a.order - b.order);
   }
   
   async getFaqItem(id: number): Promise<FaqItem | undefined> {
@@ -328,9 +422,43 @@ export class MemStorage implements IStorage {
   
   async createFaqItem(item: InsertFaqItem): Promise<FaqItem> {
     const id = this.nextId.faqItems++;
-    const faqItem: FaqItem = { ...item, id };
+    const faqItem: FaqItem = { 
+      ...item, 
+      id,
+      order: item.order ?? 0,
+    };
     this.faqItems.set(id, faqItem);
     return faqItem;
+  }
+  
+  async updateFaqItem(id: number, item: InsertFaqItem): Promise<FaqItem | undefined> {
+    // Check if the item exists
+    const existingItem = this.faqItems.get(id);
+    if (!existingItem) {
+      return undefined;
+    }
+    
+    // Update the item
+    const updatedItem: FaqItem = {
+      ...existingItem,
+      question: item.question,
+      answer: item.answer,
+      categoryId: item.categoryId,
+      order: item.order ?? existingItem.order,
+    };
+    
+    this.faqItems.set(id, updatedItem);
+    return updatedItem;
+  }
+  
+  async deleteFaqItem(id: number): Promise<boolean> {
+    // Check if the item exists
+    if (!this.faqItems.has(id)) {
+      return false;
+    }
+    
+    // Delete the item
+    return this.faqItems.delete(id);
   }
 }
 

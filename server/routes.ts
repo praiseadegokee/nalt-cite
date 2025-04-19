@@ -168,7 +168,225 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // FAQ API endpoints
+  // FAQ Category API endpoints
+  app.get(`${apiPrefix}/faq/categories`, async (req: Request, res: Response) => {
+    try {
+      const categories = await activeStorage.getFaqCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching FAQ categories:", error);
+      res.status(500).json({ message: "Failed to fetch FAQ categories" });
+    }
+  });
+  
+  app.get(`${apiPrefix}/faq/categories/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    
+    try {
+      const category = await activeStorage.getFaqCategory(id);
+      if (!category) {
+        return res.status(404).json({ message: "FAQ category not found" });
+      }
+      res.json(category);
+    } catch (error) {
+      console.error(`Error fetching FAQ category ${id}:`, error);
+      res.status(500).json({ message: "Failed to fetch FAQ category" });
+    }
+  });
+  
+  app.post(`${apiPrefix}/faq/categories`, async (req: Request, res: Response) => {
+    try {
+      const { name, description, order } = req.body;
+      
+      // Basic validation
+      if (!name) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            name: !name ? "Name is required" : null
+          }
+        });
+      }
+      
+      // Create the new FAQ category
+      const newCategory = await activeStorage.createFaqCategory({
+        name,
+        description,
+        order: order || 0
+      });
+      
+      res.status(201).json(newCategory);
+    } catch (error) {
+      console.error("Error creating FAQ category:", error);
+      res.status(500).json({ message: "Failed to create FAQ category" });
+    }
+  });
+  
+  app.put(`${apiPrefix}/faq/categories/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const { name, description, order } = req.body;
+      
+      // Basic validation
+      if (!name) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            name: !name ? "Name is required" : null
+          }
+        });
+      }
+      
+      // Update the FAQ category
+      const updatedCategory = await activeStorage.updateFaqCategory(id, {
+        name,
+        description,
+        order: order || 0
+      });
+      
+      if (!updatedCategory) {
+        return res.status(404).json({ message: "FAQ category not found" });
+      }
+      
+      res.json(updatedCategory);
+    } catch (error) {
+      console.error(`Error updating FAQ category ${id}:`, error);
+      res.status(500).json({ message: "Failed to update FAQ category" });
+    }
+  });
+  
+  app.delete(`${apiPrefix}/faq/categories/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const result = await activeStorage.deleteFaqCategory(id);
+      
+      if (!result) {
+        return res.status(404).json({ 
+          message: "FAQ category not found or cannot be deleted because it has associated FAQ items" 
+        });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error(`Error deleting FAQ category ${id}:`, error);
+      res.status(500).json({ message: "Failed to delete FAQ category" });
+    }
+  });
+  
+  // FAQ Item API endpoints
+  app.get(`${apiPrefix}/faq/items`, async (req: Request, res: Response) => {
+    const { categoryId } = req.query;
+    
+    try {
+      const faqItems = await activeStorage.getFaqItems(
+        categoryId ? parseInt(categoryId as string) : undefined
+      );
+      res.json(faqItems);
+    } catch (error) {
+      console.error("Error fetching FAQ items:", error);
+      res.status(500).json({ message: "Failed to fetch FAQ items" });
+    }
+  });
+  
+  app.get(`${apiPrefix}/faq/items/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    
+    try {
+      const item = await activeStorage.getFaqItem(id);
+      if (!item) {
+        return res.status(404).json({ message: "FAQ item not found" });
+      }
+      res.json(item);
+    } catch (error) {
+      console.error(`Error fetching FAQ item ${id}:`, error);
+      res.status(500).json({ message: "Failed to fetch FAQ item" });
+    }
+  });
+  
+  app.post(`${apiPrefix}/faq/items`, async (req: Request, res: Response) => {
+    try {
+      const { question, answer, categoryId, order } = req.body;
+      
+      // Basic validation
+      if (!question || !answer || !categoryId) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            question: !question ? "Question is required" : null,
+            answer: !answer ? "Answer is required" : null,
+            categoryId: !categoryId ? "Category ID is required" : null
+          }
+        });
+      }
+      
+      // Create the new FAQ item
+      const newItem = await activeStorage.createFaqItem({
+        question,
+        answer,
+        categoryId,
+        order: order || 0
+      });
+      
+      res.status(201).json(newItem);
+    } catch (error) {
+      console.error("Error creating FAQ item:", error);
+      res.status(500).json({ message: "Failed to create FAQ item" });
+    }
+  });
+  
+  app.put(`${apiPrefix}/faq/items/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const { question, answer, categoryId, order } = req.body;
+      
+      // Basic validation
+      if (!question || !answer || !categoryId) {
+        return res.status(400).json({ 
+          message: "Missing required fields", 
+          details: {
+            question: !question ? "Question is required" : null,
+            answer: !answer ? "Answer is required" : null,
+            categoryId: !categoryId ? "Category ID is required" : null
+          }
+        });
+      }
+      
+      // Update the FAQ item
+      const updatedItem = await activeStorage.updateFaqItem(id, {
+        question,
+        answer,
+        categoryId,
+        order: order || 0
+      });
+      
+      if (!updatedItem) {
+        return res.status(404).json({ message: "FAQ item not found" });
+      }
+      
+      res.json(updatedItem);
+    } catch (error) {
+      console.error(`Error updating FAQ item ${id}:`, error);
+      res.status(500).json({ message: "Failed to update FAQ item" });
+    }
+  });
+  
+  app.delete(`${apiPrefix}/faq/items/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    try {
+      const result = await activeStorage.deleteFaqItem(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: "FAQ item not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error(`Error deleting FAQ item ${id}:`, error);
+      res.status(500).json({ message: "Failed to delete FAQ item" });
+    }
+  });
+  
+  // For backward compatibility, maintain the old endpoint
   app.get(`${apiPrefix}/faq`, async (req: Request, res: Response) => {
     try {
       const faqItems = await activeStorage.getFaqItems();
