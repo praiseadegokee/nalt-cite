@@ -287,13 +287,19 @@ export class DbStorage implements IStorage {
       return undefined;
     }
     
-    // Update the item
+    // Log existing and new values for debugging
+    console.log("Existing FAQ item:", exists);
+    console.log("Update with:", item);
+    
+    // Update the item - using the correct fields
+    // Database columns are: id, question, answer, category_id, order_num
+    // But in our typescript models we use: id, question, answer, categoryId, order
     const result = await sqlClient`
       UPDATE faq_items 
       SET question = ${item.question}, 
           answer = ${item.answer}, 
           category_id = ${item.categoryId},
-          order_num = ${item.order || exists.order}
+          order_num = ${item.order !== undefined ? item.order : exists.order}
       WHERE id = ${id}
       RETURNING *
     `;

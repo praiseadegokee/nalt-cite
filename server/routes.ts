@@ -340,7 +340,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Log the request body for debugging
       console.log("Update FAQ item request body:", JSON.stringify(req.body));
       
-      const { question, answer, categoryId, order } = req.body;
+      // Extract values, considering both field naming conventions
+      // The database has order_num and category_id, but we use order and categoryId in the frontend
+      const question = req.body.question;
+      const answer = req.body.answer;
+      const categoryId = req.body.categoryId || req.body.category_id;
+      const order = req.body.order || req.body.order_num || 0;
       
       // Log the extracted values
       console.log("Extracted values:", { question, answer, categoryId, order });
