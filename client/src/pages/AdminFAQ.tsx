@@ -27,11 +27,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Trash2, Edit, Plus } from 'lucide-react';
 import { FAQ as FAQItem, FaqCategory } from '@/lib/types';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export default function AdminFAQ() {
   const [activeTab, setActiveTab] = useState('categories');
-  const queryClient = useQueryClient();
   const { toast } = useToast();
 
   // State for forms
@@ -80,13 +79,7 @@ export default function AdminFAQ() {
   // Category Mutations
   const createCategory = useMutation({
     mutationFn: (newCategory: Omit<FaqCategory, 'id'>) => {
-      return apiRequest('/api/faq/categories', {
-        method: 'POST',
-        body: JSON.stringify(newCategory),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      return apiRequest('POST', '/api/faq/categories', newCategory);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/categories'] });
@@ -108,13 +101,7 @@ export default function AdminFAQ() {
 
   const updateCategory = useMutation({
     mutationFn: (updatedCategory: FaqCategory) => {
-      return apiRequest(`/api/faq/categories/${updatedCategory.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(updatedCategory),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      return apiRequest('PUT', `/api/faq/categories/${updatedCategory.id}`, updatedCategory);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/categories'] });
@@ -137,9 +124,7 @@ export default function AdminFAQ() {
 
   const deleteCategory = useMutation({
     mutationFn: (id: number) => {
-      return apiRequest(`/api/faq/categories/${id}`, {
-        method: 'DELETE',
-      });
+      return apiRequest('DELETE', `/api/faq/categories/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/categories'] });
@@ -161,13 +146,7 @@ export default function AdminFAQ() {
   // FAQ Item Mutations
   const createFaqItem = useMutation({
     mutationFn: (newItem: Omit<FAQItem, 'id'>) => {
-      return apiRequest('/api/faq/items', {
-        method: 'POST',
-        body: JSON.stringify(newItem),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      return apiRequest('POST', '/api/faq/items', newItem);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/items'] });
@@ -189,13 +168,7 @@ export default function AdminFAQ() {
 
   const updateFaqItem = useMutation({
     mutationFn: (updatedItem: FAQItem) => {
-      return apiRequest(`/api/faq/items/${updatedItem.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(updatedItem),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      return apiRequest('PUT', `/api/faq/items/${updatedItem.id}`, updatedItem);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/items'] });
@@ -218,9 +191,7 @@ export default function AdminFAQ() {
 
   const deleteFaqItem = useMutation({
     mutationFn: (id: number) => {
-      return apiRequest(`/api/faq/items/${id}`, {
-        method: 'DELETE',
-      });
+      return apiRequest('DELETE', `/api/faq/items/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/faq/items'] });
