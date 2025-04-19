@@ -361,8 +361,9 @@ export class MemStorage implements IStorage {
   async createFaqCategory(category: InsertFaqCategory): Promise<FaqCategory> {
     const id = this.nextId.faqCategories++;
     const faqCategory: FaqCategory = { 
-      ...category, 
       id,
+      name: category.name,
+      order: category.order || 0, // Ensure order has a default value
       description: category.description ?? null,
     };
     this.faqCategories.set(id, faqCategory);
@@ -381,7 +382,7 @@ export class MemStorage implements IStorage {
       ...existingCategory,
       name: category.name,
       description: category.description ?? null,
-      order: category.order,
+      order: category.order || 0, // Ensure order is never undefined
     };
     
     this.faqCategories.set(id, updatedCategory);

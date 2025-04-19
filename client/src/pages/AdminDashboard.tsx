@@ -7,7 +7,8 @@ import {
   Globe, 
   Settings,
   Users,
-  LayoutDashboard
+  LayoutDashboard,
+  HelpCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ export default function AdminDashboard() {
         </Button>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Blog Management */}
         <Card className="hover:shadow-md transition">
           <CardHeader className="pb-3">
@@ -80,6 +81,27 @@ export default function AdminDashboard() {
           </CardFooter>
         </Card>
 
+        {/* FAQ Management */}
+        <Card className="hover:shadow-md transition">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-[#1B387A]">FAQ</CardTitle>
+            <CardDescription>Manage FAQs and categories</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <HelpCircle className="h-5 w-5 mr-2 text-[#294D98]" />
+              <span>Organize and edit frequently asked questions</span>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button asChild className="w-full">
+              <Link href="/admin/faq">
+                Manage FAQs
+              </Link>
+            </Button>
+          </CardFooter>
+        </Card>
+
         {/* File Upload */}
         <Card className="hover:shadow-md transition">
           <CardHeader className="pb-3">
@@ -121,6 +143,16 @@ export default function AdminDashboard() {
               <div className="text-left">
                 <div className="font-medium">Citation Tool</div>
                 <div className="text-xs text-muted-foreground">Test citation generator</div>
+              </div>
+            </Link>
+          </Button>
+          
+          <Button variant="outline" className="h-auto py-4 px-4 justify-start" asChild>
+            <Link href="/faq">
+              <HelpCircle className="h-5 w-5 mr-2 text-[#294D98]" />
+              <div className="text-left">
+                <div className="font-medium">FAQ</div>
+                <div className="text-xs text-muted-foreground">View public FAQ page</div>
               </div>
             </Link>
           </Button>
