@@ -337,10 +337,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put(`${apiPrefix}/faq/items/:id`, async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     try {
+      // Log the request body for debugging
+      console.log("Update FAQ item request body:", JSON.stringify(req.body));
+      
       const { question, answer, categoryId, order } = req.body;
+      
+      // Log the extracted values
+      console.log("Extracted values:", { question, answer, categoryId, order });
       
       // Basic validation
       if (!question || !answer || !categoryId) {
+        console.log("Validation failed:", { 
+          hasQuestion: !!question, 
+          hasAnswer: !!answer, 
+          hasCategoryId: !!categoryId 
+        });
+        
         return res.status(400).json({ 
           message: "Missing required fields", 
           details: {
