@@ -281,7 +281,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const faqItems = await activeStorage.getFaqItems(
         categoryId ? parseInt(categoryId as string) : undefined
       );
-      res.json(faqItems);
+      
+      // Transform the field names to match the frontend expectations
+      const transformedItems = faqItems.map(item => ({
+        id: item.id,
+        question: item.question,
+        answer: item.answer,
+        categoryId: item.category_id, // Map from database field to frontend field
+        order: item.order_num // Map from database field to frontend field
+      }));
+      
+      res.json(transformedItems);
     } catch (error) {
       console.error("Error fetching FAQ items:", error);
       res.status(500).json({ message: "Failed to fetch FAQ items" });
@@ -296,7 +306,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!item) {
         return res.status(404).json({ message: "FAQ item not found" });
       }
-      res.json(item);
+      
+      // Transform the field names to match the frontend expectations
+      const transformedItem = {
+        id: item.id,
+        question: item.question,
+        answer: item.answer,
+        categoryId: item.category_id, // Map from database field to frontend field
+        order: item.order_num // Map from database field to frontend field
+      };
+      
+      res.json(transformedItem);
     } catch (error) {
       console.error(`Error fetching FAQ item ${id}:`, error);
       res.status(500).json({ message: "Failed to fetch FAQ item" });
@@ -407,7 +427,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/faq`, async (req: Request, res: Response) => {
     try {
       const faqItems = await activeStorage.getFaqItems();
-      res.json(faqItems);
+      
+      // Transform the field names to match the frontend expectations
+      const transformedItems = faqItems.map(item => ({
+        id: item.id,
+        question: item.question,
+        answer: item.answer,
+        categoryId: item.category_id, // Map from database field to frontend field
+        order: item.order_num // Map from database field to frontend field
+      }));
+      
+      res.json(transformedItems);
     } catch (error) {
       console.error("Error fetching FAQ items:", error);
       res.status(500).json({ message: "Failed to fetch FAQ items" });
