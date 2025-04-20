@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { Menu, X } from 'lucide-react';
+import naltCiteLogo from '@assets/NALT Cite.png';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,9 +28,9 @@ export default function Header() {
             {/* Custom NALT Cite Logo */}
             <Link href="/" className="flex items-center">
               <img 
-                src="/images/nalt-cite-logo.png" 
+                src={naltCiteLogo} 
                 alt="NALT Cite Logo" 
-                className="h-12 w-auto bg-white rounded-lg p-1 mr-3"
+                className="h-10 w-auto bg-white rounded-md p-1 mr-3"
               />
               <span className="text-white font-bold text-xl sm:text-2xl cursor-pointer">NALT Cite</span>
             </Link>
