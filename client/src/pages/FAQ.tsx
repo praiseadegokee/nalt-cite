@@ -62,7 +62,7 @@ export default function FAQPage() {
 
   // Apply search and category filters
   useEffect(() => {
-    let results = faqItems;
+    let results = [...faqItems]; // Create a new array to avoid reference issues
     
     // Filter by category if not 'all'
     if (selectedCategory !== "all") {
@@ -89,7 +89,7 @@ export default function FAQPage() {
     });
     
     setFilteredItems(results);
-  }, [faqItems, selectedCategory, searchTerm]);
+  }, [faqItems, selectedCategory, searchTerm, setFilteredItems]); // Added setFilteredItems for clarity
 
   // Get category name by ID
   const getCategoryName = (categoryId: number) => {
