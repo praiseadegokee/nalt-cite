@@ -21,7 +21,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-[#1c3877] shadow-lg sticky top-0 z-50">
+    <header className="bg-white shadow-sm border-b border-[#1c3877]/10 sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3">
           <div className="flex items-center">
@@ -37,7 +37,7 @@ export default function Header() {
             </Link>
             {/* Admin link - not prominent, only for administrator use */}
             <Link href="/admin">
-              <span className="ml-2 text-white opacity-30 hover:opacity-80 text-xs cursor-pointer transition-opacity">
+              <span className="ml-2 text-[#1c3877] opacity-50 hover:opacity-80 text-xs cursor-pointer transition-opacity">
                 Admin
               </span>
             </Link>
@@ -50,8 +50,8 @@ export default function Header() {
                 <span 
                   className={`${
                     isActive(item.path)
-                      ? 'text-[#C3CDE1]'
-                      : 'text-white hover:text-[#C3CDE1]'
+                      ? 'text-[#1c3877] font-semibold'
+                      : 'text-[#1c3877] hover:text-[#0f2047]'
                   } transition duration-150 font-medium cursor-pointer`}
                 >
                   {item.name}
@@ -64,7 +64,7 @@ export default function Header() {
           <div className="md:hidden">
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="text-white hover:text-[#C3CDE1] focus:outline-none"
+              className="text-[#1c3877] hover:text-[#0f2047] focus:outline-none"
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
