@@ -21,17 +21,17 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-gradient-to-r from-[#1B387A] to-[#294D98] shadow-lg sticky top-0 z-50">
+    <header className="bg-[#1c3877] shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3">
           <div className="flex items-center">
             {/* Custom NALT Cite Logo */}
             <Link href="/" className="flex items-center">
-              <div className="bg-white p-2.5 rounded-md shadow-md hover:shadow-lg hover:bg-gray-50 transition-all">
+              <div className="p-1 hover:opacity-90 transition-opacity">
                 <img 
                   src={naltCiteLogo} 
                   alt="NALT Cite Logo" 
-                  className="h-12 w-auto"
+                  className="h-14 w-auto"
                 />
               </div>
             </Link>
@@ -75,15 +75,15 @@ export default function Header() {
             
             {/* Mobile menu */}
             {mobileMenuOpen && (
-              <div className="absolute top-14 right-0 left-0 bg-gradient-to-r from-[#1B387A] to-[#294D98] z-50 shadow-lg">
+              <div className="absolute top-14 right-0 left-0 bg-[#1c3877] z-50 shadow-lg">
                 <div className="px-2 pt-2 pb-3 space-y-1">
                   {navItems.map((item) => (
                     <Link key={item.path} href={item.path}>
                       <span 
                         className={`block px-3 py-2 ${
                           isActive(item.path)
-                            ? 'bg-[#294D98] text-white'
-                            : 'text-white hover:bg-[#294D98]'
+                            ? 'bg-[#0f2047] text-white'
+                            : 'text-white hover:bg-[#0f2047]'
                         } rounded cursor-pointer`}
                         onClick={() => setMobileMenuOpen(false)}
                       >
