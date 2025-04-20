@@ -21,18 +21,19 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-[#1B387A] shadow-md sticky top-0 z-50">
+    <header className="bg-gradient-to-r from-[#1B387A] to-[#294D98] shadow-lg sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+        <div className="flex justify-between items-center py-3">
           <div className="flex items-center">
             {/* Custom NALT Cite Logo */}
             <Link href="/" className="flex items-center">
-              <img 
-                src={naltCiteLogo} 
-                alt="NALT Cite Logo" 
-                className="h-10 w-auto bg-white rounded-md p-1 mr-3"
-              />
-              <span className="text-white font-bold text-xl sm:text-2xl cursor-pointer">NALT Cite</span>
+              <div className="bg-white p-2 rounded-md shadow-md hover:shadow-lg transition-all">
+                <img 
+                  src={naltCiteLogo} 
+                  alt="NALT Cite Logo" 
+                  className="h-10 w-auto"
+                />
+              </div>
             </Link>
             {/* Admin link - not prominent, only for administrator use */}
             <Link href="/admin">
@@ -74,7 +75,7 @@ export default function Header() {
             
             {/* Mobile menu */}
             {mobileMenuOpen && (
-              <div className="absolute top-16 right-0 left-0 bg-[#1B387A] z-50 shadow-lg">
+              <div className="absolute top-14 right-0 left-0 bg-gradient-to-r from-[#1B387A] to-[#294D98] z-50 shadow-lg">
                 <div className="px-2 pt-2 pb-3 space-y-1">
                   {navItems.map((item) => (
                     <Link key={item.path} href={item.path}>
