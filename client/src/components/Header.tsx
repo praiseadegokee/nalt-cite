@@ -24,11 +24,13 @@ export default function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
-            {/* Logo placeholder */}
-            <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center mr-3">
-              <span className="text-[#1B387A] font-bold text-lg">NC</span>
-            </div>
-            <Link href="/">
+            {/* Custom NALT Cite Logo */}
+            <Link href="/" className="flex items-center">
+              <img 
+                src="/images/nalt-cite-logo.png" 
+                alt="NALT Cite Logo" 
+                className="h-12 w-auto bg-white rounded-lg p-1 mr-3"
+              />
               <span className="text-white font-bold text-xl sm:text-2xl cursor-pointer">NALT Cite</span>
             </Link>
             {/* Admin link - not prominent, only for administrator use */}
