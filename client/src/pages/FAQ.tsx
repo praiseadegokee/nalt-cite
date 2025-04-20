@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { 
   Accordion,
   AccordionContent,
@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery } from '@tanstack/react-query';
 import { FAQ as FAQItem, FaqCategory } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,13 +24,13 @@ function highlightText(text: string, searchTerm: string) {
 }
 
 export default function FAQPage() {
+  // State
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [openItem, setOpenItem] = useState<string | null>("item-0");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filteredItems, setFilteredItems] = useState<FAQItem[]>([]);
   const { toast } = useToast();
 
-  // Fetch FAQ categories
+  // Data fetching with TanStack Query
   const { 
     data: categories = [],
     isLoading: categoriesLoading,
@@ -41,7 +40,6 @@ export default function FAQPage() {
     retry: 1,
   });
 
-  // Fetch FAQ items
   const { 
     data: faqItems = [],
     isLoading: faqItemsLoading,
@@ -51,7 +49,7 @@ export default function FAQPage() {
     retry: 1,
   });
 
-  // Group FAQ items by category
+  // Group FAQ items by category for sidebar display
   const groupedFaqItems = faqItems.reduce((groups: Record<number, FAQItem[]>, item: FAQItem) => {
     if (!groups[item.categoryId]) {
       groups[item.categoryId] = [];
@@ -60,9 +58,16 @@ export default function FAQPage() {
     return groups;
   }, {} as Record<number, FAQItem[]>);
 
-  // Apply search and category filters
-  useEffect(() => {
-    let results = [...faqItems]; // Create a new array to avoid reference issues
+  // Get category name helper
+  const getCategoryName = (categoryId: number) => {
+    const category = categories.find(cat => cat.id === categoryId);
+    return category ? category.name : "Uncategorized";
+  };
+  
+  // Filter items based on search and category selection
+  // Computing this during render instead of using useEffect + state to avoid infinite loops
+  const getFilteredItems = () => {
+    let results = [...faqItems];
     
     // Filter by category if not 'all'
     if (selectedCategory !== "all") {
@@ -88,13 +93,7 @@ export default function FAQPage() {
       return a.order - b.order;
     });
     
-    setFilteredItems(results);
-  }, [faqItems, selectedCategory, searchTerm, setFilteredItems]); // Added setFilteredItems for clarity
-
-  // Get category name by ID
-  const getCategoryName = (categoryId: number) => {
-    const category = categories.find((cat: FaqCategory) => cat.id === categoryId);
-    return category ? category.name : "Uncategorized";
+    return results;
   };
   
   // Handler for copying FAQ content
@@ -123,6 +122,9 @@ export default function FAQPage() {
         });
       });
   };
+
+  // Calculate filtered items for display
+  const filteredItems = getFilteredItems();
 
   // Loading state
   if (categoriesLoading || faqItemsLoading) {
@@ -185,6 +187,7 @@ export default function FAQPage() {
     );
   }
 
+  // Main content
   return (
     <section className="py-12 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
