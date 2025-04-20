@@ -11,3 +11,32 @@
     @apply font-sans antialiased bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Custom animation for slide-up effect */
+  .slide-up-fade-in {
+    animation: slide-up-fade-in 0.3s ease-out forwards;
+  }
+
+  @keyframes slide-up-fade-in {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
