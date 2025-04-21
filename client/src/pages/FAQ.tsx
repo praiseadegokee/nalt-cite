@@ -312,11 +312,36 @@ export default function FAQPage() {
             )}
           </div>
           
-          {/* FAQ Content Container - Redesigned with improved visuals */}
+          {/* Mobile Category Dropdown (Visible only on mobile) */}
+          <div className="mb-8 md:hidden">
+            <div className="relative">
+              <label htmlFor="mobile-category" className="block text-[#1B387A] font-medium text-sm mb-2">Filter by Category</label>
+              <select
+                id="mobile-category"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full rounded-xl py-3 px-4 bg-white/80 backdrop-blur-sm border border-blue-100/50 text-gray-700 focus:ring-2 focus:ring-[#1B387A]/30 focus:border-[#1B387A]/30 shadow-sm"
+              >
+                <option value="all">All Questions ({faqItems.length})</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id.toString()}>
+                    {category.name} ({groupedFaqItems[category.id]?.length || 0})
+                  </option>
+                ))}
+              </select>
+              <div className="absolute right-3 top-1/2 mt-1 text-gray-500 pointer-events-none">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          {/* FAQ Content Container - Redesigned with improved visuals and mobile-first approach */}
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100/50">
             <div className="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
-              {/* Category Sidebar - Enhanced with better spacing and visuals */}
-              <div className="md:col-span-3 lg:col-span-3 bg-gradient-to-b from-[#1B387A]/5 to-transparent p-5 md:p-6">
+              {/* Category Sidebar - Enhanced with better spacing and visuals (Hidden on mobile) */}
+              <div className="hidden md:block md:col-span-3 lg:col-span-3 bg-gradient-to-b from-[#1B387A]/5 to-transparent p-5 md:p-6">
                 <h3 className="font-semibold text-lg mb-5 text-[#1B387A] flex items-center">
                   <span className="h-6 w-1 bg-[#1B387A] rounded-full mr-2"></span>
                   Categories
@@ -353,13 +378,13 @@ export default function FAQPage() {
                           : "text-gray-700 hover:bg-[#1B387A]/10 hover:translate-x-1"
                       }`}
                     >
-                      <span className="font-medium">{category.name}</span>
+                      <span className="font-medium truncate mr-2">{category.name}</span>
                       <Badge variant={selectedCategory === category.id.toString() ? "secondary" : "outline"} 
                         className={`${
                           selectedCategory === category.id.toString()
                             ? "bg-white/20 text-white border-white/10" 
                             : "bg-[#1B387A]/10 text-[#1B387A] border-[#1B387A]/20"
-                        }`}
+                        } flex-shrink-0`}
                       >
                         {groupedFaqItems[category.id]?.length || 0}
                       </Badge>
@@ -369,28 +394,28 @@ export default function FAQPage() {
               </div>
               
               {/* FAQ Content - Enhanced with better spacing, animations and styling */}
-              <div className="md:col-span-9 lg:col-span-9 p-5 md:p-8">
-                <div className="flex items-center mb-6">
-                  <h3 className="font-semibold text-xl text-[#1B387A] flex-1">
+              <div className="md:col-span-9 lg:col-span-9 p-4 sm:p-5 md:p-8">
+                <div className="flex items-center flex-wrap mb-6">
+                  <h3 className="font-semibold text-xl text-[#1B387A] flex-1 mb-2 sm:mb-0">
                     {selectedCategory === "all" 
                       ? "All Questions" 
                       : getCategoryName(parseInt(selectedCategory))}
                   </h3>
                   
                   {filteredItems.length > 0 && (
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 w-full sm:w-auto">
                       Showing <span className="font-medium text-[#1B387A]">{filteredItems.length}</span> question{filteredItems.length !== 1 ? 's' : ''}
                     </div>
                   )}
                 </div>
                 
                 {filteredItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50/50 rounded-xl border border-gray-100">
-                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
-                      <HelpCircle size={36} className="text-gray-400" />
+                  <div className="flex flex-col items-center justify-center py-12 text-center bg-gray-50/50 rounded-xl border border-gray-100">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4 sm:mb-5">
+                      <HelpCircle size={30} className="text-gray-400" />
                     </div>
-                    <h4 className="text-xl font-semibold text-gray-700 mb-3">No FAQ items found</h4>
-                    <p className="text-gray-500 max-w-md">
+                    <h4 className="text-lg sm:text-xl font-semibold text-gray-700 mb-2 sm:mb-3">No FAQ items found</h4>
+                    <p className="text-gray-500 max-w-md px-4">
                       {searchTerm
                         ? `No results match your search for "${searchTerm}". Try using different keywords or browse categories.`
                         : "There are no FAQ items in this category yet."}
@@ -398,7 +423,7 @@ export default function FAQPage() {
                     {searchTerm && (
                       <Button 
                         variant="outline" 
-                        className="mt-6 rounded-xl px-6 hover:bg-[#1B387A]/5 border-[#1B387A]/20 text-[#1B387A]"
+                        className="mt-4 sm:mt-6 rounded-xl px-4 sm:px-6 hover:bg-[#1B387A]/5 border-[#1B387A]/20 text-[#1B387A]"
                         onClick={() => setSearchTerm('')}
                       >
                         Clear Search
@@ -406,7 +431,7 @@ export default function FAQPage() {
                     )}
                   </div>
                 ) : (
-                  <ScrollArea className="h-[calc(100vh-280px)] pr-4">
+                  <ScrollArea className="h-[400px] md:h-[calc(100vh-340px)] pr-2 sm:pr-4">
                     <Accordion 
                       type="single" 
                       collapsible 
@@ -435,9 +460,9 @@ export default function FAQPage() {
                             style={{ animationDelay }}
                           >
                             <AccordionTrigger 
-                              className="flex justify-between items-start w-full px-6 py-5 text-left bg-white hover:bg-blue-50/50 focus:outline-none text-gray-900 transition-colors duration-200"
+                              className="flex justify-between items-start w-full px-4 sm:px-6 py-4 sm:py-5 text-left bg-white hover:bg-blue-50/50 focus:outline-none text-gray-900 transition-colors duration-200"
                             >
-                              <div className="pr-8">
+                              <div className="pr-6 sm:pr-8">
                                 {selectedCategory === "all" && (
                                   <Badge 
                                     variant="secondary" 
@@ -447,27 +472,28 @@ export default function FAQPage() {
                                   </Badge>
                                 )}
                                 <div 
-                                  className="font-medium text-lg group-hover:text-[#1B387A] transition-colors duration-200"
+                                  className="font-medium text-base sm:text-lg group-hover:text-[#1B387A] transition-colors duration-200"
                                   dangerouslySetInnerHTML={{ __html: questionContent }}
                                 />
                               </div>
                             </AccordionTrigger>
-                            <AccordionContent className="px-6 py-5 bg-gradient-to-br from-blue-50/50 to-white border-t border-blue-100/50 text-gray-700">
+                            <AccordionContent className="px-4 sm:px-6 py-4 sm:py-5 bg-gradient-to-br from-blue-50/50 to-white border-t border-blue-100/50 text-gray-700">
                               <div className="prose prose-sm max-w-none">
                                 <div dangerouslySetInnerHTML={{ __html: answerContent }} />
                               </div>
-                              <div className="mt-6 flex justify-end border-t border-blue-100/30 pt-4">
+                              <div className="mt-4 sm:mt-6 flex justify-end border-t border-blue-100/30 pt-3 sm:pt-4">
                                 <Button 
                                   variant="outline" 
                                   size="sm" 
-                                  className="text-[#1B387A]/70 hover:text-[#1B387A] hover:bg-[#1B387A]/5 border-[#1B387A]/20 rounded-lg"
+                                  className="text-[#1B387A]/70 hover:text-[#1B387A] hover:bg-[#1B387A]/5 border-[#1B387A]/20 rounded-lg text-xs sm:text-sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCopyFAQ(item.question, item.answer);
                                   }}
                                 >
-                                  <Copy size={14} className="mr-2" />
-                                  Copy Answer
+                                  <Copy size={12} className="mr-1 sm:mr-2" />
+                                  <span className="hidden sm:inline">Copy Answer</span>
+                                  <span className="sm:hidden">Copy</span>
                                 </Button>
                               </div>
                             </AccordionContent>
@@ -481,29 +507,29 @@ export default function FAQPage() {
             </div>
           </div>
           
-          {/* Contact Card - Enhanced with better design and animation */}
-          <div className="mt-16 relative">
+          {/* Contact Card - Enhanced with better design and animation for all screen sizes */}
+          <div className="mt-12 sm:mt-16 relative">
             <div className="absolute inset-0 bg-gradient-to-r from-[#172B5E] via-[#1B387A] to-[#294D98] rounded-2xl transform rotate-1 opacity-70 blur-sm"></div>
             <div className="bg-gradient-to-r from-[#172B5E] via-[#1B387A] to-[#294D98] text-white rounded-2xl shadow-xl overflow-hidden relative z-10">
-              <div className="p-8 md:p-10 text-center md:flex md:items-center md:text-left">
+              <div className="p-6 sm:p-8 md:p-10 text-center md:flex md:items-center md:text-left">
                 <div className="md:flex-1">
-                  <h3 className="text-2xl font-bold mb-3">Still have questions?</h3>
-                  <p className="opacity-90 text-lg max-w-xl">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3">Still have questions?</h3>
+                  <p className="opacity-90 text-base sm:text-lg max-w-xl">
                     Contact our support team for specific questions about NALT citation format or legal research standards.
                   </p>
                 </div>
-                <div className="mt-6 md:mt-0 md:ml-6 flex justify-center">
+                <div className="mt-5 md:mt-0 md:ml-6 flex justify-center">
                   <Button 
-                    className="bg-white text-[#1B387A] hover:bg-blue-50 border-none shadow-lg px-6 py-6 rounded-xl text-lg font-medium transition-transform duration-300 hover:scale-105"
+                    className="bg-white text-[#1B387A] hover:bg-blue-50 border-none shadow-lg px-4 sm:px-6 py-3 sm:py-4 md:py-6 rounded-xl text-base sm:text-lg font-medium transition-transform duration-300 hover:scale-105 w-full sm:w-auto"
                   >
                     Contact Support
                   </Button>
                 </div>
               </div>
               
-              {/* Decorative elements */}
-              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full transform translate-x-20 -translate-y-20"></div>
-              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full transform -translate-x-16 translate-y-16"></div>
+              {/* Decorative elements - adjusted for better mobile visibility */}
+              <div className="absolute top-0 right-0 w-24 h-24 sm:w-40 sm:h-40 bg-white/5 rounded-full transform translate-x-10 sm:translate-x-20 -translate-y-12 sm:-translate-y-20"></div>
+              <div className="absolute bottom-0 left-0 w-20 h-20 sm:w-32 sm:h-32 bg-white/5 rounded-full transform -translate-x-10 sm:-translate-x-16 translate-y-10 sm:translate-y-16"></div>
             </div>
           </div>
         </div>
