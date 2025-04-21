@@ -129,31 +129,54 @@ export default function FAQPage() {
   // Loading state
   if (categoriesLoading || faqItemsLoading) {
     return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto">
-            <Skeleton className="h-12 w-3/4 mb-4" />
-            <Skeleton className="h-5 w-full mb-8" />
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-100/30 blur-3xl"></div>
+          <div className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-indigo-100/20 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <Skeleton className="h-10 w-40 rounded-full mx-auto mb-6" />
+              <Skeleton className="h-16 w-3/4 mx-auto mb-6" />
+              <Skeleton className="h-6 w-2/4 mx-auto" />
+            </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="md:col-span-1">
-                <Skeleton className="h-10 w-full mb-4" />
-                <div className="space-y-2">
-                  {[1, 2, 3, 4].map((i) => (
-                    <Skeleton key={i} className="h-8 w-full" />
-                  ))}
+            <Skeleton className="h-14 max-w-2xl mx-auto rounded-xl mb-12" />
+            
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100/50">
+              <div className="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
+                {/* Category Sidebar Loading */}
+                <div className="md:col-span-3 lg:col-span-3 bg-gradient-to-b from-[#1B387A]/5 to-transparent p-5 md:p-6">
+                  <Skeleton className="h-8 w-32 mb-6" />
+                  
+                  <div className="space-y-3 pr-2">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Skeleton key={i} className="h-12 w-full rounded-xl" />
+                    ))}
+                  </div>
                 </div>
-              </div>
-              
-              <div className="md:col-span-3">
-                <Skeleton className="h-12 w-full mb-6" />
-                <div className="space-y-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="border border-gray-200 rounded-lg p-4">
-                      <Skeleton className="h-6 w-full mb-2" />
-                      <Skeleton className="h-20 w-full" />
-                    </div>
-                  ))}
+                
+                {/* FAQ Content Loading */}
+                <div className="md:col-span-9 lg:col-span-9 p-5 md:p-8">
+                  <Skeleton className="h-8 w-48 mb-8" />
+                  
+                  <div className="space-y-6">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="animate-pulse">
+                        <div className="border border-blue-100/50 rounded-xl overflow-hidden shadow-sm p-6 bg-white">
+                          <Skeleton className="h-6 w-full mb-3" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                            <Skeleton className="h-4 w-5/6" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -166,18 +189,48 @@ export default function FAQPage() {
   // Error state
   if (categoriesError || faqItemsError) {
     return (
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-[#1B387A]">Frequently Asked Questions</h2>
-            <div className="text-red-500 p-6 bg-red-50 rounded-lg shadow-sm">
-              <p className="font-medium">There was an error loading the FAQ content.</p>
-              <p className="mt-2">Please try again later or contact support if the problem persists.</p>
+      <section className="py-16 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-red-100/30 blur-3xl"></div>
+          <div className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-orange-100/20 blur-3xl"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-block bg-red-500/10 px-5 py-2 rounded-full mb-4 shadow-sm">
+                <span className="text-red-600 font-medium tracking-wide">Error</span>
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-red-600">
+                Oops! Something went wrong
+              </h2>
+              <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
+                We encountered an issue while loading the FAQ content. Please try again later.
+              </p>
+            </div>
+            
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-red-100 p-8 md:p-10 text-center max-w-3xl mx-auto">
+              <div className="w-20 h-20 bg-red-50 rounded-full mx-auto flex items-center justify-center mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-10 h-10 text-red-500">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="8" x2="12" y2="12"></line>
+                  <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">There was an error loading the FAQ content</h3>
+              <p className="text-gray-600 mb-8">Our team has been notified of this issue. Please try again later or contact support if the problem persists.</p>
               <Button 
                 variant="outline" 
-                className="mt-4 text-red-600 border-red-300 hover:bg-red-50"
+                className="bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 px-6 py-6 rounded-xl transition-all duration-300"
                 onClick={() => window.location.reload()}
               >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 mr-2">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
                 Reload Page
               </Button>
             </div>
@@ -189,30 +242,50 @@ export default function FAQPage() {
 
   // Main content
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-[#1B387A]">Frequently Asked Questions</h2>
-            <p className="text-gray-600 max-w-3xl mx-auto">
+    <section className="py-16 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-100/30 blur-3xl"></div>
+        <div className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-indigo-100/20 blur-3xl"></div>
+      </div>
+      
+      {/* Subtle dot pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{ 
+          backgroundImage: "radial-gradient(#1B387A 0.8px, transparent 0.8px)", 
+          backgroundSize: "30px 30px" 
+        }}></div>
+      </div>
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-block bg-[#1B387A]/10 px-5 py-2 rounded-full mb-4 shadow-sm">
+              <span className="text-[#1B387A] font-medium tracking-wide">Knowledge Base</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#1B387A] via-[#2c4da3] to-[#3a61cc]">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-gray-600 max-w-3xl mx-auto text-lg leading-relaxed">
               Find answers to common questions about NALT citation format and legal research standards. Browse categories or search for specific topics.
             </p>
           </div>
           
-          {/* Search */}
-          <div className="relative mb-8 max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          {/* Search - Enhanced with animation and styling */}
+          <div className="relative mb-12 max-w-2xl mx-auto transform transition-all duration-500 hover:scale-[1.02]">
+            <div className="relative shadow-lg rounded-xl overflow-hidden border border-blue-100/50">
+              <div className="absolute inset-0 bg-gradient-to-r from-[#1B387A]/5 to-blue-50/50 opacity-70"></div>
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#1B387A]/70" size={20} />
               <Input
                 type="text"
                 placeholder="Search for questions or answers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 border-gray-300 focus:border-[#1B387A] focus:ring-[#1B387A] rounded-lg w-full"
+                className="pl-12 pr-4 py-3 border-0 bg-white/80 backdrop-blur-sm focus:ring-2 focus:ring-[#1B387A]/30 rounded-xl w-full text-gray-700 placeholder:text-gray-400"
               />
               {searchTerm && (
                 <button 
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#1B387A]/60 hover:text-[#1B387A] bg-white/80 rounded-full p-1 transition-colors duration-200"
                   onClick={() => setSearchTerm('')}
                 >
                   <ChevronLeft size={18} />
@@ -222,32 +295,50 @@ export default function FAQPage() {
             </div>
             
             {searchTerm && (
-              <div className="mt-2 text-sm text-gray-500">
+              <div className="mt-3 text-sm text-gray-500 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-blue-100/50 shadow-sm">
                 {filteredItems.length === 0 ? (
-                  <p>No results found for "{searchTerm}"</p>
+                  <p className="flex items-center">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-400 mr-2"></span>
+                    No results found for "<span className="font-medium text-[#1B387A]">{searchTerm}</span>"
+                  </p>
                 ) : (
-                  <p>Found {filteredItems.length} result{filteredItems.length !== 1 ? 's' : ''} for "{searchTerm}"</p>
+                  <p className="flex items-center">
+                    <span className="inline-block w-2 h-2 rounded-full bg-green-400 mr-2"></span>
+                    Found <span className="font-medium text-[#1B387A] mx-1">{filteredItems.length}</span> 
+                    result{filteredItems.length !== 1 ? 's' : ''} for "<span className="font-medium text-[#1B387A]">{searchTerm}</span>"
+                  </p>
                 )}
               </div>
             )}
           </div>
           
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="grid grid-cols-1 md:grid-cols-4">
-              {/* Category Sidebar */}
-              <div className="md:col-span-1 bg-gray-50 p-4 md:p-6 border-b md:border-b-0 md:border-r border-gray-200">
-                <h3 className="font-medium text-lg mb-4 text-[#1B387A]">Categories</h3>
-                <div className="space-y-1">
+          {/* FAQ Content Container - Redesigned with improved visuals */}
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden border border-blue-100/50">
+            <div className="grid grid-cols-1 md:grid-cols-12 min-h-[500px]">
+              {/* Category Sidebar - Enhanced with better spacing and visuals */}
+              <div className="md:col-span-3 lg:col-span-3 bg-gradient-to-b from-[#1B387A]/5 to-transparent p-5 md:p-6">
+                <h3 className="font-semibold text-lg mb-5 text-[#1B387A] flex items-center">
+                  <span className="h-6 w-1 bg-[#1B387A] rounded-full mr-2"></span>
+                  Categories
+                </h3>
+                
+                <div className="space-y-2 pr-2">
                   <button
                     onClick={() => setSelectedCategory("all")}
-                    className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                    className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-300 flex items-center justify-between ${
                       selectedCategory === "all" 
-                        ? "bg-[#1B387A] text-white" 
-                        : "text-gray-700 hover:bg-gray-200"
+                        ? "bg-[#1B387A] text-white shadow-lg" 
+                        : "text-gray-700 hover:bg-[#1B387A]/10 hover:translate-x-1"
                     }`}
                   >
-                    All Questions
-                    <Badge variant="outline" className="ml-2 bg-white text-[#1B387A] border-[#1B387A]">
+                    <span className="font-medium">All Questions</span>
+                    <Badge variant={selectedCategory === "all" ? "secondary" : "outline"} 
+                      className={`${
+                        selectedCategory === "all"
+                          ? "bg-white/20 text-white border-white/10" 
+                          : "bg-[#1B387A]/10 text-[#1B387A] border-[#1B387A]/20"
+                      }`}
+                    >
                       {faqItems.length}
                     </Badge>
                   </button>
@@ -256,18 +347,20 @@ export default function FAQPage() {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id.toString())}
-                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                      className={`w-full text-left px-4 py-3 rounded-xl transition-all duration-300 flex items-center justify-between ${
                         selectedCategory === category.id.toString() 
-                          ? "bg-[#1B387A] text-white" 
-                          : "text-gray-700 hover:bg-gray-200"
+                          ? "bg-[#1B387A] text-white shadow-lg" 
+                          : "text-gray-700 hover:bg-[#1B387A]/10 hover:translate-x-1"
                       }`}
                     >
-                      {category.name}
-                      <Badge variant="outline" className={`ml-2 ${
-                        selectedCategory === category.id.toString()
-                          ? "bg-white text-[#1B387A] border-white" 
-                          : "bg-white text-[#1B387A] border-[#1B387A]"
-                      }`}>
+                      <span className="font-medium">{category.name}</span>
+                      <Badge variant={selectedCategory === category.id.toString() ? "secondary" : "outline"} 
+                        className={`${
+                          selectedCategory === category.id.toString()
+                            ? "bg-white/20 text-white border-white/10" 
+                            : "bg-[#1B387A]/10 text-[#1B387A] border-[#1B387A]/20"
+                        }`}
+                      >
                         {groupedFaqItems[category.id]?.length || 0}
                       </Badge>
                     </button>
@@ -275,18 +368,28 @@ export default function FAQPage() {
                 </div>
               </div>
               
-              {/* FAQ Content */}
-              <div className="md:col-span-3 p-4 md:p-6">
-                <h3 className="font-medium text-xl mb-5 text-[#1B387A]">
-                  {selectedCategory === "all" 
-                    ? "All Questions" 
-                    : getCategoryName(parseInt(selectedCategory))}
-                </h3>
+              {/* FAQ Content - Enhanced with better spacing, animations and styling */}
+              <div className="md:col-span-9 lg:col-span-9 p-5 md:p-8">
+                <div className="flex items-center mb-6">
+                  <h3 className="font-semibold text-xl text-[#1B387A] flex-1">
+                    {selectedCategory === "all" 
+                      ? "All Questions" 
+                      : getCategoryName(parseInt(selectedCategory))}
+                  </h3>
+                  
+                  {filteredItems.length > 0 && (
+                    <div className="text-sm text-gray-500">
+                      Showing <span className="font-medium text-[#1B387A]">{filteredItems.length}</span> question{filteredItems.length !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
                 
                 {filteredItems.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <HelpCircle size={48} className="text-gray-300 mb-4" />
-                    <h4 className="text-lg font-medium text-gray-700 mb-2">No FAQ items found</h4>
+                  <div className="flex flex-col items-center justify-center py-16 text-center bg-gray-50/50 rounded-xl border border-gray-100">
+                    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-5">
+                      <HelpCircle size={36} className="text-gray-400" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-gray-700 mb-3">No FAQ items found</h4>
                     <p className="text-gray-500 max-w-md">
                       {searchTerm
                         ? `No results match your search for "${searchTerm}". Try using different keywords or browse categories.`
@@ -295,7 +398,7 @@ export default function FAQPage() {
                     {searchTerm && (
                       <Button 
                         variant="outline" 
-                        className="mt-4"
+                        className="mt-6 rounded-xl px-6 hover:bg-[#1B387A]/5 border-[#1B387A]/20 text-[#1B387A]"
                         onClick={() => setSearchTerm('')}
                       >
                         Clear Search
@@ -303,7 +406,7 @@ export default function FAQPage() {
                     )}
                   </div>
                 ) : (
-                  <ScrollArea className="h-[calc(100vh-320px)] pr-4">
+                  <ScrollArea className="h-[calc(100vh-280px)] pr-4">
                     <Accordion 
                       type="single" 
                       collapsible 
@@ -311,7 +414,7 @@ export default function FAQPage() {
                       onValueChange={(value) => setOpenItem(value)}
                       className="space-y-4"
                     >
-                      {filteredItems.map((item) => {
+                      {filteredItems.map((item, index) => {
                         // Prepare highlighted content if searching
                         const questionContent = searchTerm
                           ? highlightText(item.question, searchTerm)
@@ -321,41 +424,50 @@ export default function FAQPage() {
                           ? highlightText(item.answer, searchTerm)
                           : item.answer;
                         
+                        // Add staggered animation delay based on index
+                        const animationDelay = `${index * 50}ms`;
+                        
                         return (
                           <AccordionItem 
                             key={item.id}
                             value={`item-${item.id}`}
-                            className="border border-gray-200 rounded-lg overflow-hidden shadow-sm transition hover:shadow-md"
+                            className="border border-blue-100/50 rounded-xl overflow-hidden shadow-sm transition-all duration-300 hover:shadow-md group"
+                            style={{ animationDelay }}
                           >
-                            <AccordionTrigger className="flex justify-between items-start w-full px-6 py-4 text-left bg-white hover:bg-gray-50 focus:outline-none text-gray-900">
+                            <AccordionTrigger 
+                              className="flex justify-between items-start w-full px-6 py-5 text-left bg-white hover:bg-blue-50/50 focus:outline-none text-gray-900 transition-colors duration-200"
+                            >
                               <div className="pr-8">
                                 {selectedCategory === "all" && (
-                                  <Badge variant="secondary" className="mb-2 text-xs font-normal">
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="mb-2 text-xs bg-[#1B387A]/10 text-[#1B387A] border-none"
+                                  >
                                     {getCategoryName(item.categoryId)}
                                   </Badge>
                                 )}
                                 <div 
-                                  className="font-medium"
+                                  className="font-medium text-lg group-hover:text-[#1B387A] transition-colors duration-200"
                                   dangerouslySetInnerHTML={{ __html: questionContent }}
                                 />
                               </div>
                             </AccordionTrigger>
-                            <AccordionContent className="px-6 py-4 bg-gray-50 border-t border-gray-200 text-gray-700">
+                            <AccordionContent className="px-6 py-5 bg-gradient-to-br from-blue-50/50 to-white border-t border-blue-100/50 text-gray-700">
                               <div className="prose prose-sm max-w-none">
                                 <div dangerouslySetInnerHTML={{ __html: answerContent }} />
                               </div>
-                              <div className="mt-4 flex justify-end">
+                              <div className="mt-6 flex justify-end border-t border-blue-100/30 pt-4">
                                 <Button 
-                                  variant="ghost" 
+                                  variant="outline" 
                                   size="sm" 
-                                  className="text-gray-500 hover:text-gray-700"
+                                  className="text-[#1B387A]/70 hover:text-[#1B387A] hover:bg-[#1B387A]/5 border-[#1B387A]/20 rounded-lg"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCopyFAQ(item.question, item.answer);
                                   }}
                                 >
-                                  <Copy size={14} className="mr-1" />
-                                  Copy
+                                  <Copy size={14} className="mr-2" />
+                                  Copy Answer
                                 </Button>
                               </div>
                             </AccordionContent>
@@ -369,16 +481,29 @@ export default function FAQPage() {
             </div>
           </div>
           
-          {/* Contact Card */}
-          <div className="mt-12 bg-[#1B387A] text-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-6 md:p-8 text-center">
-              <h3 className="text-xl font-bold mb-2">Still have questions?</h3>
-              <p className="mb-6 opacity-90">Contact us for specific questions about NALT citation format or legal research.</p>
-              <Button 
-                className="bg-white text-[#1B387A] hover:bg-gray-100 border-none"
-              >
-                Contact Support
-              </Button>
+          {/* Contact Card - Enhanced with better design and animation */}
+          <div className="mt-16 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#172B5E] via-[#1B387A] to-[#294D98] rounded-2xl transform rotate-1 opacity-70 blur-sm"></div>
+            <div className="bg-gradient-to-r from-[#172B5E] via-[#1B387A] to-[#294D98] text-white rounded-2xl shadow-xl overflow-hidden relative z-10">
+              <div className="p-8 md:p-10 text-center md:flex md:items-center md:text-left">
+                <div className="md:flex-1">
+                  <h3 className="text-2xl font-bold mb-3">Still have questions?</h3>
+                  <p className="opacity-90 text-lg max-w-xl">
+                    Contact our support team for specific questions about NALT citation format or legal research standards.
+                  </p>
+                </div>
+                <div className="mt-6 md:mt-0 md:ml-6 flex justify-center">
+                  <Button 
+                    className="bg-white text-[#1B387A] hover:bg-blue-50 border-none shadow-lg px-6 py-6 rounded-xl text-lg font-medium transition-transform duration-300 hover:scale-105"
+                  >
+                    Contact Support
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full transform translate-x-20 -translate-y-20"></div>
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full transform -translate-x-16 translate-y-16"></div>
             </div>
           </div>
         </div>
