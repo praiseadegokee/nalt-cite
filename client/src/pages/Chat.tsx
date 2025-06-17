@@ -48,57 +48,60 @@ export default function Chat() {
   // Create conversation mutation
   const createConversationMutation = useMutation({
     mutationFn: async (title: string) => {
-      const response = await apiRequest('/api/chat/conversations', {
-        method: 'POST',
-        body: JSON.stringify({ title }),
-      });
-      if (!response.ok) throw new Error('Failed to create conversation');
+      console.log('Creating conversation with title:', title);
+      const response = await apiRequest('POST', '/api/chat/conversations', { title });
+      console.log('Response status:', response.status);
       return response.json();
     },
     onSuccess: (conversation) => {
+      console.log('Conversation created successfully:', conversation);
       queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
       setSelectedConversationId(conversation.id);
       setShowNewConversation(false);
       setNewConversationTitle('');
+      toast({ title: 'Success', description: 'Conversation created successfully' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to create conversation', variant: 'destructive' });
+    onError: (error) => {
+      console.error('Conversation creation failed:', error);
+      toast({ title: 'Error', description: `Failed to create conversation: ${error.message}`, variant: 'destructive' });
     },
   });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (question: string) => {
-      const response = await apiRequest(`/api/chat/conversations/${selectedConversationId}/messages`, {
-        method: 'POST',
-        body: JSON.stringify({ question }),
-      });
-      if (!response.ok) throw new Error('Failed to send message');
+      console.log('Sending message:', question);
+      const response = await apiRequest('POST', `/api/chat/conversations/${selectedConversationId}/messages`, { question });
+      console.log('Message sent successfully');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chat/conversations/${selectedConversationId}/messages`] });
       setNewMessage('');
+      toast({ title: 'Success', description: 'Message sent successfully' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' });
+    onError: (error) => {
+      console.error('Message sending failed:', error);
+      toast({ title: 'Error', description: `Failed to send message: ${error.message}`, variant: 'destructive' });
     },
   });
 
   // Delete conversation mutation
   const deleteConversationMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest(`/api/chat/conversations/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Failed to delete conversation');
+      console.log('Deleting conversation:', id);
+      const response = await apiRequest('DELETE', `/api/chat/conversations/${id}`);
+      console.log('Conversation deleted successfully');
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
       setSelectedConversationId(null);
+      toast({ title: 'Success', description: 'Conversation deleted successfully' });
     },
-    onError: () => {
-      toast({ title: 'Error', description: 'Failed to delete conversation', variant: 'destructive' });
+    onError: (error) => {
+      console.error('Conversation deletion failed:', error);
+      toast({ title: 'Error', description: `Failed to delete conversation: ${error.message}`, variant: 'destructive' });
     },
   });
 
