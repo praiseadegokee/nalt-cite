@@ -12,7 +12,7 @@ export class RAGChatService {
     try {
       if (process.env.GEMINI_API_KEY) {
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
         this.isConfigured = true;
       }
     } catch (error) {
