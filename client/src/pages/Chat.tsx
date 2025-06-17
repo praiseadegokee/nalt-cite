@@ -31,15 +31,7 @@ export default function Chat() {
     enabled: !!selectedConversationId,
   });
 
-  // Debug logging for messages
-  useEffect(() => {
-    console.log('Messages updated:', { 
-      selectedConversationId, 
-      messagesCount: messages.length, 
-      messagesLoading,
-      messages: messages.slice(0, 3) // Log first 3 messages to avoid spam
-    });
-  }, [messages, messagesLoading, selectedConversationId]);
+
 
   // Fetch available documents
   const { data: documents = [] } = useQuery<Document[]>({
@@ -72,24 +64,19 @@ export default function Chat() {
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ conversationId, question }: { conversationId: number; question: string }) => {
-      console.log('Sending message:', { conversationId, question });
       const response = await fetch(`/api/chat/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question }),
       });
       if (!response.ok) throw new Error('Failed to send message');
-      const result = await response.json();
-      console.log('Message sent successfully:', result);
-      return result;
+      return response.json();
     },
-    onSuccess: (data) => {
-      console.log('Message mutation success:', data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations', selectedConversationId, 'messages'] });
       setNewMessage('');
     },
-    onError: (error) => {
-      console.error('Message mutation error:', error);
+    onError: () => {
       toast({ title: 'Error', description: 'Failed to send message', variant: 'destructive' });
     },
   });
@@ -154,12 +141,7 @@ export default function Chat() {
   }, [conversations, selectedConversationId]);
 
   const handleSendMessage = () => {
-    console.log('handleSendMessage called:', { newMessage, selectedConversationId });
-    if (!newMessage.trim() || !selectedConversationId) {
-      console.log('Message send blocked:', { messageEmpty: !newMessage.trim(), noConversation: !selectedConversationId });
-      return;
-    }
-    console.log('Calling sendMessageMutation...');
+    if (!newMessage.trim() || !selectedConversationId) return;
     sendMessageMutation.mutate({ conversationId: selectedConversationId, question: newMessage });
   };
 
