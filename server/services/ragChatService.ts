@@ -70,6 +70,8 @@ export class RAGChatService {
             sources.push(chunk.documentTitle);
           }
         });
+        
+        console.log('Context being sent to AI:', context.substring(0, 500) + '...');
       } else {
         console.log('No relevant chunks found for query:', question);
       }
@@ -87,17 +89,26 @@ When answering:
 - Be precise and professional
 - Cite specific sections or rules when possible
 - Provide formatting examples when relevant
-- If you don't have specific information in the provided context, clearly state this
+- Always use the provided context from the official guidelines when available
 - Focus on practical application of citation rules
 
-${context ? 'Use the provided context from the guidelines to answer the question accurately.' : 'Answer based on your knowledge of legal citation standards, but note that specific guideline documents are not currently available.'}`;
+${context ? 'IMPORTANT: Use ONLY the provided context from the official NALT and OSCOLA guidelines to answer the question. Do not rely on general knowledge if specific information is provided in the context.' : 'No specific guideline documents are currently available.'}`;
 
-      // Create the full prompt
-      const fullPrompt = `${systemPrompt}
+      // Create the full prompt with context
+      const fullPrompt = context ? 
+        `${systemPrompt}
+
+CONTEXT FROM OFFICIAL GUIDELINES:
+${context}
 
 User Question: ${question}
 
-Please provide a comprehensive answer based on the available information.`;
+Please provide a comprehensive answer based on the official guidelines provided in the context above.` :
+        `${systemPrompt}
+
+User Question: ${question}
+
+Please provide a comprehensive answer based on your general knowledge of legal citation standards.`;
 
       // Store user message
       await dbStorage.createChatMessage({
