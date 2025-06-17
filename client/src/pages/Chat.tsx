@@ -27,7 +27,7 @@ export default function Chat() {
 
   // Fetch messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
-    queryKey: ['/api/chat/conversations', selectedConversationId, 'messages'],
+    queryKey: [`/api/chat/conversations/${selectedConversationId}/messages`],
     enabled: !!selectedConversationId,
   });
 
@@ -73,7 +73,7 @@ export default function Chat() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations', selectedConversationId, 'messages'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/chat/conversations/${selectedConversationId}/messages`] });
       setNewMessage('');
     },
     onError: () => {
