@@ -315,7 +315,30 @@ export default function Chat() {
                         {messagesLoading ? (
                           <div className="text-center text-gray-500">Loading messages...</div>
                         ) : messages.length === 0 ? (
-                          <div className="text-center text-gray-500">No messages yet. Start the conversation!</div>
+                          <div className="text-center text-gray-500 p-6">
+                            <div className="mb-4">
+                              <h3 className="text-lg font-semibold mb-2">Welcome to NALT Citation Assistant</h3>
+                              <p className="mb-4">Ask questions about Nigerian legal citation standards and formatting. Try asking:</p>
+                            </div>
+                            <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
+                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded" 
+                                   onClick={() => setNewMessage("How do I cite a Nigerian court case using NALT format?")}>
+                                • "How do I cite a Nigerian court case using NALT format?"
+                              </div>
+                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                                   onClick={() => setNewMessage("What is the NALT citation style for statutes?")}>
+                                • "What is the NALT citation style for statutes?"
+                              </div>
+                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                                   onClick={() => setNewMessage("How does NALT differ from OSCOLA citation?")}>
+                                • "How does NALT differ from OSCOLA citation?"
+                              </div>
+                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                                   onClick={() => setNewMessage("What are the footnote requirements in NALT?")}>
+                                • "What are the footnote requirements in NALT?"
+                              </div>
+                            </div>
+                          </div>
                         ) : (
                           messages.map((message) => (
                             <div
