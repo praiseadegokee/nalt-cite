@@ -280,6 +280,15 @@ export async function initializeDatabase() {
       console.log('Sample blog posts added successfully.');
     }
 
+    // Initialize RAG documents after all other setup is complete
+    try {
+      const { initializeRAGDocuments } = await import('./initialize-rag-docs');
+      await initializeRAGDocuments();
+    } catch (error) {
+      console.error('Error initializing RAG documents:', error);
+      // Don't fail the entire startup if RAG documents fail to initialize
+    }
+
   } catch (error) {
     console.error('Database initialization error:', error);
     throw error;
