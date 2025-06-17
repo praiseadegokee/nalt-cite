@@ -209,7 +209,7 @@ export default function Chat() {
                       <FileText className="h-3 w-3 text-blue-600" />
                       <span className="flex-1 truncate">{doc.title}</span>
                       <Badge variant="outline" className="text-xs">
-                        {doc.documentType.toUpperCase()}
+                        {doc.documentType?.toUpperCase() || 'DOC'}
                       </Badge>
                     </div>
                   ))}
