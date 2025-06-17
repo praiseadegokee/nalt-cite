@@ -165,133 +165,145 @@ export default function Chat() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">NALT Citation Assistant</h1>
-          <p className="text-gray-600">Ask questions about NALT guidelines and OSCOLA citation standards</p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="container mx-auto px-4 py-6">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
+              <Bot className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">NALT Citation Assistant</h1>
+              <p className="text-sm text-gray-600">AI-powered legal citation guidance</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-180px)]">
           {/* Sidebar */}
           <div className="lg:col-span-1 space-y-4">
-            {/* Document Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Documents ({documents.length})
+            {/* Knowledge Base Status */}
+            <Card className="border-0 shadow-sm bg-white/70 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center gap-2 text-gray-700">
+                  <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  Knowledge Base
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="pt-0">
                 <div className="space-y-2">
-                  <Input
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleFileChange}
-                    className="text-sm"
-                  />
-                  {uploadFile && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-600 truncate">{uploadFile.name}</span>
-                      <Button
-                        size="sm"
-                        onClick={handleUploadDocument}
-                        disabled={uploadDocumentMutation.isPending}
-                        className="h-6 px-2 text-xs"
-                      >
-                        <Upload className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-1 max-h-32 overflow-y-auto">
                   {documents.map((doc) => (
-                    <div key={doc.id} className="flex items-center gap-2 p-2 bg-gray-50 rounded text-xs">
-                      <FileText className="h-3 w-3 text-blue-600" />
-                      <span className="flex-1 truncate">{doc.title}</span>
-                      <Badge variant="outline" className="text-xs">
-                        {doc.documentType?.toUpperCase() || 'DOC'}
-                      </Badge>
+                    <div key={doc.id} className="flex items-center gap-2 p-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-100">
+                      <FileText className="h-3 w-3 text-green-600" />
+                      <span className="text-xs text-green-800 font-medium truncate">
+                        {doc.filename?.replace('_Complete_Guide.pdf', '').replace('_Guide.pdf', '') || doc.title}
+                      </span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-3 p-2 bg-blue-50 rounded-lg border border-blue-100">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-blue-700 font-medium">AI Ready</span>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-1">Documents indexed for intelligent search</p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Conversations */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm flex items-center justify-between">
+            <Card className="border-0 shadow-sm bg-white/70 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm flex items-center justify-between text-gray-700">
                   <span className="flex items-center gap-2">
                     <MessageCircle className="h-4 w-4" />
                     Conversations
                   </span>
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="ghost"
                     onClick={() => setShowNewConversation(true)}
-                    className="h-6 w-6 p-0"
+                    className="h-7 w-7 p-0 hover:bg-blue-100 hover:text-blue-600 rounded-full"
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-4 w-4" />
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="pt-0">
                 {showNewConversation && (
-                  <div className="space-y-2">
+                  <div className="space-y-2 mb-3 p-3 bg-gray-50 rounded-lg border">
                     <Input
-                      placeholder="Conversation title"
+                      placeholder="Name your conversation..."
                       value={newConversationTitle}
                       onChange={(e) => setNewConversationTitle(e.target.value)}
-                      className="text-sm"
+                      className="text-sm border-0 bg-white"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleCreateConversation();
+                        if (e.key === 'Escape') setShowNewConversation(false);
+                      }}
                     />
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <Button
                         size="sm"
                         onClick={handleCreateConversation}
                         disabled={createConversationMutation.isPending}
-                        className="h-6 px-2 text-xs"
+                        className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700"
                       >
                         Create
                       </Button>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
                         onClick={() => setShowNewConversation(false)}
-                        className="h-6 px-2 text-xs"
+                        className="h-7 px-3 text-xs"
                       >
                         Cancel
                       </Button>
                     </div>
                   </div>
                 )}
-                <ScrollArea className="h-48">
+                <ScrollArea className="h-64">
                   <div className="space-y-1">
-                    {conversations.map((conv) => (
-                      <div
-                        key={conv.id}
-                        className={`flex items-center gap-2 p-2 rounded cursor-pointer text-xs ${
-                          selectedConversationId === conv.id
-                            ? 'bg-blue-100 text-blue-900'
-                            : 'hover:bg-gray-100'
-                        }`}
-                        onClick={() => setSelectedConversationId(conv.id)}
-                      >
-                        <span className="flex-1 truncate">{conv.title}</span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteConversationMutation.mutate(conv.id);
-                          }}
-                          className="h-4 w-4 p-0 opacity-50 hover:opacity-100"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                    {conversations.length === 0 ? (
+                      <div className="text-center py-6 text-gray-500">
+                        <MessageCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No conversations yet</p>
+                        <p className="text-xs">Create one to get started</p>
                       </div>
-                    ))}
+                    ) : (
+                      conversations.map((conv) => (
+                        <div
+                          key={conv.id}
+                          className={`group flex items-center gap-2 p-3 rounded-lg cursor-pointer text-sm transition-all duration-200 ${
+                            selectedConversationId === conv.id
+                              ? 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 shadow-sm'
+                              : 'hover:bg-gray-50 border border-transparent'
+                          }`}
+                          onClick={() => setSelectedConversationId(conv.id)}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="truncate font-medium text-gray-900">{conv.title}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {new Date(conv.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteConversationMutation.mutate(conv.id);
+                            }}
+                            className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100 hover:text-red-600 transition-opacity"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
               </CardContent>
@@ -300,44 +312,75 @@ export default function Chat() {
 
           {/* Chat Area */}
           <div className="lg:col-span-3">
-            <Card className="h-full flex flex-col">
-              <CardHeader>
-                <CardTitle className="text-lg">
-                  {selectedConversationId
-                    ? conversations.find(c => c.id === selectedConversationId)?.title || 'Chat'
-                    : 'Select a conversation to start chatting'}
-                </CardTitle>
+            <Card className="h-full flex flex-col border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+              <CardHeader className="border-b border-gray-100 bg-white/50">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold text-gray-800">
+                    {selectedConversationId ? (
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                          <MessageCircle className="h-4 w-4 text-white" />
+                        </div>
+                        <span>{conversations.find(c => c.id === selectedConversationId)?.title || 'Chat'}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 text-gray-500">
+                        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+                          <MessageCircle className="h-4 w-4" />
+                        </div>
+                        <span>Select a conversation to start</span>
+                      </div>
+                    )}
+                  </CardTitle>
+                  {selectedConversationId && (
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                      <span>AI Assistant Online</span>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
+              <CardContent className="flex-1 flex flex-col p-0">
                 {selectedConversationId ? (
                   <>
                     {/* Messages */}
-                    <ScrollArea className="flex-1 pr-4">
-                      <div className="space-y-4">
+                    <ScrollArea className="flex-1 p-6">
+                      <div className="space-y-6">
                         {messagesLoading ? (
-                          <div className="text-center text-gray-500">Loading messages...</div>
-                        ) : messages.length === 0 ? (
-                          <div className="text-center text-gray-500 p-6">
-                            <div className="mb-4">
-                              <h3 className="text-lg font-semibold mb-2">Welcome to NALT Citation Assistant</h3>
-                              <p className="mb-4">Ask questions about Nigerian legal citation standards and formatting. Try asking:</p>
+                          <div className="flex items-center justify-center py-12">
+                            <div className="flex items-center gap-3 text-gray-500">
+                              <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                              <span>Loading conversation...</span>
                             </div>
-                            <div className="space-y-2 text-sm bg-gray-50 p-4 rounded-lg">
-                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded" 
-                                   onClick={() => setNewMessage("How do I cite a Nigerian court case using NALT format?")}>
-                                • "How do I cite a Nigerian court case using NALT format?"
+                          </div>
+                        ) : messages.length === 0 ? (
+                          <div className="text-center py-12">
+                            <div className="max-w-lg mx-auto">
+                              <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <Bot className="h-8 w-8 text-blue-600" />
                               </div>
-                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                                   onClick={() => setNewMessage("What is the NALT citation style for statutes?")}>
-                                • "What is the NALT citation style for statutes?"
-                              </div>
-                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                                   onClick={() => setNewMessage("How does NALT differ from OSCOLA citation?")}>
-                                • "How does NALT differ from OSCOLA citation?"
-                              </div>
-                              <div className="cursor-pointer hover:bg-gray-100 p-2 rounded"
-                                   onClick={() => setNewMessage("What are the footnote requirements in NALT?")}>
-                                • "What are the footnote requirements in NALT?"
+                              <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
+                              <p className="text-gray-600 mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
+                              <div className="grid gap-3">
+                                {[
+                                  "How do I cite a Nigerian court case using NALT format?",
+                                  "What is the NALT citation style for statutes?",
+                                  "How does NALT differ from OSCOLA citation?",
+                                  "What are the footnote requirements in NALT?"
+                                ].map((question, index) => (
+                                  <button
+                                    key={index}
+                                    onClick={() => setNewMessage(question)}
+                                    className="text-left p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <span className="text-white text-sm font-medium">{index + 1}</span>
+                                      </div>
+                                      <span className="text-gray-700 font-medium">{question}</span>
+                                    </div>
+                                  </button>
+                                ))}
                               </div>
                             </div>
                           </div>
@@ -345,40 +388,55 @@ export default function Chat() {
                           messages.map((message) => (
                             <div
                               key={message.id}
-                              className={`flex gap-3 ${
+                              className={`flex gap-4 ${
                                 message.role === 'user' ? 'justify-end' : 'justify-start'
                               }`}
                             >
-                              <div className={`flex gap-3 max-w-[80%] ${
+                              <div className={`flex gap-3 max-w-[85%] ${
                                 message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                               }`}>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                  message.role === 'user' ? 'bg-blue-500' : 'bg-green-500'
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                  message.role === 'user' 
+                                    ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg' 
+                                    : 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg'
                                 }`}>
                                   {message.role === 'user' ? (
-                                    <User className="h-4 w-4 text-white" />
+                                    <User className="h-5 w-5 text-white" />
                                   ) : (
-                                    <Bot className="h-4 w-4 text-white" />
+                                    <Bot className="h-5 w-5 text-white" />
                                   )}
                                 </div>
-                                <div className={`p-3 rounded-lg ${
-                                  message.role === 'user'
-                                    ? 'bg-blue-500 text-white'
-                                    : 'bg-gray-100 text-gray-900'
-                                }`}>
-                                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                                  {message.sources && JSON.parse(message.sources).length > 0 && (
-                                    <div className="mt-2 pt-2 border-t border-gray-200">
-                                      <p className="text-xs text-gray-600 mb-1">Sources:</p>
-                                      <div className="flex flex-wrap gap-1">
-                                        {JSON.parse(message.sources).map((source: string, index: number) => (
-                                          <Badge key={index} variant="secondary" className="text-xs">
-                                            {source}
-                                          </Badge>
-                                        ))}
+                                <div className="space-y-1">
+                                  <div className={`inline-block px-4 py-3 rounded-2xl shadow-sm ${
+                                    message.role === 'user'
+                                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
+                                      : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
+                                  }`}>
+                                    <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+                                    {message.sources && JSON.parse(message.sources).length > 0 && (
+                                      <div className="mt-3 pt-3 border-t border-gray-300/50">
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <FileText className="h-3 w-3 text-gray-500" />
+                                          <span className="text-xs font-medium text-gray-600">Sources</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                          {JSON.parse(message.sources).map((source: string, index: number) => (
+                                            <span
+                                              key={index}
+                                              className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-200"
+                                            >
+                                              {source.length > 30 ? `${source.substring(0, 30)}...` : source}
+                                            </span>
+                                          ))}
+                                        </div>
                                       </div>
-                                    </div>
-                                  )}
+                                    )}
+                                  </div>
+                                  <div className={`text-xs text-gray-500 ${
+                                    message.role === 'user' ? 'text-right' : 'text-left'
+                                  }`}>
+                                    {new Date(message.createdAt).toLocaleTimeString()}
+                                  </div>
                                 </div>
                               </div>
                             </div>
