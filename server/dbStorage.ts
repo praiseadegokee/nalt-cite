@@ -377,12 +377,36 @@ export class DbStorage implements IStorage {
   }
 
   async searchDocumentChunks(query: string): Promise<DocumentChunk[]> {
-    const chunks = await sqlClient`
-      SELECT * FROM document_chunks 
-      WHERE content ILIKE ${'%' + query + '%'}
-      LIMIT 10
-    `;
-    return chunks as DocumentChunk[];
+    // Extract key terms from the query for better matching
+    const keywords = query.toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !['the', 'and', 'for', 'what', 'how', 'is', 'are', 'to', 'in', 'of', 'a', 'an'].includes(word));
+    
+    console.log('Extracted keywords:', keywords);
+    
+    if (keywords.length === 0) {
+      return [];
+    }
+    
+    // Search for chunks containing any of the keywords
+    const chunks = [];
+    for (const keyword of keywords) {
+      const result = await sqlClient`
+        SELECT * FROM document_chunks 
+        WHERE content ILIKE ${'%' + keyword + '%'}
+        ORDER BY chunk_index
+        LIMIT 5
+      `;
+      chunks.push(...result);
+    }
+    
+    // Remove duplicates and limit results
+    const uniqueChunks = chunks.filter((chunk, index, self) => 
+      index === self.findIndex(c => c.id === chunk.id)
+    ).slice(0, 10);
+    
+    console.log('Found chunks in searchDocumentChunks:', uniqueChunks.length);
+    return uniqueChunks as DocumentChunk[];
   }
 
   // Chat conversation methods

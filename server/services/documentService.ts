@@ -84,7 +84,9 @@ export class DocumentService {
       
       const results = [];
       for (const chunk of chunks) {
+        console.log('Processing chunk for document ID:', chunk.documentId);
         const document = await dbStorage.getDocument(chunk.documentId);
+        console.log('Found document:', document ? document.title : 'NOT FOUND');
         if (document) {
           results.push({
             content: chunk.content,
