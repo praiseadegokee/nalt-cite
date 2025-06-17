@@ -412,7 +412,11 @@ export class DbStorage implements IStorage {
   // Chat conversation methods
   async getChatConversations(): Promise<ChatConversation[]> {
     const conversations = await sqlClient`
-      SELECT * FROM chat_conversations 
+      SELECT 
+        id,
+        title,
+        created_at as "createdAt"
+      FROM chat_conversations 
       ORDER BY created_at DESC
     `;
     return conversations as ChatConversation[];
@@ -449,7 +453,14 @@ export class DbStorage implements IStorage {
   // Chat message methods
   async getChatMessages(conversationId: number): Promise<ChatMessage[]> {
     const messages = await sqlClient`
-      SELECT * FROM chat_messages 
+      SELECT 
+        id,
+        conversation_id as "conversationId",
+        role,
+        content,
+        sources,
+        created_at as "createdAt"
+      FROM chat_messages 
       WHERE conversation_id = ${conversationId} 
       ORDER BY created_at
     `;
@@ -460,7 +471,13 @@ export class DbStorage implements IStorage {
     const result = await sqlClient`
       INSERT INTO chat_messages (conversation_id, role, content, sources, created_at)
       VALUES (${message.conversationId}, ${message.role}, ${message.content}, ${message.sources || null}, NOW())
-      RETURNING *
+      RETURNING 
+        id,
+        conversation_id as "conversationId",
+        role,
+        content,
+        sources,
+        created_at as "createdAt"
     `;
     return result[0] as ChatMessage;
   }
