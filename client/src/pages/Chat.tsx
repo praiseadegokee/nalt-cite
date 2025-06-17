@@ -446,36 +446,69 @@ export default function Chat() {
                       </div>
                     </ScrollArea>
 
-                    <Separator className="my-4" />
-
                     {/* Message Input */}
-                    <div className="flex gap-2">
-                      <Textarea
-                        placeholder="Ask a question about NALT guidelines or OSCOLA citation standards..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            handleSendMessage();
-                          }
-                        }}
-                        className="flex-1 min-h-[60px] resize-none"
-                      />
-                      <Button
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                        className="self-end"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
+                    <div className="border-t border-gray-100 bg-gray-50/50 p-4 rounded-b-xl">
+                      <div className="flex gap-3 items-end">
+                        <div className="flex-1 relative">
+                          <Textarea
+                            placeholder="Ask about NALT guidelines, citation formats, or legal writing standards..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSendMessage();
+                              }
+                            }}
+                            className="min-h-[56px] max-h-32 resize-none border-0 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pr-12"
+                            disabled={sendMessageMutation.isPending}
+                          />
+                          {sendMessageMutation.isPending && (
+                            <div className="absolute bottom-3 right-3">
+                              <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                          className="h-14 w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {sendMessageMutation.isPending ? (
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Send className="h-5 w-5" />
+                          )}
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+                        <div className="flex items-center gap-4">
+                          <span>Press Enter to send, Shift+Enter for new line</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                          <span>Powered by NALT & OSCOLA guides</span>
+                        </div>
+                      </div>
                     </div>
                   </>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-500">
-                    <div className="text-center">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                      <p>Select a conversation to start chatting</p>
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center max-w-md mx-auto p-8">
+                      <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                        <MessageCircle className="h-10 w-10 text-gray-400" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">Ready to Help with Legal Citations</h3>
+                      <p className="text-gray-600 mb-6">
+                        Start a new conversation or select an existing one to get expert guidance on NALT and OSCOLA citation standards.
+                      </p>
+                      <Button
+                        onClick={() => setShowNewConversation(true)}
+                        className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-200"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Start New Conversation
+                      </Button>
                     </div>
                   </div>
                 )}
