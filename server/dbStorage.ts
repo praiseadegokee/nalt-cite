@@ -6,7 +6,11 @@ import {
   type BlogPost, type InsertBlogPost,
   type Resource, type InsertResource,
   type FaqItem, type InsertFaqItem,
-  type FaqCategory, type InsertFaqCategory
+  type FaqCategory, type InsertFaqCategory,
+  type Document, type InsertDocument,
+  type DocumentChunk, type InsertDocumentChunk,
+  type ChatConversation, type InsertChatConversation,
+  type ChatMessage, type InsertChatMessage
 } from "@shared/schema";
 import { IStorage } from './storage';
 
@@ -317,6 +321,124 @@ export class DbStorage implements IStorage {
     // Delete the item
     await sqlClient`DELETE FROM faq_items WHERE id = ${id}`;
     return true;
+  }
+
+  // Document methods for RAG
+  async getDocuments(): Promise<Document[]> {
+    const documents = await sqlClient`SELECT * FROM documents ORDER BY uploaded_at DESC`;
+    return documents as Document[];
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    const documents = await sqlClient`SELECT * FROM documents WHERE id = ${id}`;
+    return documents[0] as Document | undefined;
+  }
+
+  async createDocument(document: InsertDocument): Promise<Document> {
+    const result = await sqlClient`
+      INSERT INTO documents (filename, title, content, document_type, uploaded_at)
+      VALUES (${document.filename}, ${document.title}, ${document.content}, ${document.documentType}, NOW())
+      RETURNING *
+    `;
+    return result[0] as Document;
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    const exists = await this.getDocument(id);
+    if (!exists) {
+      return false;
+    }
+    
+    // Delete related chunks first
+    await sqlClient`DELETE FROM document_chunks WHERE document_id = ${id}`;
+    
+    // Delete the document
+    await sqlClient`DELETE FROM documents WHERE id = ${id}`;
+    return true;
+  }
+
+  // Document chunk methods
+  async getDocumentChunks(documentId: number): Promise<DocumentChunk[]> {
+    const chunks = await sqlClient`
+      SELECT * FROM document_chunks 
+      WHERE document_id = ${documentId} 
+      ORDER BY chunk_index
+    `;
+    return chunks as DocumentChunk[];
+  }
+
+  async createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    const result = await sqlClient`
+      INSERT INTO document_chunks (document_id, content, chunk_index, embedding)
+      VALUES (${chunk.documentId}, ${chunk.content}, ${chunk.chunkIndex}, ${chunk.embedding || null})
+      RETURNING *
+    `;
+    return result[0] as DocumentChunk;
+  }
+
+  async searchDocumentChunks(query: string): Promise<DocumentChunk[]> {
+    const chunks = await sqlClient`
+      SELECT * FROM document_chunks 
+      WHERE content ILIKE ${'%' + query + '%'}
+      LIMIT 10
+    `;
+    return chunks as DocumentChunk[];
+  }
+
+  // Chat conversation methods
+  async getChatConversations(): Promise<ChatConversation[]> {
+    const conversations = await sqlClient`
+      SELECT * FROM chat_conversations 
+      ORDER BY created_at DESC
+    `;
+    return conversations as ChatConversation[];
+  }
+
+  async getChatConversation(id: number): Promise<ChatConversation | undefined> {
+    const conversations = await sqlClient`SELECT * FROM chat_conversations WHERE id = ${id}`;
+    return conversations[0] as ChatConversation | undefined;
+  }
+
+  async createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation> {
+    const result = await sqlClient`
+      INSERT INTO chat_conversations (title, created_at)
+      VALUES (${conversation.title}, NOW())
+      RETURNING *
+    `;
+    return result[0] as ChatConversation;
+  }
+
+  async deleteChatConversation(id: number): Promise<boolean> {
+    const exists = await this.getChatConversation(id);
+    if (!exists) {
+      return false;
+    }
+    
+    // Delete related messages first
+    await sqlClient`DELETE FROM chat_messages WHERE conversation_id = ${id}`;
+    
+    // Delete the conversation
+    await sqlClient`DELETE FROM chat_conversations WHERE id = ${id}`;
+    return true;
+  }
+
+  // Chat message methods
+  async getChatMessages(conversationId: number): Promise<ChatMessage[]> {
+    const messages = await sqlClient`
+      SELECT * FROM chat_messages 
+      WHERE conversation_id = ${conversationId} 
+      ORDER BY created_at
+    `;
+    return messages as ChatMessage[];
+  }
+
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const result = await sqlClient`
+      INSERT INTO chat_messages (conversation_id, role, content, sources, created_at)
+      VALUES (${message.conversationId}, ${message.role}, ${message.content}, ${message.sources || null}, NOW())
+      RETURNING *
+    `;
+    return result[0] as ChatMessage;
   }
 }
 

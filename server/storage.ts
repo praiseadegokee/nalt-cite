@@ -86,6 +86,10 @@ export class MemStorage implements IStorage {
   private resources: Map<number, Resource>;
   private faqCategories: Map<number, FaqCategory>;
   private faqItems: Map<number, FaqItem>;
+  private documents: Map<number, Document>;
+  private documentChunks: Map<number, DocumentChunk>;
+  private chatConversations: Map<number, ChatConversation>;
+  private chatMessages: Map<number, ChatMessage>;
   
   private nextId: {
     users: number;
@@ -95,6 +99,10 @@ export class MemStorage implements IStorage {
     resources: number;
     faqCategories: number;
     faqItems: number;
+    documents: number;
+    documentChunks: number;
+    chatConversations: number;
+    chatMessages: number;
   };
 
   constructor() {
@@ -105,6 +113,10 @@ export class MemStorage implements IStorage {
     this.resources = new Map();
     this.faqCategories = new Map();
     this.faqItems = new Map();
+    this.documents = new Map();
+    this.documentChunks = new Map();
+    this.chatConversations = new Map();
+    this.chatMessages = new Map();
     
     this.nextId = {
       users: 1,
@@ -114,6 +126,10 @@ export class MemStorage implements IStorage {
       resources: 1,
       faqCategories: 1,
       faqItems: 1,
+      documents: 1,
+      documentChunks: 1,
+      chatConversations: 1,
+      chatMessages: 1,
     };
     
     // Initialize with some sample data for testing
@@ -485,6 +501,118 @@ export class MemStorage implements IStorage {
     
     // Delete the item
     return this.faqItems.delete(id);
+  }
+
+  // Document methods for RAG
+  async getDocuments(): Promise<Document[]> {
+    return Array.from(this.documents.values());
+  }
+
+  async getDocument(id: number): Promise<Document | undefined> {
+    return this.documents.get(id);
+  }
+
+  async createDocument(insertDocument: InsertDocument): Promise<Document> {
+    const id = this.nextId.documents++;
+    const document: Document = { 
+      ...insertDocument, 
+      id,
+      uploadedAt: new Date()
+    };
+    this.documents.set(id, document);
+    return document;
+  }
+
+  async deleteDocument(id: number): Promise<boolean> {
+    if (!this.documents.has(id)) {
+      return false;
+    }
+    
+    // Also delete related chunks
+    const chunksToDelete = Array.from(this.documentChunks.values())
+      .filter(chunk => chunk.documentId === id);
+    
+    chunksToDelete.forEach(chunk => {
+      this.documentChunks.delete(chunk.id);
+    });
+    
+    return this.documents.delete(id);
+  }
+
+  // Document chunk methods
+  async getDocumentChunks(documentId: number): Promise<DocumentChunk[]> {
+    return Array.from(this.documentChunks.values())
+      .filter(chunk => chunk.documentId === documentId)
+      .sort((a, b) => a.chunkIndex - b.chunkIndex);
+  }
+
+  async createDocumentChunk(insertChunk: InsertDocumentChunk): Promise<DocumentChunk> {
+    const id = this.nextId.documentChunks++;
+    const chunk: DocumentChunk = { ...insertChunk, id };
+    this.documentChunks.set(id, chunk);
+    return chunk;
+  }
+
+  async searchDocumentChunks(query: string): Promise<DocumentChunk[]> {
+    const queryLower = query.toLowerCase();
+    return Array.from(this.documentChunks.values())
+      .filter(chunk => chunk.content.toLowerCase().includes(queryLower))
+      .slice(0, 10); // Return top 10 results
+  }
+
+  // Chat conversation methods
+  async getChatConversations(): Promise<ChatConversation[]> {
+    return Array.from(this.chatConversations.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  async getChatConversation(id: number): Promise<ChatConversation | undefined> {
+    return this.chatConversations.get(id);
+  }
+
+  async createChatConversation(insertConversation: InsertChatConversation): Promise<ChatConversation> {
+    const id = this.nextId.chatConversations++;
+    const conversation: ChatConversation = { 
+      ...insertConversation, 
+      id,
+      createdAt: new Date()
+    };
+    this.chatConversations.set(id, conversation);
+    return conversation;
+  }
+
+  async deleteChatConversation(id: number): Promise<boolean> {
+    if (!this.chatConversations.has(id)) {
+      return false;
+    }
+    
+    // Also delete related messages
+    const messagesToDelete = Array.from(this.chatMessages.values())
+      .filter(message => message.conversationId === id);
+    
+    messagesToDelete.forEach(message => {
+      this.chatMessages.delete(message.id);
+    });
+    
+    return this.chatConversations.delete(id);
+  }
+
+  // Chat message methods
+  async getChatMessages(conversationId: number): Promise<ChatMessage[]> {
+    return Array.from(this.chatMessages.values())
+      .filter(message => message.conversationId === conversationId)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+  }
+
+  async createChatMessage(insertMessage: InsertChatMessage): Promise<ChatMessage> {
+    const id = this.nextId.chatMessages++;
+    const message: ChatMessage = { 
+      ...insertMessage, 
+      id,
+      createdAt: new Date()
+    };
+    this.chatMessages.set(id, message);
+    return message;
   }
 }
 
