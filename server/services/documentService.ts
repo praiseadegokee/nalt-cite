@@ -78,7 +78,9 @@ export class DocumentService {
   
   async searchDocuments(query: string): Promise<{ content: string; documentTitle: string; chunkIndex: number }[]> {
     try {
+      console.log('DocumentService: Searching for query:', query);
       const chunks = await dbStorage.searchDocumentChunks(query);
+      console.log('DocumentService: Found chunks from DB:', chunks.length);
       
       const results = [];
       for (const chunk of chunks) {
@@ -92,6 +94,7 @@ export class DocumentService {
         }
       }
       
+      console.log('DocumentService: Returning results:', results.length);
       return results;
     } catch (error) {
       console.error('Error searching documents:', error);

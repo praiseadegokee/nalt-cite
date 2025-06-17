@@ -52,13 +52,16 @@ export class RAGChatService {
     
     try {
       // Search for relevant document chunks
+      console.log('Searching for documents with query:', question);
       const relevantChunks = await documentService.searchDocuments(question);
+      console.log('Found chunks:', relevantChunks.length);
       
       // Create context from retrieved documents
       let context = '';
       const sources: string[] = [];
       
       if (relevantChunks.length > 0) {
+        console.log('Building context from', relevantChunks.length, 'chunks');
         context = 'Based on the following information from NALT guidelines and OSCOLA citation standards:\n\n';
         
         relevantChunks.forEach((chunk, index) => {
@@ -67,6 +70,8 @@ export class RAGChatService {
             sources.push(chunk.documentTitle);
           }
         });
+      } else {
+        console.log('No relevant chunks found for query:', question);
       }
 
       // Create system prompt for legal citation assistance
