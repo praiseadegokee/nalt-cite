@@ -4,18 +4,19 @@ import {
   Globe, 
   HelpCircle, 
   Newspaper, 
-  Download
+  Download,
+  Bot
 } from 'lucide-react';
 import { Feature, GlossaryTerm, FAQ, BlogPost, Resource, GuidelinePart } from './types';
 
 // Features for homepage
 export const features: Feature[] = [
   {
-    title: 'NALT Citation Guide',
-    description: 'Access the complete official guide with detailed examples and formatting rules.',
-    icon: FileText,
-    link: '/resources',
-    linkText: 'Learn more',
+    title: 'AI Citation Assistant',
+    description: 'Ask questions about NALT guidelines and OSCOLA standards. Get instant, accurate answers from uploaded documents.',
+    icon: Bot,
+    link: '/chat',
+    linkText: 'Start chatting',
   },
   {
     title: 'Citation Generator',
@@ -23,6 +24,13 @@ export const features: Feature[] = [
     icon: Settings,
     link: '/citation-generator',
     linkText: 'Try it now',
+  },
+  {
+    title: 'NALT Citation Guide',
+    description: 'Access the complete official guide with detailed examples and formatting rules.',
+    icon: FileText,
+    link: '/resources',
+    linkText: 'Learn more',
   },
   {
     title: 'Legal Glossary',
