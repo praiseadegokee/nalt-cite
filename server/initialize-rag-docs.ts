@@ -97,8 +97,8 @@ export async function initializeRAGDocuments(): Promise<void> {
     
     const documentsToProcess = [
       {
-        path: path.resolve(process.cwd(), 'public/pdfs/NALT_Guide.pdf'),
-        filename: 'NALT_Guide.pdf',
+        path: path.resolve(process.cwd(), 'public/pdfs/NALT_Complete_Guide.pdf'),
+        filename: 'NALT_Complete_Guide.pdf',
         type: 'nalt' as const
       },
       {
