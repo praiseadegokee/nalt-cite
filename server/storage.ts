@@ -5,7 +5,11 @@ import {
   blogPosts, type BlogPost, type InsertBlogPost,
   resources, type Resource, type InsertResource,
   faqItems, type FaqItem, type InsertFaqItem,
-  faqCategories, type FaqCategory, type InsertFaqCategory
+  faqCategories, type FaqCategory, type InsertFaqCategory,
+  documents, type Document, type InsertDocument,
+  documentChunks, type DocumentChunk, type InsertDocumentChunk,
+  chatConversations, type ChatConversation, type InsertChatConversation,
+  chatMessages, type ChatMessage, type InsertChatMessage
 } from "@shared/schema";
 
 // Expanded storage interface with all the CRUD operations for our models
@@ -51,6 +55,27 @@ export interface IStorage {
   createFaqItem(item: InsertFaqItem): Promise<FaqItem>;
   updateFaqItem(id: number, item: InsertFaqItem): Promise<FaqItem | undefined>;
   deleteFaqItem(id: number): Promise<boolean>;
+  
+  // Document methods for RAG
+  getDocuments(): Promise<Document[]>;
+  getDocument(id: number): Promise<Document | undefined>;
+  createDocument(document: InsertDocument): Promise<Document>;
+  deleteDocument(id: number): Promise<boolean>;
+  
+  // Document chunk methods
+  getDocumentChunks(documentId: number): Promise<DocumentChunk[]>;
+  createDocumentChunk(chunk: InsertDocumentChunk): Promise<DocumentChunk>;
+  searchDocumentChunks(query: string): Promise<DocumentChunk[]>;
+  
+  // Chat conversation methods
+  getChatConversations(): Promise<ChatConversation[]>;
+  getChatConversation(id: number): Promise<ChatConversation | undefined>;
+  createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation>;
+  deleteChatConversation(id: number): Promise<boolean>;
+  
+  // Chat message methods
+  getChatMessages(conversationId: number): Promise<ChatMessage[]>;
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
 }
 
 export class MemStorage implements IStorage {

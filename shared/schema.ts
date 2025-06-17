@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, vector } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -68,6 +68,42 @@ export const faqItems = pgTable("faq_items", {
   order: integer("order_num").notNull().default(0),
 });
 
+// Documents table for RAG system
+export const documents = pgTable("documents", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  documentType: text("document_type").notNull(), // 'nalt' or 'oscola'
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+});
+
+// Document chunks table for RAG retrieval
+export const documentChunks = pgTable("document_chunks", {
+  id: serial("id").primaryKey(),
+  documentId: integer("document_id").notNull(),
+  content: text("content").notNull(),
+  chunkIndex: integer("chunk_index").notNull(),
+  embedding: text("embedding"), // Store as JSON string since we don't have vector support
+});
+
+// Chat conversations table
+export const chatConversations = pgTable("chat_conversations", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Chat messages table
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  conversationId: integer("conversation_id").notNull(),
+  role: text("role").notNull(), // 'user' or 'assistant'
+  content: text("content").notNull(),
+  sources: text("sources"), // JSON array of source document references
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Create insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -119,6 +155,31 @@ export const insertFaqItemSchema = createInsertSchema(faqItems).pick({
   order: true,
 });
 
+export const insertDocumentSchema = createInsertSchema(documents).pick({
+  filename: true,
+  title: true,
+  content: true,
+  documentType: true,
+});
+
+export const insertDocumentChunkSchema = createInsertSchema(documentChunks).pick({
+  documentId: true,
+  content: true,
+  chunkIndex: true,
+  embedding: true,
+});
+
+export const insertChatConversationSchema = createInsertSchema(chatConversations).pick({
+  title: true,
+});
+
+export const insertChatMessageSchema = createInsertSchema(chatMessages).pick({
+  conversationId: true,
+  role: true,
+  content: true,
+  sources: true,
+});
+
 // Export types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -140,3 +201,15 @@ export type FaqCategory = typeof faqCategories.$inferSelect;
 
 export type InsertFaqItem = z.infer<typeof insertFaqItemSchema>;
 export type FaqItem = typeof faqItems.$inferSelect;
+
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+export type Document = typeof documents.$inferSelect;
+
+export type InsertDocumentChunk = z.infer<typeof insertDocumentChunkSchema>;
+export type DocumentChunk = typeof documentChunks.$inferSelect;
+
+export type InsertChatConversation = z.infer<typeof insertChatConversationSchema>;
+export type ChatConversation = typeof chatConversations.$inferSelect;
+
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
