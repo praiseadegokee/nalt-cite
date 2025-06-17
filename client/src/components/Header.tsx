@@ -14,6 +14,7 @@ export default function Header() {
   const navItems = [
     { name: 'Home', path: '/' },
     { name: 'Citation Generator', path: '/citation-generator' },
+    { name: 'AI Assistant', path: '/chat' },
     { name: 'Glossary', path: '/glossary' },
     { name: 'FAQ', path: '/faq' },
     { name: 'Blog', path: '/blog' },

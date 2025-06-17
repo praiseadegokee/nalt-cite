@@ -652,6 +652,160 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // RAG Chatbot API endpoints
+  app.get(`${apiPrefix}/chat/conversations`, async (req: Request, res: Response) => {
+    try {
+      const { ragChatService } = await import('./services/ragChatService');
+      const conversations = await ragChatService.getConversations();
+      res.json(conversations);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ message: 'Failed to fetch conversations' });
+    }
+  });
+
+  app.post(`${apiPrefix}/chat/conversations`, async (req: Request, res: Response) => {
+    try {
+      const { title } = req.body;
+      if (!title) {
+        return res.status(400).json({ message: 'Title is required' });
+      }
+      
+      const { ragChatService } = await import('./services/ragChatService');
+      const conversation = await ragChatService.createConversation(title);
+      res.status(201).json(conversation);
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      res.status(500).json({ message: 'Failed to create conversation' });
+    }
+  });
+
+  app.get(`${apiPrefix}/chat/conversations/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { ragChatService } = await import('./services/ragChatService');
+      const conversation = await ragChatService.getConversation(id);
+      
+      if (!conversation) {
+        return res.status(404).json({ message: 'Conversation not found' });
+      }
+      
+      res.json(conversation);
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      res.status(500).json({ message: 'Failed to fetch conversation' });
+    }
+  });
+
+  app.delete(`${apiPrefix}/chat/conversations/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { ragChatService } = await import('./services/ragChatService');
+      const result = await ragChatService.deleteConversation(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: 'Conversation not found' });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting conversation:', error);
+      res.status(500).json({ message: 'Failed to delete conversation' });
+    }
+  });
+
+  app.get(`${apiPrefix}/chat/conversations/:id/messages`, async (req: Request, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { ragChatService } = await import('./services/ragChatService');
+      const messages = await ragChatService.getMessages(conversationId);
+      res.json(messages);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      res.status(500).json({ message: 'Failed to fetch messages' });
+    }
+  });
+
+  app.post(`${apiPrefix}/chat/conversations/:id/messages`, async (req: Request, res: Response) => {
+    try {
+      const conversationId = parseInt(req.params.id);
+      const { question } = req.body;
+      
+      if (!question) {
+        return res.status(400).json({ message: 'Question is required' });
+      }
+      
+      const { ragChatService } = await import('./services/ragChatService');
+      const result = await ragChatService.answerQuestion(conversationId, question);
+      res.json(result);
+    } catch (error) {
+      console.error('Error processing question:', error);
+      res.status(500).json({ 
+        message: 'Failed to process question',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.get(`${apiPrefix}/chat/documents`, async (req: Request, res: Response) => {
+    try {
+      const { ragChatService } = await import('./services/ragChatService');
+      const documents = await ragChatService.getAvailableDocuments();
+      res.json(documents);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      res.status(500).json({ message: 'Failed to fetch documents' });
+    }
+  });
+
+  app.post(`${apiPrefix}/chat/upload-document`, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'No PDF file uploaded',
+          allowedTypes: ['PDF']
+        });
+      }
+
+      if (req.file.mimetype !== 'application/pdf') {
+        return res.status(400).json({
+          success: false,
+          message: 'Only PDF files are allowed for document processing'
+        });
+      }
+      
+      const { ragChatService } = await import('./services/ragChatService');
+      const result = await ragChatService.processUploadedDocument(req.file.path, req.file.originalname);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error processing document:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to process document',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  app.delete(`${apiPrefix}/chat/documents/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { ragChatService } = await import('./services/ragChatService');
+      const result = await ragChatService.deleteDocument(id);
+      
+      if (!result) {
+        return res.status(404).json({ message: 'Document not found' });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      console.error('Error deleting document:', error);
+      res.status(500).json({ message: 'Failed to delete document' });
+    }
+  });
+
   // Citation generator API endpoint
   app.post(`${apiPrefix}/generate-citation`, (req: Request, res: Response) => {
     const { sourceType, author, title, edition, publisher, year, page } = req.body;
