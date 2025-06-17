@@ -4,15 +4,26 @@ import { dbStorage } from '../dbStorage';
 import type { InsertChatConversation, InsertChatMessage } from '@shared/schema';
 
 export class RAGChatService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
+  private isConfigured: boolean = false;
 
   constructor() {
-    if (!process.env.GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY environment variable is required');
+    try {
+      if (process.env.GEMINI_API_KEY) {
+        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+        this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+        this.isConfigured = true;
+      }
+    } catch (error) {
+      console.warn('RAG Chat Service: Gemini API not configured:', error instanceof Error ? error.message : 'Unknown error');
     }
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
+  }
+
+  private checkConfiguration() {
+    if (!this.isConfigured) {
+      throw new Error('GEMINI_API_KEY environment variable is required for AI chat functionality');
+    }
   }
 
   async createConversation(title: string) {
@@ -37,6 +48,8 @@ export class RAGChatService {
   }
 
   async answerQuestion(conversationId: number, question: string) {
+    this.checkConfiguration();
+    
     try {
       // Search for relevant document chunks
       const relevantChunks = await documentService.searchDocuments(question);
@@ -90,7 +103,7 @@ Please provide a comprehensive answer based on the available information.`;
       });
 
       // Generate response using Gemini
-      const result = await this.model.generateContent(fullPrompt);
+      const result = await this.model!.generateContent(fullPrompt);
       const response = result.response;
       const answer = response.text();
 
