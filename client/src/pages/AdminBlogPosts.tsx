@@ -224,11 +224,26 @@ export default function AdminBlogPosts() {
 
   // Handle editing existing post
   function handleEditPost(post: BlogPost) {
-    const tagsString = post.tags ? 
-      (Array.isArray(post.tags) ? post.tags.join(', ') : 
-       typeof post.tags === 'string' ? 
-         (post.tags.startsWith('[') ? JSON.parse(post.tags).join(', ') : post.tags) : 
-         '') : '';
+    // Handle tags parsing safely
+    let tagsString = '';
+    if (post.tags) {
+      if (Array.isArray(post.tags)) {
+        tagsString = post.tags.join(', ');
+      } else if (typeof post.tags === 'string') {
+        try {
+          // Try to parse as JSON array first
+          const parsed = JSON.parse(post.tags);
+          if (Array.isArray(parsed)) {
+            tagsString = parsed.join(', ');
+          } else {
+            tagsString = post.tags;
+          }
+        } catch {
+          // If not JSON, treat as plain string
+          tagsString = post.tags;
+        }
+      }
+    }
     
     form.reset({
       title: post.title,
@@ -239,11 +254,11 @@ export default function AdminBlogPosts() {
       readTime: post.readTime,
       category: post.category,
       tags: tagsString,
-      thumbnail: post.thumbnail || '',
+      thumbnail: (post as any).thumbnail || '',
     });
     
     setEditingPost(post);
-    setThumbnailUrl(post.thumbnail || '');
+    setThumbnailUrl((post as any).thumbnail || '');
     setThumbnailFile(null);
     setIsOpen(true);
   }

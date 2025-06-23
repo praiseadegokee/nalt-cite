@@ -160,6 +160,18 @@ export class DbStorage implements IStorage {
     `;
     return result[0] as BlogPost;
   }
+
+  async updateBlogPost(id: number, post: InsertBlogPost): Promise<BlogPost | undefined> {
+    const result = await sqlClient`
+      UPDATE blog_posts 
+      SET title = ${post.title}, excerpt = ${post.excerpt}, content = ${post.content}, 
+          date = ${post.date}, author = ${post.author}, read_time = ${post.readTime}, 
+          category = ${post.category}, tags = ${post.tags || null}, thumbnail = ${post.thumbnail || null}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    return result[0] as BlogPost || undefined;
+  }
   
   // Resource methods
   async getResources(category?: string): Promise<Resource[]> {

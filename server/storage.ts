@@ -359,10 +359,29 @@ export class MemStorage implements IStorage {
     const blogPost: BlogPost = { 
       ...post, 
       id,
-      tags: post.tags ?? null 
+      tags: post.tags ?? null,
+      thumbnail: post.thumbnail ?? null
     };
     this.blogPosts.set(id, blogPost);
     return blogPost;
+  }
+
+  async updateBlogPost(id: number, post: InsertBlogPost): Promise<BlogPost | undefined> {
+    const existingPost = this.blogPosts.get(id);
+    if (!existingPost) {
+      return undefined;
+    }
+    
+    const updatedPost: BlogPost = {
+      ...existingPost,
+      ...post,
+      id,
+      tags: post.tags ?? null,
+      thumbnail: post.thumbnail ?? null
+    };
+    
+    this.blogPosts.set(id, updatedPost);
+    return updatedPost;
   }
   
   // Resource methods
