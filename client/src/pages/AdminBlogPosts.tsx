@@ -48,6 +48,7 @@ const blogPostFormSchema = z.object({
     if (!value) return "";
     return value;
   }),
+  thumbnail: z.string().optional(),
 });
 
 type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
@@ -55,6 +56,9 @@ type BlogPostFormValues = z.infer<typeof blogPostFormSchema>;
 export default function AdminBlogPosts() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>('');
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch blog posts

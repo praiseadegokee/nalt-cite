@@ -46,6 +46,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
       fileSize: 5 * 1024 * 1024 // 5MB max file size for thumbnails
     }
   });
+
+  // General file upload configuration
+  const generalFileStorage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      let uploadDir;
+      if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/')) {
+        uploadDir = path.resolve(process.cwd(), 'public/pdfs');
+      } else {
+        uploadDir = path.resolve(process.cwd(), 'public/downloads');
+      }
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: function(req, file, cb) {
+      cb(null, file.originalname);
+    }
+  });
+
+  const generalUpload = multer({ 
+    storage: generalFileStorage,
+    fileFilter: (req, file, cb) => {
+      const allowedMimeTypes = [
+        'application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp'
+      ];
+      if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+        return cb(new Error('Only PDF, DOCX, XLSX, and image files are allowed'));
+      }
+    },
+    limits: {
+      fileSize: 50 * 1024 * 1024 // 50MB max file size
+    }
+  });
   
   // Serve cover image directly - will use the first image found in the pdfs directory
   app.get('/cover-image', (req: Request, res: Response) => {
@@ -643,60 +683,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // File upload endpoint with improved error handling
-  const fileStorage = multer.diskStorage({
-    destination: function(req, file, cb) {
-      // Determine destination based on file type
-      let uploadDir;
-      
-      // Image files and PDFs go to the pdfs directory, other files to downloads
-      if (file.mimetype === 'application/pdf' || 
-          file.mimetype.startsWith('image/')) {
-        uploadDir = path.resolve(process.cwd(), 'public/pdfs');
-      } else {
-        uploadDir = path.resolve(process.cwd(), 'public/downloads');
-      }
-      
-      // Ensure directory exists
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      
-      cb(null, uploadDir);
-    },
-    filename: function(req, file, cb) {
-      // Keep original filename
-      cb(null, file.originalname);
-    }
-  });
+  // File upload endpoint using the general upload configuration
 
-  const upload = multer({ 
-    storage: fileStorage,
-    fileFilter: (req, file, cb) => {
-      // Allow PDF, Word docs, Excel spreadsheets, and common image formats
-      const allowedMimeTypes = [
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'image/jpeg',  // .jpg, .jpeg
-        'image/png',   // .png
-        'image/gif',   // .gif
-        'image/webp'   // .webp
-      ];
-      
-      if (allowedMimeTypes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(null, false);
-        return cb(new Error('Only PDF, DOCX, XLSX, and image files (JPG, PNG, GIF, WEBP) are allowed'));
-      }
-    },
-    limits: {
-      fileSize: 50 * 1024 * 1024 // 50MB max file size
-    }
-  });
-
-  app.post(`${apiPrefix}/upload`, upload.single('file'), (req: Request, res: Response) => {
+  app.post(`${apiPrefix}/upload`, generalUpload.single('file'), (req: Request, res: Response) => {
     try {
       // Handle missing file or validation errors
       if (!req.file) {
@@ -869,7 +858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post(`${apiPrefix}/chat/upload-document`, upload.single('file'), async (req: Request, res: Response) => {
+  app.post(`${apiPrefix}/chat/upload-document`, generalUpload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
         return res.status(400).json({ 
