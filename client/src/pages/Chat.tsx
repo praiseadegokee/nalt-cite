@@ -144,7 +144,7 @@ export default function Chat() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       {/* Mobile Header */}
-      <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-gray-200 p-4 sticky top-0 z-50">
+      <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-gray-200 p-4 sticky top-0 z-40">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -167,7 +167,7 @@ export default function Chat() {
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -177,7 +177,7 @@ export default function Chat() {
           className={`
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
             lg:translate-x-0 transition-transform duration-300 ease-in-out
-            fixed lg:relative z-50 lg:z-auto
+            fixed lg:relative z-40 lg:z-auto
             w-80 lg:w-80 h-full bg-white lg:bg-transparent
             flex flex-col gap-4 p-4 lg:p-6
             overflow-y-auto shadow-xl lg:shadow-none
