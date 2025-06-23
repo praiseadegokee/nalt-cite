@@ -1,0 +1,33 @@
+NALT CITATION QUICK REFERENCE GUIDE
+ 
+A.	GENERAL PRINCIPLES:
+•	Footnotes: NALT uses the footnote style of referencing. Sources are identified with superscript Arabic numerals in the text, and full citation details appear at the bottom of the page.
+•	Minimal Punctuation: NALT uses punctuation marks minimally. For example, no full stops after abbreviations (e.g., LFN, NWLR).
+•	Case Names: Use 'v' (without a full stop) in place of 'versus' or 'vs'.
+•	Multiple Citations: Separate multiple citations in a single footnote with a semi-colon (;).
+•	Author and Title: Use a comma (,) to separate the author(s) from the title of a work.
+•	Online Sources: For online publications also available in hard copy, cite the hard copy. For online-only sources, end with the web address in angle brackets (<>) and the access date.
+•	Title and Subtitle: Separate a title from a subtitle with a colon (:).
+•	Law Report Brackets: Use round or square brackets consistently for the year and part of law reports. Cite cases exactly as they appear in their original source.
+•	Constitution Citation: Cite the Constitution of the Federal Republic of Nigeria 1999 in full with ‘as amended’ initially, then CFRN 1999 (as amended) or ‘the 1999 Constitution’ subsequently.
+•	Statute Citation: Cite statutes by their short titles with major words capitalized (e.g., Child Rights Act, 2003). In the footnote, cite the full codified title (e.g., Cap U8 Laws of the Federation of Nigeria 2004). Include the statute number and year if not codified.
+•	Parts, Sections, etc.: Use abbreviations (s, sub-s, para, sch) primarily in footnotes. Example: s 4(1)(a)(i).
+•	Ibid. and Cross-Referencing: Use 'ibid.' for the immediately preceding footnote if only one source is cited. Use ‘(n…)’ to cross-reference a previously cited footnote.
+B.	COMMON CITATION FORMATS:
+•	Case: Abacha v Fawehinmi FWLR (Pt 4) 533.
+•	Unreported Case: The State v Airwaves Communications Ltd. (FHC/J/CRC/10/2015, Federal High Court Jos Judicial Division, 17 June 2016).
+•	Book: Bethel Uzoma Ihugba, Introduction to Legal Research Method and Legal Writing (Malthouse Press, 2020).
+•	Chapter in an Edited Book: David Jangkam, ‘The Value of Authorship in the Digital Environment’ in Clement Francis Kwede and Karen Shaakaa (eds), World Wide Research: Reshaping the Sciences and Humanities in the Century of Information (MIT, 2010) 62.
+•	Journal Article (Hard Copy): EI Alemika, ‘Criminal Justice System and Respect for Human Rights: Problems and Imperatives for Reform’ Human Rights Review: An International Human Rights Journal 12(2) 25.
+•	Journal Article (Online): CJ Dakas, ‘The Right of Franchise and the Imperative of a Credible Electoral System in Nigeria’ EJLT (2010)1(1) <http://ejlt.org/article/view/17> accessed 27 July 2010.
+•	Newspaper Article: JN Aduba, ‘Constitutionalism and Citizenship: What Is the Way Forward?’ New Era Magazine (Lagos, 13 October 2012) 10.
+•	Project/Dissertation/Thesis: Matthias Zechariah, Genocide under International Criminal Law: Past, Present and Future Concerns in Africa (LLM Dissertation, Faculty of Law, University of Jos 2011).
+C.	Bibliography:
+•	Presented at the end of the work in alphabetical order by author surname.
+•	Surname precedes initial(s), with a comma after the final initial (e.g., Alemika EI).
+•	Page numbers are generally omitted from book and journal article citations in the bibliography.
+•	For multiple works by the same author, list chronologically, using a double em-dash (--) after the first full citation.
+ 
+
+NOTE: This is a condensed guide. Refer to the full NALT Citation Guide for more detailed rules and examples.
+
