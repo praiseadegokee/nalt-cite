@@ -50,6 +50,12 @@ export class RAGChatService {
   async answerQuestion(conversationId: number, question: string) {
     this.checkConfiguration();
     
+    // Validate conversation exists
+    const conversation = await dbStorage.getChatConversation(conversationId);
+    if (!conversation) {
+      throw new Error(`Conversation with ID ${conversationId} not found`);
+    }
+    
     try {
       // Search for relevant document chunks
       console.log('Searching for documents with query:', question);
