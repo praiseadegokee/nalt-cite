@@ -35,12 +35,16 @@ export class RAGChatService {
     return await dbStorage.getChatConversations(sessionId);
   }
 
-  async getConversation(id: number) {
-    return await dbStorage.getChatConversation(id);
+  async getConversation(id: number, sessionId?: string) {
+    const conversation = await dbStorage.getChatConversation(id);
+    if (sessionId && conversation && conversation.sessionId !== sessionId) {
+      return null; // Access denied
+    }
+    return conversation;
   }
 
-  async deleteConversation(id: number) {
-    return await dbStorage.deleteChatConversation(id);
+  async deleteConversation(id: number, sessionId?: string) {
+    return await dbStorage.deleteChatConversation(id, sessionId);
   }
 
   async getMessages(conversationId: number) {

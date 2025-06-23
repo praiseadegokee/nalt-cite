@@ -696,11 +696,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/chat/conversations/:id`, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
-      const conversation = await ragChatService.getConversation(id);
+      const conversation = await ragChatService.getConversation(id, sessionId);
       
       if (!conversation) {
-        return res.status(404).json({ message: 'Conversation not found' });
+        return res.status(404).json({ message: 'Conversation not found or access denied' });
       }
       
       res.json(conversation);
@@ -713,11 +714,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiPrefix}/chat/conversations/:id`, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
-      const result = await ragChatService.deleteConversation(id);
+      const result = await ragChatService.deleteConversation(id, sessionId);
       
       if (!result) {
-        return res.status(404).json({ message: 'Conversation not found' });
+        return res.status(404).json({ message: 'Conversation not found or access denied' });
       }
       
       res.status(204).end();
@@ -730,12 +732,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get(`${apiPrefix}/chat/conversations/:id/messages`, async (req: Request, res: Response) => {
     try {
       const conversationId = parseInt(req.params.id);
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
       
-      // First check if conversation exists
-      const conversation = await ragChatService.getConversation(conversationId);
+      // First check if conversation exists and user has access
+      const conversation = await ragChatService.getConversation(conversationId, sessionId);
       if (!conversation) {
-        return res.status(404).json({ message: 'Conversation not found' });
+        return res.status(404).json({ message: 'Conversation not found or access denied' });
       }
       
       const messages = await ragChatService.getMessages(conversationId);
@@ -755,7 +758,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Question is required' });
       }
       
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
+      
+      // Verify user has access to this conversation
+      const conversation = await ragChatService.getConversation(conversationId, sessionId);
+      if (!conversation) {
+        return res.status(404).json({ message: 'Conversation not found or access denied' });
+      }
+      
       const result = await ragChatService.answerQuestion(conversationId, question);
       res.json(result);
     } catch (error) {
