@@ -85,8 +85,70 @@ export default function AdminBlogPosts() {
       readTime: 5,
       category: '',
       tags: '',
+      thumbnail: '',
     },
   });
+
+  // Handle thumbnail file selection
+  const handleThumbnailChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'File too large',
+        description: 'Thumbnail must be less than 5MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Check file type
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      toast({
+        title: 'Invalid file type',
+        description: 'Only JPEG, PNG, WebP, and GIF images are allowed',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setThumbnailFile(file);
+    setUploadingThumbnail(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('thumbnail', file);
+
+      const response = await fetch('/api/blog/upload-thumbnail', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setThumbnailUrl(result.thumbnailUrl);
+        form.setValue('thumbnail', result.thumbnailUrl);
+        toast({
+          title: 'Thumbnail uploaded',
+          description: 'Your thumbnail has been uploaded successfully',
+        });
+      } else {
+        throw new Error(result.message || 'Upload failed');
+      }
+    } catch (error) {
+      toast({
+        title: 'Upload failed',
+        description: error instanceof Error ? error.message : 'Unknown error',
+        variant: 'destructive',
+      });
+      setThumbnailFile(null);
+    } finally {
+      setUploadingThumbnail(false);
+    }
+  };
 
   // Create blog post mutation
   const createBlogPost = useMutation({
@@ -101,7 +163,8 @@ export default function AdminBlogPosts() {
         },
         body: JSON.stringify({
           ...values,
-          tags: tagsArray
+          tags: tagsArray,
+          thumbnail: values.thumbnail || null
         }),
       });
       
@@ -145,8 +208,11 @@ export default function AdminBlogPosts() {
       readTime: 5,
       category: '',
       tags: '',
+      thumbnail: '',
     });
     setEditingPost(null);
+    setThumbnailFile(null);
+    setThumbnailUrl('');
     setIsOpen(true);
   }
 
@@ -259,6 +325,41 @@ export default function AdminBlogPosts() {
                   </FormItem>
                 )}
               />
+
+              {/* Thumbnail Upload Field */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Thumbnail Image (Optional)
+                </label>
+                <div className="space-y-3">
+                  <Input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleThumbnailChange}
+                    disabled={uploadingThumbnail}
+                    className="cursor-pointer"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Upload a thumbnail image (JPEG, PNG, WebP, GIF). Maximum file size: 5MB. Recommended dimensions: 1280x720px.
+                  </p>
+                  {uploadingThumbnail && (
+                    <div className="flex items-center gap-2 text-sm text-blue-600">
+                      <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                      Uploading thumbnail...
+                    </div>
+                  )}
+                  {thumbnailUrl && (
+                    <div className="space-y-2">
+                      <p className="text-sm text-green-600">Thumbnail uploaded successfully!</p>
+                      <img
+                        src={thumbnailUrl}
+                        alt="Thumbnail preview"
+                        className="w-32 h-18 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <FormField
                 control={form.control}
