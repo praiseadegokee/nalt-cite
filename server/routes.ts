@@ -718,6 +718,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const conversationId = parseInt(req.params.id);
       const { ragChatService } = await import('./services/ragChatService');
+      
+      // First check if conversation exists
+      const conversation = await ragChatService.getConversation(conversationId);
+      if (!conversation) {
+        return res.status(404).json({ message: 'Conversation not found' });
+      }
+      
       const messages = await ragChatService.getMessages(conversationId);
       res.json(messages);
     } catch (error) {
