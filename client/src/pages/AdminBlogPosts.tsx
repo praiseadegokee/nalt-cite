@@ -150,14 +150,17 @@ export default function AdminBlogPosts() {
     }
   };
 
-  // Create blog post mutation
+  // Create/Update blog post mutation
   const createBlogPost = useMutation({
     mutationFn: async (values: BlogPostFormValues) => {
       // Parse tags from comma-separated string to array before sending
       const tagsArray = values.tags ? values.tags.split(',').map(tag => tag.trim()) : [];
       
-      const response = await fetch('/api/blog/posts', {
-        method: 'POST',
+      const url = editingPost ? `/api/blog/posts/${editingPost.id}` : '/api/blog/posts';
+      const method = editingPost ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -169,7 +172,7 @@ export default function AdminBlogPosts() {
       });
       
       if (!response.ok) {
-        throw new Error('Failed to create blog post');
+        throw new Error(`Failed to ${editingPost ? 'update' : 'create'} blog post`);
       }
       
       return response.json();
@@ -177,16 +180,19 @@ export default function AdminBlogPosts() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blog/posts'] });
       toast({
-        title: 'Blog post created',
-        description: 'Your blog post has been published successfully.',
+        title: `Blog post ${editingPost ? 'updated' : 'created'}`,
+        description: `Your blog post has been ${editingPost ? 'updated' : 'published'} successfully.`,
       });
       setIsOpen(false);
+      setEditingPost(null);
+      setThumbnailFile(null);
+      setThumbnailUrl('');
       form.reset();
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: `Failed to create blog post: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        description: `Failed to ${editingPost ? 'update' : 'create'} blog post: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: 'destructive',
       });
     },
@@ -213,6 +219,32 @@ export default function AdminBlogPosts() {
     setEditingPost(null);
     setThumbnailFile(null);
     setThumbnailUrl('');
+    setIsOpen(true);
+  }
+
+  // Handle editing existing post
+  function handleEditPost(post: BlogPost) {
+    const tagsString = post.tags ? 
+      (Array.isArray(post.tags) ? post.tags.join(', ') : 
+       typeof post.tags === 'string' ? 
+         (post.tags.startsWith('[') ? JSON.parse(post.tags).join(', ') : post.tags) : 
+         '') : '';
+    
+    form.reset({
+      title: post.title,
+      excerpt: post.excerpt,
+      content: post.content,
+      date: post.date,
+      author: post.author,
+      readTime: post.readTime,
+      category: post.category,
+      tags: tagsString,
+      thumbnail: post.thumbnail || '',
+    });
+    
+    setEditingPost(post);
+    setThumbnailUrl(post.thumbnail || '');
+    setThumbnailFile(null);
     setIsOpen(true);
   }
 
@@ -268,10 +300,7 @@ export default function AdminBlogPosts() {
                         variant="outline"
                         size="sm"
                         className="h-8 w-8 p-0"
-                        onClick={() => {
-                          // Set up edit functionality here
-                          console.log('Edit post', post.id);
-                        }}
+                        onClick={() => handleEditPost(post)}
                       >
                         <Edit className="h-4 w-4" />
                       </Button>

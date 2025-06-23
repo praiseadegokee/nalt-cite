@@ -617,6 +617,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put(`${apiPrefix}/blog/posts/:id`, async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    
+    try {
+      const { title, excerpt, content, date, author, readTime, category, tags, thumbnail } = req.body;
+      
+      // Update the blog post
+      const updatedPost = await activeStorage.updateBlogPost(id, {
+        title,
+        excerpt,
+        content,
+        date,
+        author,
+        readTime,
+        category,
+        tags,
+        thumbnail
+      });
+      
+      if (!updatedPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      res.json(updatedPost);
+    } catch (error) {
+      console.error(`Error updating blog post ${id}:`, error);
+      res.status(500).json({ 
+        message: "Failed to update blog post",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Resources API endpoints
   app.get(`${apiPrefix}/resources`, async (req: Request, res: Response) => {
     const { category } = req.query;

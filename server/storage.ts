@@ -36,6 +36,7 @@ export interface IStorage {
   getBlogPosts(): Promise<BlogPost[]>;
   getBlogPost(id: number): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, post: InsertBlogPost): Promise<BlogPost | undefined>;
   
   // Resource methods
   getResources(category?: string): Promise<Resource[]>;
