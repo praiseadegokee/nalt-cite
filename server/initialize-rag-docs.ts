@@ -142,14 +142,8 @@ export async function initializeRAGDocuments(): Promise<void> {
     
     console.log(`Current status - NALT: ${hasNALT ? 'exists' : 'missing'}, OSCOLA: ${hasOSCOLA ? 'exists' : 'missing'}`);
     
-    // Process initialization in background to prevent startup timeout
-    setTimeout(async () => {
-      try {
-        await processDocumentsAsync(hasNALT, hasOSCOLA);
-      } catch (error) {
-        console.error('Background document processing failed:', error);
-      }
-    }, 1000);
+    // Skip background processing if server is under load
+    console.log('Skipping background document processing to prioritize server stability');
     
     console.log('Document initialization scheduled for background processing');
     return;
