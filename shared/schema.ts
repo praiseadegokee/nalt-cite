@@ -38,6 +38,7 @@ export const blogPosts = pgTable("blog_posts", {
   readTime: integer("read_time").notNull(),
   category: text("category").notNull(),
   tags: text("tags"),
+  thumbnail: text("thumbnail"), // URL to uploaded thumbnail image
 });
 
 // Resources table
@@ -132,6 +133,7 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).pick({
   readTime: true,
   category: true,
   tags: true,
+  thumbnail: true,
 });
 
 export const insertResourceSchema = createInsertSchema(resources).pick({

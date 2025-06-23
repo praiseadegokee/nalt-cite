@@ -153,9 +153,9 @@ export class DbStorage implements IStorage {
   
   async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
     const result = await sqlClient`
-      INSERT INTO blog_posts (title, excerpt, content, date, author, read_time, category, tags)
+      INSERT INTO blog_posts (title, excerpt, content, date, author, read_time, category, tags, thumbnail)
       VALUES (${post.title}, ${post.excerpt}, ${post.content}, ${post.date}, 
-              ${post.author}, ${post.readTime}, ${post.category}, ${post.tags || null})
+              ${post.author}, ${post.readTime}, ${post.category}, ${post.tags || null}, ${post.thumbnail || null})
       RETURNING *
     `;
     return result[0] as BlogPost;

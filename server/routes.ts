@@ -13,6 +13,39 @@ import multer from "multer";
 export async function registerRoutes(app: Express): Promise<Server> {
   // API prefix
   const apiPrefix = "/api";
+
+  // Thumbnail upload configuration (5MB limit for images)
+  const thumbnailStorage = multer.diskStorage({
+    destination: function(req, file, cb) {
+      const uploadDir = path.resolve(process.cwd(), 'public/uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: function(req, file, cb) {
+      // Generate unique filename with timestamp
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, 'thumbnail-' + uniqueSuffix + ext);
+    }
+  });
+
+  const thumbnailUpload = multer({ 
+    storage: thumbnailStorage,
+    fileFilter: (req, file, cb) => {
+      const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (allowedMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(null, false);
+        return cb(new Error('Only JPEG, PNG, WebP, and GIF images are allowed for thumbnails'));
+      }
+    },
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB max file size for thumbnails
+    }
+  });
   
   // Serve cover image directly - will use the first image found in the pdfs directory
   app.get('/cover-image', (req: Request, res: Response) => {
@@ -456,9 +489,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog thumbnail upload endpoint
+  app.post(`${apiPrefix}/blog/upload-thumbnail`, thumbnailUpload.single('thumbnail'), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'No thumbnail file uploaded',
+          allowedTypes: ['JPEG', 'PNG', 'WebP', 'GIF']
+        });
+      }
+
+      // Check file size (5MB limit)
+      const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+      if (req.file.size > maxSize) {
+        return res.status(400).json({
+          success: false,
+          message: 'File size exceeds 5MB limit'
+        });
+      }
+
+      // Check file type
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Only JPEG, PNG, WebP, and GIF images are allowed'
+        });
+      }
+      
+      // Return the file path for use in blog post
+      const thumbnailUrl = `/uploads/${req.file.filename}`;
+      res.json({
+        success: true,
+        thumbnailUrl,
+        message: 'Thumbnail uploaded successfully'
+      });
+    } catch (error) {
+      console.error('Error uploading thumbnail:', error);
+      res.status(500).json({ 
+        success: false,
+        message: 'Failed to upload thumbnail',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   app.post(`${apiPrefix}/blog/posts`, async (req: Request, res: Response) => {
     try {
-      const { title, excerpt, content, date, author, readTime, category, tags } = req.body;
+      const { title, excerpt, content, date, author, readTime, category, tags, thumbnail } = req.body;
       
       // Create the blog post
       const newPost = await activeStorage.createBlogPost({
@@ -469,7 +548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         author,
         readTime,
         category,
-        tags
+        tags,
+        thumbnail
       });
       
       res.status(201).json(newPost);
