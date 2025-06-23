@@ -1,0 +1,97 @@
+OSCOLA Quick Reference Guide
+Primary Sources
+Do not use full stops in abbreviations. Separate
+citations with a semi-colon.
+Cases
+Give the party names, followed by the neutral
+citation, followed by the Law Reports citation (eg AC,
+Ch, QB). If there is no neutral citation, give the Law
+Reports citation followed by the court in brackets. If
+the case is not reported in the Law Reports, cite the
+All ER or the WLR, or failing that a specialist report.
+Corr v IBC Vehicles Ltd [2008] UKHL 13, [2008]
+1 AC 884
+R (Roberts) v Parole Board [2004] EWCA Civ
+1031, [2005] QB 410
+Page v Smith [1996] AC 155 (HL)
+When pinpointing, give paragraph numbers in
+square brackets at the end of the citation. If the
+judgment has no paragraph numbers, provide the
+page number pinpoint after the court.
+Callery v Gray [2001] EWCA Civ 1117, [2001] 1
+WLR 2112 [42], [45]
+Bunt v Tilley [2006] EWHC 407 (QB), [2006] 3
+All ER 336 [1]–[37]
+R v Leeds County Court, ex p Morris [1990] QB
+523 (QB) 530–31
+If citing a particular judge:
+Arscott v The Coal Authority [2004] EWCA Civ
+892, [2005] Env LR 6 [27] (Laws LJ)
+Statutes and statutory instruments
+Act of Supremacy 1558
+Human Rights Act 1998, s 15(1)(b)
+Penalties for Disorderly Behaviour (Amendment
+of Minimum Age) Order 2004, SI 2004/3166
+EU legislation and cases
+Consolidated Version of the Treaty on European
+Union [2008] OJ C115/13
+Council Regulation (EC) 139/2004 on the control
+of concentrations between undertakings (EC
+Merger Regulation) [2004] OJ L24/1, art 5
+Case C–176/03 Commission v Council [2005] ECR
+I–7879, paras 47–48
+European Court of Human Rights
+Omojudi v UK (2009) 51 EHRR 10
+Osman v UK ECHR 1998–VIII 3124
+Balogh v Hungary App no 47940/99 (ECHR, 20
+July 2004)
+Simpson v UK (1989) 64 DR 188
+Secondary Sources
+Books
+Give the author’s name in the same form as in the
+publication, except in bibliographies, where you
+should give only the surname followed by the
+initial(s). Give relevant information about editions,
+translators and so forth before the publisher, and
+give page numbers at the end of the citation, after
+the brackets.
+Thomas Hobbes, Leviathan (first published 1651,
+Penguin 1985) 268
+Gareth Jones, Goff and Jones: The Law of Restitution
+(1st supp, 7th edn, Sweet & Maxwell 2009)
+K Zweigert and H Kötz, An Introduction to
+Comparative Law (Tony Weir tr, 3rd edn, OUP
+1998)
+Contributions to edited books
+Francis Rose, ‘The Evolution of the Species’
+in Andrew Burrows and Alan Rodger (eds),
+Mapping the Law: Essays in Memory of Peter Birks
+(OUP 2006)
+Encyclopedias
+Halsbury’s Laws (5th edn, 2010) vol 57, para 53
+Journal articles
+Paul Craig, ‘Theory, “Pure Theory” and Values in
+Public Law’ [2005] PL 440
+When pinpointing, put a comma between the first
+page of the article and the page pinpoint.
+JAG Griffith, ‘The Common Law and the Political
+Constitution’ (2001) 117 LQR 42, 64
+Online journals
+Graham Greenleaf, ‘The Global Development
+of Free Access to Legal Information’ (2010)
+1(1) EJLT < http://ejlt.org//article/view/17 >
+accessed 27 July 2010
+Command papers and Law Commission reports
+Department for International Development,
+Eliminating World Poverty: Building our Common
+Future (White Paper, Cm 7656, 2009) ch 5
+Law Commission, Reforming Bribery (Law Com
+No 313, 2008) paras 3.12–3.17
+Websites and blogs
+Sarah Cole, ‘Virtual Friend Fires Employee’
+(Naked Law, 1 May 2009) <www.nakedlaw.
+com/2009/05/index.html> accessed 19 November
+2009
+Newspaper articles
+Jane Croft, ‘Supreme Court Warns on Quality’
+Financial Times (London, 1 July 2010) 3
