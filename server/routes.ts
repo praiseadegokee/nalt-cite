@@ -667,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(`${apiPrefix}/chat/conversations`, async (req: Request, res: Response) => {
     try {
       const { title } = req.body;
-      if (!title) {
+      if (!title || !title.trim()) {
         return res.status(400).json({ message: 'Title is required' });
       }
       
@@ -731,7 +731,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const conversationId = parseInt(req.params.id);
       const { question } = req.body;
       
-      if (!question) {
+      if (!question || !question.trim()) {
         return res.status(400).json({ message: 'Question is required' });
       }
       
