@@ -463,10 +463,18 @@ export class DbStorage implements IStorage {
     return result[0] as ChatConversation;
   }
 
-  async deleteChatConversation(id: number): Promise<boolean> {
-    const exists = await this.getChatConversation(id);
-    if (!exists) {
-      return false;
+  async deleteChatConversation(id: number, sessionId?: string): Promise<boolean> {
+    // If sessionId is provided, verify ownership
+    if (sessionId) {
+      const conversation = await this.getChatConversation(id);
+      if (!conversation || conversation.sessionId !== sessionId) {
+        return false;
+      }
+    } else {
+      const exists = await this.getChatConversation(id);
+      if (!exists) {
+        return false;
+      }
     }
     
     // Delete related messages first

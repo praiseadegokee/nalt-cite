@@ -26,13 +26,13 @@ export class RAGChatService {
     }
   }
 
-  async createConversation(title: string) {
-    const conversation = await dbStorage.createChatConversation({ title });
+  async createConversation(title: string, sessionId: string) {
+    const conversation = await dbStorage.createChatConversation({ title, sessionId });
     return conversation;
   }
 
-  async getConversations() {
-    return await dbStorage.getChatConversations();
+  async getConversations(sessionId: string) {
+    return await dbStorage.getChatConversations(sessionId);
   }
 
   async getConversation(id: number) {

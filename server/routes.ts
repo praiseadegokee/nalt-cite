@@ -2,6 +2,7 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { dbStorage } from "./dbStorage";
+import { randomUUID } from "crypto";
 
 // Use database storage instead of memory storage
 const activeStorage = dbStorage;
@@ -652,11 +653,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Helper function to get or create session ID
+  const getSessionId = (req: Request, res: Response): string => {
+    let sessionId = req.headers['x-session-id'] as string;
+    if (!sessionId) {
+      sessionId = randomUUID();
+      res.setHeader('x-session-id', sessionId);
+    }
+    return sessionId;
+  };
+
   // RAG Chatbot API endpoints
   app.get(`${apiPrefix}/chat/conversations`, async (req: Request, res: Response) => {
     try {
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
-      const conversations = await ragChatService.getConversations();
+      const conversations = await ragChatService.getConversations(sessionId);
       res.json(conversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
@@ -671,8 +683,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Title is required' });
       }
       
+      const sessionId = getSessionId(req, res);
       const { ragChatService } = await import('./services/ragChatService');
-      const conversation = await ragChatService.createConversation(title);
+      const conversation = await ragChatService.createConversation(title, sessionId);
       res.status(201).json(conversation);
     } catch (error) {
       console.error('Error creating conversation:', error);
