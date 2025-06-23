@@ -143,27 +143,9 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
-      {/* Mobile Header */}
-      <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-gray-200 p-4 sticky top-0 z-40">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-              <BookOpen className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-semibold text-gray-900">NALT Citation Assistant</span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2"
-          >
-            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-      </div>
 
-      <div className="flex h-screen lg:pt-0 pt-16">
+
+      <div className="flex h-screen">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
@@ -293,8 +275,8 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col lg:ml-0 ml-0">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl mx-4 lg:mx-6 mb-4 lg:mb-6">
+        <div className="flex-1 flex flex-col">
+          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl m-4 lg:mx-6 lg:mb-6">
             <CardHeader className="border-b border-gray-100 p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3">
@@ -320,12 +302,12 @@ export default function Chat() {
                     <span>AI Online</span>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => setSidebarOpen(true)}
-                    className="lg:hidden p-2"
+                    className="lg:hidden text-xs px-2 py-1"
                   >
-                    <Menu className="h-4 w-4" />
+                    Conversations
                   </Button>
                 </div>
               </div>
