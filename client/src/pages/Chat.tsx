@@ -127,6 +127,20 @@ export default function Chat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Close sidebar when clicking outside on mobile
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+
+    if (sidebarOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [sidebarOpen]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       {/* Mobile Header */}
@@ -159,14 +173,17 @@ export default function Chat() {
         )}
 
         {/* Sidebar */}
-        <div className={`
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-          lg:translate-x-0 transition-transform duration-300 ease-in-out
-          fixed lg:relative z-50 lg:z-auto
-          w-80 lg:w-80 h-full bg-white lg:bg-transparent
-          flex flex-col gap-4 p-4 lg:p-6
-          overflow-y-auto
-        `}>
+        <div 
+          className={`
+            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+            lg:translate-x-0 transition-transform duration-300 ease-in-out
+            fixed lg:relative z-50 lg:z-auto
+            w-80 lg:w-80 h-full bg-white lg:bg-transparent
+            flex flex-col gap-4 p-4 lg:p-6
+            overflow-y-auto shadow-xl lg:shadow-none
+          `}
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header - Hidden on mobile */}
           <Card className="hidden lg:block bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="pb-4">
@@ -327,14 +344,14 @@ export default function Chat() {
                           </div>
                         </div>
                       ) : messages.length === 0 ? (
-                        <div className="text-center py-12">
+                        <div className="text-center py-8 lg:py-12 px-4">
                           <div className="max-w-lg mx-auto">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                              <Bot className="h-8 w-8 text-blue-600" />
+                            <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                              <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                            <p className="text-gray-600 mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
-                            <div className="grid gap-3">
+                            <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
+                            <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
+                            <div className="grid gap-2 lg:gap-3">
                               {[
                                 "How do I cite a Nigerian court case using NALT format?",
                                 "What is the NALT citation style for statutes?",
@@ -343,14 +360,17 @@ export default function Chat() {
                               ].map((question, index) => (
                                 <button
                                   key={index}
-                                  onClick={() => setNewMessage(question)}
-                                  className="text-left p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
+                                  onClick={() => {
+                                    setNewMessage(question);
+                                    setSidebarOpen(false);
+                                  }}
+                                  className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
                                 >
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                                      <span className="text-white text-sm font-medium">{index + 1}</span>
+                                  <div className="flex items-center gap-2 lg:gap-3">
+                                    <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                                      <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
                                     </div>
-                                    <span className="text-gray-700 font-medium">{question}</span>
+                                    <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
                                   </div>
                                 </button>
                               ))}
@@ -420,8 +440,8 @@ export default function Chat() {
                   </ScrollArea>
 
                   {/* Message Input */}
-                  <div className="border-t border-gray-100 bg-gray-50/50 p-4 rounded-b-xl">
-                    <div className="flex gap-3 items-end">
+                  <div className="border-t border-gray-100 bg-gray-50/50 p-3 lg:p-4 rounded-b-xl">
+                    <div className="flex gap-2 lg:gap-3 items-end">
                       <div className="flex-1 relative">
                         <Textarea
                           placeholder="Ask about NALT guidelines, citation formats, or legal writing standards..."
@@ -433,30 +453,31 @@ export default function Chat() {
                               handleSendMessage();
                             }
                           }}
-                          className="min-h-[56px] max-h-32 resize-none border-0 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pr-12"
+                          className="min-h-[48px] lg:min-h-[56px] max-h-32 resize-none border-0 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pr-12 text-sm lg:text-base"
                           disabled={sendMessageMutation.isPending}
                         />
                         {sendMessageMutation.isPending && (
                           <div className="absolute bottom-3 right-3">
-                            <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
                           </div>
                         )}
                       </div>
                       <Button
                         onClick={handleSendMessage}
                         disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                        className="h-14 w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {sendMessageMutation.isPending ? (
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         ) : (
-                          <Send className="h-5 w-5" />
+                          <Send className="h-4 w-4 lg:h-5 lg:w-5" />
                         )}
                       </Button>
                     </div>
-                    <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-2 text-xs text-gray-500">
                       <div className="flex items-center gap-4">
-                        <span>Press Enter to send, Shift+Enter for new line</span>
+                        <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
+                        <span className="sm:hidden">Tap send or press Enter</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
