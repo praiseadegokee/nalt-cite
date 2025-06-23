@@ -84,6 +84,48 @@ async function chunkAndStoreDocument(documentId: number, content: string): Promi
   console.log(`Stored ${chunks.length} chunks successfully`);
 }
 
+async function processDocumentsAsync(hasNALT: boolean, hasOSCOLA: boolean): Promise<void> {
+  const documentsToProcess = [
+    {
+      path: path.resolve(process.cwd(), 'public/pdfs/NALT_Complete_Guide.pdf'),
+      filename: 'NALT_Complete_Guide.pdf',
+      type: 'nalt' as const,
+      skip: hasNALT
+    },
+    {
+      path: path.resolve(process.cwd(), 'public/pdfs/OSCOLA_Guide.pdf'),
+      filename: 'OSCOLA_Guide.pdf',
+      type: 'oscola' as const,
+      skip: hasOSCOLA
+    }
+  ];
+  
+  for (const doc of documentsToProcess) {
+    if (doc.skip) {
+      console.log(`Skipping ${doc.filename} - already exists`);
+      continue;
+    }
+    
+    if (fs.existsSync(doc.path)) {
+      try {
+        console.log(`Processing ${doc.filename}...`);
+        const documentId = await processAndStorePDF(doc.path, doc.filename, doc.type);
+        console.log(`✓ Successfully processed ${doc.filename} (Document ID: ${documentId})`);
+      } catch (error) {
+        console.error(`✗ Failed to process ${doc.filename}:`, error);
+      }
+    } else {
+      console.warn(`⚠ File not found: ${doc.path}`);
+    }
+  }
+  
+  const finalDocs = await dbStorage.getDocuments();
+  console.log(`Background processing complete! Total documents: ${finalDocs.length}`);
+  finalDocs.forEach(doc => {
+    console.log(`- ${doc.title} (${doc.documentType.toUpperCase()})`);
+  });
+}
+
 export async function initializeRAGDocuments(): Promise<void> {
   console.log('Initializing permanent RAG documents...');
   
@@ -94,9 +136,23 @@ export async function initializeRAGDocuments(): Promise<void> {
     const hasOSCOLA = existingDocs.some(doc => doc.documentType === 'oscola');
     
     if (hasNALT && hasOSCOLA) {
-      console.log('Documents already exist in the system:', existingDocs.map(d => d.title));
+      console.log('Both documents already exist in the system:', existingDocs.map(d => d.title));
       return;
     }
+    
+    console.log(`Current status - NALT: ${hasNALT ? 'exists' : 'missing'}, OSCOLA: ${hasOSCOLA ? 'exists' : 'missing'}`);
+    
+    // Process initialization in background to prevent startup timeout
+    setTimeout(async () => {
+      try {
+        await processDocumentsAsync(hasNALT, hasOSCOLA);
+      } catch (error) {
+        console.error('Background document processing failed:', error);
+      }
+    }, 1000);
+    
+    console.log('Document initialization scheduled for background processing');
+    return;
     
     const documentsToProcess = [
       {
@@ -112,8 +168,15 @@ export async function initializeRAGDocuments(): Promise<void> {
     ];
     
     for (const doc of documentsToProcess) {
+      // Skip if this document type already exists
+      if ((doc.type === 'nalt' && hasNALT) || (doc.type === 'oscola' && hasOSCOLA)) {
+        console.log(`Skipping ${doc.filename} - already exists`);
+        continue;
+      }
+      
       if (fs.existsSync(doc.path)) {
         try {
+          console.log(`Processing ${doc.filename}...`);
           const documentId = await processAndStorePDF(doc.path, doc.filename, doc.type);
           console.log(`✓ Successfully processed ${doc.filename} (Document ID: ${documentId})`);
         } catch (error) {
