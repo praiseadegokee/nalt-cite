@@ -15,7 +15,9 @@ import {
   User, 
   FileText,
   BookOpen,
-  Sparkles
+  Sparkles,
+  Menu,
+  X
 } from 'lucide-react';
 import type { ChatConversation, ChatMessage, Document } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
@@ -25,6 +27,7 @@ export default function Chat() {
   const [newMessage, setNewMessage] = useState('');
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [newConversationTitle, setNewConversationTitle] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -126,11 +129,46 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
-      <div className="container mx-auto p-6 h-screen flex gap-6">
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-white/90 backdrop-blur-sm border-b border-gray-200 p-4 sticky top-0 z-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+              <BookOpen className="h-4 w-4 text-white" />
+            </div>
+            <span className="font-semibold text-gray-900">NALT Citation Assistant</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-2"
+          >
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex h-screen lg:pt-0 pt-16">
+        {/* Mobile Sidebar Overlay */}
+        {sidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
         {/* Sidebar */}
-        <div className="w-80 flex flex-col gap-4">
-          {/* Header */}
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+        <div className={`
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
+          lg:translate-x-0 transition-transform duration-300 ease-in-out
+          fixed lg:relative z-50 lg:z-auto
+          w-80 lg:w-80 h-full bg-white lg:bg-transparent
+          flex flex-col gap-4 p-4 lg:p-6
+          overflow-y-auto
+        `}>
+          {/* Header - Hidden on mobile */}
+          <Card className="hidden lg:block bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
@@ -238,9 +276,9 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader className="border-b border-gray-100">
+        <div className="flex-1 flex flex-col lg:ml-0 ml-0">
+          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl mx-4 lg:mx-6 mb-4 lg:mb-6">
+            <CardHeader className="border-b border-gray-100 p-4 lg:p-6">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-3">
                   {selectedConversationId ? (
@@ -248,22 +286,30 @@ export default function Chat() {
                       <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
                         <Bot className="h-4 w-4 text-white" />
                       </div>
-                      <span>{conversations.find(c => c.id === selectedConversationId)?.title || 'Chat'}</span>
+                      <span className="truncate text-sm lg:text-base">{conversations.find(c => c.id === selectedConversationId)?.title || 'Chat'}</span>
                     </>
                   ) : (
                     <>
                       <div className="w-8 h-8 bg-gradient-to-br from-gray-400 to-gray-500 rounded-lg flex items-center justify-center">
                         <MessageCircle className="h-4 w-4 text-white" />
                       </div>
-                      <span>Select a conversation</span>
+                      <span className="text-sm lg:text-base">Select a conversation</span>
                     </>
                   )}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500">
                     <Sparkles className="h-3 w-3" />
                     <span>AI Online</span>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden p-2"
+                  >
+                    <Menu className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -271,8 +317,8 @@ export default function Chat() {
               {selectedConversationId ? (
                 <>
                   {/* Messages */}
-                  <ScrollArea className="flex-1 p-6">
-                    <div className="space-y-6">
+                  <ScrollArea className="flex-1 p-4 lg:p-6">
+                    <div className="space-y-4 lg:space-y-6">
                       {messagesLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <div className="flex items-center gap-3 text-gray-500">
@@ -319,27 +365,27 @@ export default function Chat() {
                               message.role === 'user' ? 'justify-end' : 'justify-start'
                             }`}
                           >
-                            <div className={`flex gap-3 max-w-[85%] ${
+                            <div className={`flex gap-2 lg:gap-3 max-w-[95%] lg:max-w-[85%] ${
                               message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                             }`}>
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                 message.role === 'user' 
                                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg' 
                                   : 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg'
                               }`}>
                                 {message.role === 'user' ? (
-                                  <User className="h-5 w-5 text-white" />
+                                  <User className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                                 ) : (
-                                  <Bot className="h-5 w-5 text-white" />
+                                  <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
                                 )}
                               </div>
-                              <div className="space-y-1">
-                                <div className={`inline-block px-4 py-3 rounded-2xl shadow-sm ${
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className={`inline-block px-3 lg:px-4 py-2 lg:py-3 rounded-2xl shadow-sm max-w-full ${
                                   message.role === 'user'
                                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
                                     : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
                                 }`}>
-                                  <div className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</div>
+                                  <div className="whitespace-pre-wrap text-sm leading-relaxed break-words">{message.content}</div>
                                   {message.sources && JSON.parse(message.sources).length > 0 && (
                                     <div className="mt-3 pt-3 border-t border-gray-300/50">
                                       <div className="flex items-center gap-2 mb-2">
