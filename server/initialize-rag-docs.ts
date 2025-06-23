@@ -88,9 +88,12 @@ export async function initializeRAGDocuments(): Promise<void> {
   console.log('Initializing permanent RAG documents...');
   
   try {
-    // Check if documents already exist
+    // Check if both required documents already exist
     const existingDocs = await dbStorage.getDocuments();
-    if (existingDocs.length > 0) {
+    const hasNALT = existingDocs.some(doc => doc.documentType === 'nalt');
+    const hasOSCOLA = existingDocs.some(doc => doc.documentType === 'oscola');
+    
+    if (hasNALT && hasOSCOLA) {
       console.log('Documents already exist in the system:', existingDocs.map(d => d.title));
       return;
     }
