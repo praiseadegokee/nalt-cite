@@ -90,6 +90,7 @@ export const documentChunks = pgTable("document_chunks", {
 // Chat conversations table
 export const chatConversations = pgTable("chat_conversations", {
   id: serial("id").primaryKey(),
+  sessionId: text("session_id").notNull(),
   title: text("title").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -170,6 +171,7 @@ export const insertDocumentChunkSchema = createInsertSchema(documentChunks).pick
 });
 
 export const insertChatConversationSchema = createInsertSchema(chatConversations).pick({
+  sessionId: true,
   title: true,
 });
 

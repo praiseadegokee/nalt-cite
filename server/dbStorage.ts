@@ -410,28 +410,55 @@ export class DbStorage implements IStorage {
   }
 
   // Chat conversation methods
-  async getChatConversations(): Promise<ChatConversation[]> {
-    const conversations = await sqlClient`
-      SELECT 
-        id,
-        title,
-        created_at as "createdAt"
-      FROM chat_conversations 
-      ORDER BY created_at DESC
-    `;
-    return conversations as ChatConversation[];
+  async getChatConversations(sessionId?: string): Promise<ChatConversation[]> {
+    if (sessionId) {
+      const conversations = await sqlClient`
+        SELECT 
+          id,
+          session_id as "sessionId",
+          title,
+          created_at as "createdAt"
+        FROM chat_conversations 
+        WHERE session_id = ${sessionId}
+        ORDER BY created_at DESC
+      `;
+      return conversations as ChatConversation[];
+    } else {
+      const conversations = await sqlClient`
+        SELECT 
+          id,
+          session_id as "sessionId",
+          title,
+          created_at as "createdAt"
+        FROM chat_conversations 
+        ORDER BY created_at DESC
+      `;
+      return conversations as ChatConversation[];
+    }
   }
 
   async getChatConversation(id: number): Promise<ChatConversation | undefined> {
-    const conversations = await sqlClient`SELECT * FROM chat_conversations WHERE id = ${id}`;
+    const conversations = await sqlClient`
+      SELECT 
+        id,
+        session_id as "sessionId",
+        title,
+        created_at as "createdAt"
+      FROM chat_conversations 
+      WHERE id = ${id}
+    `;
     return conversations[0] as ChatConversation | undefined;
   }
 
   async createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation> {
     const result = await sqlClient`
-      INSERT INTO chat_conversations (title, created_at)
-      VALUES (${conversation.title}, NOW())
-      RETURNING *
+      INSERT INTO chat_conversations (session_id, title, created_at)
+      VALUES (${conversation.sessionId}, ${conversation.title}, NOW())
+      RETURNING 
+        id,
+        session_id as "sessionId",
+        title,
+        created_at as "createdAt"
     `;
     return result[0] as ChatConversation;
   }
