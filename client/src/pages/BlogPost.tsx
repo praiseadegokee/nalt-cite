@@ -88,25 +88,44 @@ export default function BlogPost() {
               <div className="flex flex-wrap gap-2">
                 {(() => {
                   let tagsArray: string[] = [];
-                  try {
-                    // Try to parse the tags if they're stored as a JSON string
-                    if (typeof post.tags === 'string') {
-                      tagsArray = JSON.parse(post.tags);
-                    } else if (Array.isArray(post.tags)) {
-                      tagsArray = post.tags;
+                  
+                  if (post.tags) {
+                    try {
+                      if (typeof post.tags === 'string') {
+                        // Try to parse as JSON array first
+                        if (post.tags.startsWith('[')) {
+                          tagsArray = JSON.parse(post.tags);
+                        } else {
+                          // If it's a comma-separated string, split it
+                          tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                        }
+                      } else if (Array.isArray(post.tags)) {
+                        tagsArray = post.tags;
+                      }
+                    } catch (e) {
+                      console.error('Failed to parse tags', e);
+                      // Fallback: treat as comma-separated string
+                      if (typeof post.tags === 'string') {
+                        tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                      }
                     }
-                  } catch (e) {
-                    console.error('Failed to parse tags', e);
                   }
                   
-                  return tagsArray.map((tag: string, index: number) => (
+                  // Ensure tagsArray is always an array before mapping
+                  if (!Array.isArray(tagsArray)) {
+                    tagsArray = [];
+                  }
+                  
+                  return tagsArray.length > 0 ? tagsArray.map((tag: string, index: number) => (
                     <span 
                       key={index} 
                       className="text-xs font-medium py-1 px-2 rounded-full bg-gray-100 text-gray-800"
                     >
                       {tag}
                     </span>
-                  ));
+                  )) : (
+                    <span className="text-xs text-gray-500">No tags</span>
+                  );
                 })()}
               </div>
             </div>
