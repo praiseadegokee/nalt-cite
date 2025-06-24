@@ -1,9 +1,26 @@
 import { useParams, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Separator } from '@/components/ui/separator';
+import { 
+  ChevronLeft, 
+  Clock, 
+  User, 
+  Calendar,
+  Share2,
+  Twitter,
+  Linkedin,
+  Facebook,
+  Copy,
+  Check
+} from 'lucide-react';
+import { useState } from 'react';
 
 export default function BlogPost() {
   const { id } = useParams();
+  const [copiedLink, setCopiedLink] = useState(false);
   
   // Fetch blog post from the API
   const { data: post, isLoading, isError } = useQuery({
@@ -17,149 +34,296 @@ export default function BlogPost() {
     },
   });
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const img = e.currentTarget;
+    img.style.display = 'none';
+    
+    const fallback = document.createElement('div');
+    fallback.className = 'h-64 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] mb-8 rounded-xl flex items-center justify-center text-white';
+    fallback.innerHTML = `
+      <div class="text-center">
+        <svg class="h-12 w-12 mx-auto mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <p class="text-sm opacity-80">Article Image</p>
+      </div>
+    `;
+    
+    img.parentNode?.insertBefore(fallback, img);
+  };
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy link');
+    }
+  };
+
+  const shareUrl = encodeURIComponent(window.location.href);
+  const shareTitle = encodeURIComponent(post?.title || '');
+
   if (isLoading) {
     return (
-      <div className="py-20 text-center">
-        <p>Loading article...</p>
+      <div className="py-16 bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <Skeleton className="h-6 w-32 mb-8" />
+            <div className="space-y-6">
+              <div className="flex items-center space-x-3">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-4 w-32" />
+              </div>
+              <Skeleton className="h-12 w-full" />
+              <div className="flex items-center space-x-4">
+                <Skeleton className="h-12 w-12 rounded-full" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+              </div>
+              <Skeleton className="h-64 w-full rounded-xl" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (isError || !post) {
     return (
-      <div className="py-20 text-center">
-        <p>Article not found.</p>
-        <Link href="/blog">
-          <a className="inline-block mt-4 text-[#294D98] hover:underline">
-            Return to blog
-          </a>
-        </Link>
+      <div className="py-20 bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4">📄</div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Article not found</h2>
+          <p className="text-gray-600 mb-6">The article you're looking for doesn't exist or has been removed.</p>
+          <Button asChild>
+            <Link href="/blog">
+              <ChevronLeft className="h-4 w-4 mr-2" />
+              Return to blog
+            </Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <article className="py-10 bg-white">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          {/* Back to blog link */}
-          <Link href="/blog" className="inline-flex items-center text-[#294D98] hover:text-[#1B387A] mb-8">
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Back to all articles
-          </Link>
-          
-          {/* Article header */}
-          <header className="mb-8">
-            <div className="flex items-center mb-4">
-              <span className="text-xs font-medium py-1 px-2 rounded bg-[#C3CDE1]/40 text-[#1B387A] mr-3">{post.category}</span>
-              <time dateTime={post.date} className="text-sm text-gray-500">
-                {new Date(post.date).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </time>
-            </div>
+    <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen">
+      <article className="py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            {/* Back to blog link */}
+            <Button variant="ghost" asChild className="mb-8 hover:bg-white/50">
+              <Link href="/blog">
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Back to all articles
+              </Link>
+            </Button>
             
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
+            {/* Article header */}
+            <header className="mb-12 bg-white rounded-xl p-8 shadow-sm">
+              <div className="flex flex-wrap items-center gap-4 mb-6">
+                <Badge variant="default" className="bg-[#294D98] hover:bg-[#1B387A]">
+                  {post.category}
+                </Badge>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <time dateTime={post.date}>
+                    {new Date(post.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </time>
+                </div>
+                <div className="flex items-center text-sm text-gray-500">
+                  <Clock className="h-4 w-4 mr-2" />
+                  {post.readTime} min read
+                </div>
+              </div>
+              
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                {post.title}
+              </h1>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-4">
+                    <User className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{post.author}</p>
+                    <p className="text-sm text-gray-500">Contributing Author</p>
+                  </div>
+                </div>
+                
+                {/* Share buttons */}
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyToClipboard}
+                    className="hover:bg-gray-50"
+                  >
+                    {copiedLink ? (
+                      <Check className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="hover:bg-blue-50"
+                  >
+                    <a
+                      href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Twitter className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="hover:bg-blue-50"
+                  >
+                    <a
+                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="hover:bg-blue-50"
+                  >
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Facebook className="h-4 w-4" />
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </header>
             
-            <div className="flex items-center">
-              <div className="h-10 w-10 rounded-full bg-gray-300 mr-3"></div>
-              <div>
-                <p className="font-medium text-gray-900">{post.author}</p>
-                <p className="text-sm text-gray-500">{post.readTime} min read</p>
+            {/* Article content */}
+            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+              {/* Thumbnail image */}
+              {(post as any).thumbnail ? (
+                <img 
+                  src={(post as any).thumbnail} 
+                  alt={post.title}
+                  className="h-64 w-full object-cover"
+                  onError={handleImageError}
+                />
+              ) : (
+                <div className="h-64 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center text-white">
+                  <div className="text-center">
+                    <Calendar className="h-12 w-12 mx-auto mb-2 opacity-60" />
+                    <p className="text-sm opacity-80">Featured Article</p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="p-8 md:p-12">
+                <div className="prose prose-lg max-w-none">
+                  <p className="text-xl text-gray-700 font-medium leading-relaxed mb-8">
+                    {post.excerpt}
+                  </p>
+                  
+                  <div 
+                    className="prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-900 prose-a:text-[#294D98] hover:prose-a:text-[#1B387A]"
+                    dangerouslySetInnerHTML={{ __html: post.content }} 
+                  />
+                </div>
               </div>
             </div>
-          </header>
-          
-          {/* Article content */}
-          <div className="prose max-w-none">
-            {/* Thumbnail image */}
-            {(post as any).thumbnail ? (
-              <img 
-                src={(post as any).thumbnail} 
-                alt={post.title}
-                className="h-64 w-full object-cover mb-8 rounded"
-                onError={(e) => {
-                  // Fallback to gray background if image fails to load
-                  (e.target as HTMLImageElement).style.display = 'none';
-                  const fallback = document.createElement('div');
-                  fallback.className = 'h-64 w-full bg-gray-300 mb-8 rounded flex items-center justify-center text-gray-500';
-                  fallback.textContent = 'Image not available';
-                  (e.target as HTMLImageElement).parentNode?.insertBefore(fallback, e.target);
-                }}
-              />
-            ) : (
-              <div className="h-64 w-full bg-gray-300 mb-8 rounded flex items-center justify-center text-gray-500">
-                No thumbnail image
+            
+            {/* Tags section */}
+            {post.tags && (
+              <div className="mt-8 bg-white rounded-xl p-8 shadow-sm">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                  <Share2 className="h-5 w-5 mr-2" />
+                  Related Topics
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {(() => {
+                    let tagsArray: string[] = [];
+                    
+                    if (post.tags) {
+                      try {
+                        if (typeof post.tags === 'string') {
+                          if (post.tags.startsWith('[')) {
+                            tagsArray = JSON.parse(post.tags);
+                          } else {
+                            tagsArray = post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
+                          }
+                        } else if (Array.isArray(post.tags)) {
+                          tagsArray = post.tags;
+                        }
+                      } catch (e) {
+                        console.error('Failed to parse tags', e);
+                        if (typeof post.tags === 'string') {
+                          tagsArray = post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
+                        }
+                      }
+                    }
+                    
+                    if (!Array.isArray(tagsArray)) {
+                      tagsArray = [];
+                    }
+                    
+                    return tagsArray.length > 0 ? tagsArray.map((tag: string, index: number) => (
+                      <Badge 
+                        key={index} 
+                        variant="secondary"
+                        className="hover:bg-[#294D98] hover:text-white transition-colors cursor-pointer"
+                      >
+                        {tag}
+                      </Badge>
+                    )) : (
+                      <span className="text-sm text-gray-500">No tags available</span>
+                    );
+                  })()}
+                </div>
               </div>
             )}
             
-            <p className="text-lg font-medium text-gray-800 mb-6">{post.excerpt}</p>
-            
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          </div>
-          
-          {/* Tags */}
-          {post.tags && (
-            <div className="mt-10 pt-6 border-t border-gray-200">
-              <h2 className="text-sm font-semibold text-gray-900 mb-3">Related Topics:</h2>
-              <div className="flex flex-wrap gap-2">
-                {(() => {
-                  let tagsArray: string[] = [];
-                  
-                  if (post.tags) {
-                    try {
-                      if (typeof post.tags === 'string') {
-                        // Try to parse as JSON array first
-                        if (post.tags.startsWith('[')) {
-                          tagsArray = JSON.parse(post.tags);
-                        } else {
-                          // If it's a comma-separated string, split it
-                          tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-                        }
-                      } else if (Array.isArray(post.tags)) {
-                        tagsArray = post.tags;
-                      }
-                    } catch (e) {
-                      console.error('Failed to parse tags', e);
-                      // Fallback: treat as comma-separated string
-                      if (typeof post.tags === 'string') {
-                        tagsArray = post.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-                      }
-                    }
-                  }
-                  
-                  // Ensure tagsArray is always an array before mapping
-                  if (!Array.isArray(tagsArray)) {
-                    tagsArray = [];
-                  }
-                  
-                  return tagsArray.length > 0 ? tagsArray.map((tag: string, index: number) => (
-                    <span 
-                      key={index} 
-                      className="text-xs font-medium py-1 px-2 rounded-full bg-gray-100 text-gray-800"
-                    >
-                      {tag}
-                    </span>
-                  )) : (
-                    <span className="text-xs text-gray-500">No tags</span>
-                  );
-                })()}
+            {/* Back to blog CTA */}
+            <div className="mt-12 text-center">
+              <Separator className="mb-8" />
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-gray-900">Explore More Articles</h3>
+                <p className="text-gray-600">Discover more insights on legal citation and academic writing</p>
+                <Button asChild size="lg" className="bg-[#294D98] hover:bg-[#1B387A]">
+                  <Link href="/blog">
+                    View All Articles
+                  </Link>
+                </Button>
               </div>
-            </div>
-          )}
-          
-          {/* Share links */}
-          <div className="mt-8 flex justify-end">
-            <div className="flex space-x-4">
-              <button className="text-sm text-[#294D98] hover:text-[#1B387A]">Share on Twitter</button>
-              <button className="text-sm text-[#294D98] hover:text-[#1B387A]">Share on LinkedIn</button>
-              <button className="text-sm text-[#294D98] hover:text-[#1B387A]">Share on Facebook</button>
             </div>
           </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
   );
 }
