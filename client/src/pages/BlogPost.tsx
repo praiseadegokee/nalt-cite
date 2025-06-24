@@ -74,7 +74,26 @@ export default function BlogPost() {
           
           {/* Article content */}
           <div className="prose max-w-none">
-            <div className="h-64 w-full bg-gray-300 mb-8 rounded"></div>
+            {/* Thumbnail image */}
+            {(post as any).thumbnail ? (
+              <img 
+                src={(post as any).thumbnail} 
+                alt={post.title}
+                className="h-64 w-full object-cover mb-8 rounded"
+                onError={(e) => {
+                  // Fallback to gray background if image fails to load
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  const fallback = document.createElement('div');
+                  fallback.className = 'h-64 w-full bg-gray-300 mb-8 rounded flex items-center justify-center text-gray-500';
+                  fallback.textContent = 'Image not available';
+                  (e.target as HTMLImageElement).parentNode?.insertBefore(fallback, e.target);
+                }}
+              />
+            ) : (
+              <div className="h-64 w-full bg-gray-300 mb-8 rounded flex items-center justify-center text-gray-500">
+                No thumbnail image
+              </div>
+            )}
             
             <p className="text-lg font-medium text-gray-800 mb-6">{post.excerpt}</p>
             
