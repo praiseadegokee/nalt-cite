@@ -85,15 +85,15 @@ export default function BlogCard({ post }: BlogCardProps) {
         
         {/* Author and Read Time */}
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-3">
+          <div className="flex items-center min-w-0 flex-1 mr-2">
+            <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-3 flex-shrink-0">
               <User className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-medium text-gray-900">{post.author}</span>
+            <span className="text-sm font-medium text-gray-900 truncate">{post.author}</span>
           </div>
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-gray-500 flex-shrink-0">
             <Clock className="h-3 w-3 mr-1" />
-            {post.readTime} min
+            <span className="whitespace-nowrap">{post.readTime} min</span>
           </div>
         </div>
       </div>

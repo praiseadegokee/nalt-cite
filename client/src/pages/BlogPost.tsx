@@ -129,96 +129,96 @@ export default function BlogPost() {
             </Button>
             
             {/* Article header */}
-            <header className="mb-12 bg-white rounded-xl p-8 shadow-sm">
-              <div className="flex flex-wrap items-center gap-4 mb-6">
-                <Badge variant="default" className="bg-[#294D98] hover:bg-[#1B387A]">
+            <header className="mb-8 sm:mb-12 bg-white rounded-xl p-4 sm:p-6 lg:p-8 shadow-sm">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+                <Badge variant="default" className="bg-[#294D98] hover:bg-[#1B387A] text-xs">
                   {post.category}
                 </Badge>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Calendar className="h-4 w-4 mr-2" />
+                <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <time dateTime={post.date}>
                     {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
-                      month: 'long',
+                      month: 'short',
                       day: 'numeric'
                     })}
                   </time>
                 </div>
-                <div className="flex items-center text-sm text-gray-500">
-                  <Clock className="h-4 w-4 mr-2" />
+                <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   {post.readTime} min read
                 </div>
               </div>
               
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
                 {post.title}
               </h1>
               
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-4">
-                    <User className="h-6 w-6 text-white" />
+                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                    <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{post.author}</p>
-                    <p className="text-sm text-gray-500">Contributing Author</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{post.author}</p>
+                    <p className="text-xs sm:text-sm text-gray-500">Contributing Author</p>
                   </div>
                 </div>
                 
                 {/* Share buttons */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={copyToClipboard}
-                    className="hover:bg-gray-50"
+                    className="hover:bg-gray-50 p-2"
                   >
                     {copiedLink ? (
-                      <Check className="h-4 w-4 text-green-600" />
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                     ) : (
-                      <Copy className="h-4 w-4" />
+                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
                     )}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     asChild
-                    className="hover:bg-blue-50"
+                    className="hover:bg-blue-50 p-2"
                   >
                     <a
                       href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Twitter className="h-4 w-4" />
+                      <Twitter className="h-3 w-3 sm:h-4 sm:w-4" />
                     </a>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     asChild
-                    className="hover:bg-blue-50"
+                    className="hover:bg-blue-50 p-2"
                   >
                     <a
                       href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Linkedin className="h-4 w-4" />
+                      <Linkedin className="h-3 w-3 sm:h-4 sm:w-4" />
                     </a>
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     asChild
-                    className="hover:bg-blue-50"
+                    className="hover:bg-blue-50 p-2"
                   >
                     <a
                       href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <Facebook className="h-4 w-4" />
+                      <Facebook className="h-3 w-3 sm:h-4 sm:w-4" />
                     </a>
                   </Button>
                 </div>
@@ -232,26 +232,26 @@ export default function BlogPost() {
                 <img 
                   src={(post as any).thumbnail} 
                   alt={post.title}
-                  className="h-64 w-full object-cover"
+                  className="h-48 sm:h-64 lg:h-80 w-full object-cover"
                   onError={handleImageError}
                 />
               ) : (
-                <div className="h-64 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center text-white">
+                <div className="h-48 sm:h-64 lg:h-80 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center text-white">
                   <div className="text-center">
-                    <Calendar className="h-12 w-12 mx-auto mb-2 opacity-60" />
-                    <p className="text-sm opacity-80">Featured Article</p>
+                    <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 opacity-60" />
+                    <p className="text-xs sm:text-sm opacity-80">Featured Article</p>
                   </div>
                 </div>
               )}
               
-              <div className="p-8 md:p-12">
-                <div className="prose prose-lg max-w-none">
-                  <p className="text-xl text-gray-700 font-medium leading-relaxed mb-8">
+              <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
+                <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+                  <p className="text-base sm:text-lg lg:text-xl text-gray-700 font-medium leading-relaxed mb-6 sm:mb-8">
                     {post.excerpt}
                   </p>
                   
                   <div 
-                    className="prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-900 prose-a:text-[#294D98] hover:prose-a:text-[#1B387A]"
+                    className="prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-900 prose-a:text-[#294D98] hover:prose-a:text-[#1B387A] prose-img:rounded-lg prose-img:shadow-md"
                     dangerouslySetInnerHTML={{ __html: post.content }} 
                   />
                 </div>
