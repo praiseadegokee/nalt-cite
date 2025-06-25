@@ -141,43 +141,68 @@ Please provide the details for your source, and I'll format it correctly accordi
       const relevantChunks = await documentService.searchDocuments(question);
       console.log('Found chunks:', relevantChunks.length);
       
-      // Create context from retrieved documents
+      // Create context from retrieved documents with improved organization
       let context = '';
       const sources: string[] = [];
       
       if (relevantChunks.length > 0) {
         console.log('Building context from', relevantChunks.length, 'chunks');
-        context = 'Based on the following information from NALT guidelines and OSCOLA citation standards:\n\n';
         
-        relevantChunks.forEach((chunk, index) => {
-          context += `Source ${index + 1} (${chunk.documentTitle}):\n${chunk.content}\n\n`;
-          if (!sources.includes(chunk.documentTitle)) {
-            sources.push(chunk.documentTitle);
-          }
-        });
+        // Group chunks by document type for better organization
+        const naltChunks = relevantChunks.filter(chunk => chunk.documentType === 'nalt');
+        const oscolaChunks = relevantChunks.filter(chunk => chunk.documentType === 'oscola');
+        
+        context = 'Based on the following official legal citation guidelines:\n\n';
+        
+        if (naltChunks.length > 0) {
+          context += '=== NALT (Nigerian Association of Law Teachers) Guidelines ===\n';
+          naltChunks.forEach((chunk, index) => {
+            context += `${index + 1}. ${chunk.content.trim()}\n\n`;
+            if (!sources.includes(chunk.documentTitle)) {
+              sources.push(chunk.documentTitle);
+            }
+          });
+        }
+        
+        if (oscolaChunks.length > 0) {
+          context += '=== OSCOLA (Oxford Standard for Citation of Legal Authorities) Guidelines ===\n';
+          oscolaChunks.forEach((chunk, index) => {
+            context += `${index + 1}. ${chunk.content.trim()}\n\n`;
+            if (!sources.includes(chunk.documentTitle)) {
+              sources.push(chunk.documentTitle);
+            }
+          });
+        }
         
         console.log('Context being sent to AI:', context.substring(0, 500) + '...');
       } else {
         console.log('No relevant chunks found for query:', question);
       }
 
-      // Create system prompt for legal citation assistance
-      const systemPrompt = `You are a specialized assistant for legal citation and writing standards, specifically knowledgeable about Nigerian legal citation standards (NALT) and Oxford Standard for Citation of Legal Authorities (OSCOLA).
+      // Enhanced system prompt for better responses
+      const systemPrompt = `You are a specialized Nigerian legal citation assistant with expertise in NALT (Nigerian Association of Law Teachers) and OSCOLA citation standards.
 
-Your role is to:
-1. Provide accurate guidance on legal citation formatting
-2. Help with proper legal writing standards
-3. Answer questions about NALT and OSCOLA requirements
-4. Provide examples when helpful
+**Core Responsibilities:**
+1. Generate accurate NALT-compliant legal citations
+2. Explain citation rules with practical examples
+3. Help with legal writing standards
+4. Compare NALT vs OSCOLA when relevant
+5. Provide step-by-step citation guidance
 
-When answering:
-- Be precise and professional
-- Cite specific sections or rules when possible
-- Provide formatting examples when relevant
-- Always use the provided context from the official guidelines when available
-- Focus on practical application of citation rules
+**Response Guidelines:**
+- Always prioritize NALT standards for Nigerian legal sources
+- Use provided official guidelines as the authoritative source
+- Give concrete examples with proper formatting
+- Explain the reasoning behind citation rules
+- Be concise but comprehensive
+- Use markdown formatting for better readability
 
-${context ? 'IMPORTANT: Use ONLY the provided context from the official NALT and OSCOLA guidelines to answer the question. Do not rely on general knowledge if specific information is provided in the context.' : 'No specific guideline documents are currently available.'}`;
+**Citation Priority:**
+1. Official NALT guidelines (primary)
+2. OSCOLA guidelines (comparative reference)
+3. General legal citation principles (if no specific guidance available)
+
+${context ? 'IMPORTANT: Base your response primarily on the official guidelines provided below. These are authoritative sources for citation standards.' : 'Note: Limited guideline context available - provide general NALT citation principles.'}`;
 
       // Create the full prompt with context
       const fullPrompt = context ? 

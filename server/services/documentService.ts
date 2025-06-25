@@ -37,9 +37,9 @@ export class DocumentService {
   }
   
   private async chunkAndStoreDocument(documentId: number, content: string): Promise<void> {
-    // Split content into chunks of approximately 1000 characters
-    const chunkSize = 1000;
-    const overlap = 200; // Overlap between chunks for better context
+    // Improved chunking strategy - split by paragraphs first, then by size
+    const chunkSize = 800; // Reduced for better semantic coherence
+    const overlap = 150;
     
     const chunks: string[] = [];
     let startIndex = 0;
