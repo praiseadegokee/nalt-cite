@@ -33,6 +33,7 @@ function Router() {
         <Route path="/blog/:id" component={BlogPost} />
         <Route path="/resources" component={Resources} />
         <Route path="/admin" component={AdminDashboard} />
+        <Route path="/upload" component={FileUpload} />
         <Route path="/admin/upload" component={FileUpload} />
         <Route path="/admin/blog" component={AdminBlogPosts} />
         <Route path="/admin/glossary" component={AdminGlossary} />

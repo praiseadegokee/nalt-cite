@@ -17,7 +17,8 @@ import {
   BookOpen,
   Sparkles,
   Menu,
-  X
+  X,
+  Upload
 } from 'lucide-react';
 import type { ChatConversation, ChatMessage, Document } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
@@ -121,6 +122,67 @@ export default function Chat() {
       toast({ title: 'Error', description: `Failed to delete conversation: ${error.message}`, variant: 'destructive' });
     },
   });
+
+  // File upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/chat/upload-document', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Failed to upload ${file.name}`);
+        }
+        
+        return response.json();
+      });
+      
+      return Promise.all(uploadPromises);
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
+      const successCount = results.length;
+      toast({ 
+        title: 'Success', 
+        description: `${successCount} document${successCount > 1 ? 's' : ''} uploaded successfully` 
+      });
+    },
+    onError: (error) => {
+      console.error('Upload failed:', error);
+      toast({ title: 'Error', description: `Upload failed: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Delete document mutation
+  const deleteDocumentMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest('DELETE', `/api/chat/documents/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
+      toast({ title: 'Success', description: 'Document removed successfully' });
+    },
+    onError: (error) => {
+      console.error('Failed to delete document:', error);
+      toast({ title: 'Error', description: `Failed to delete document: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Handle file upload
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      uploadMutation.mutate(files);
+    }
+    event.target.value = '';
+  };
 
   const handleSendMessage = () => {
     if (!newMessage.trim()) return;
