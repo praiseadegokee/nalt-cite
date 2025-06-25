@@ -294,11 +294,15 @@ Please provide a comprehensive answer based on your general knowledge of legal c
   }
 
   async getAvailableDocuments() {
-    return await documentService.getAvailableDocuments();
+    return await dbStorage.getDocuments();
   }
 
   async deleteDocument(id: number) {
-    return await documentService.deleteDocument(id);
+    const result = await dbStorage.deleteDocument(id);
+    return {
+      success: result,
+      message: result ? 'Document deleted successfully' : 'Document not found'
+    };
   }
 }
 

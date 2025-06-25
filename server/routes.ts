@@ -915,29 +915,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(`${apiPrefix}/chat/upload-document`, generalUpload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'No PDF file uploaded',
-          allowedTypes: ['PDF']
-        });
+        return res.status(400).json({ message: 'No file uploaded' });
       }
 
-      if (req.file.mimetype !== 'application/pdf') {
-        return res.status(400).json({
-          success: false,
-          message: 'Only PDF files are allowed for document processing'
-        });
+      const { filename, path: filePath, mimetype } = req.file;
+      
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'text/plain'];
+      if (!allowedTypes.includes(mimetype)) {
+        return res.status(400).json({ message: 'Only PDF and TXT files are supported' });
       }
       
+      // Import and use ragChatService
       const { ragChatService } = await import('./services/ragChatService');
-      const result = await ragChatService.processUploadedDocument(req.file.path, req.file.originalname);
+      const result = await ragChatService.processUploadedDocument(filePath, filename);
       
       res.json(result);
     } catch (error) {
-      console.error('Error processing document:', error);
+      console.error('Error uploading document:', error);
       res.status(500).json({ 
-        success: false,
-        message: 'Failed to process document',
+        message: 'Failed to upload document',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

@@ -30,6 +30,7 @@ export default function Chat() {
   const [newConversationTitle, setNewConversationTitle] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

@@ -82,76 +82,134 @@ export class DocumentService {
       const endIndex = Math.min(startIndex + chunkSize, content.length);
       let chunk = content.slice(startIndex, endIndex);
       
-      // Try to break at a sentence boundary near the end
+      // Improved splitting logic - look for paragraph breaks first, then sentences
+      let splitIndex = endIndex;
       if (endIndex < content.length) {
-        const lastPeriod = chunk.lastIndexOf('.');
-        const lastNewline = chunk.lastIndexOf('\n');
-        const breakPoint = Math.max(lastPeriod, lastNewline);
+        // First, look for paragraph breaks (double newline)
+        const lookbackRange = Math.min(200, chunk.length);
+        const lookbackText = chunk.slice(-lookbackRange);
         
-        if (breakPoint > startIndex + chunkSize * 0.7) {
-          chunk = content.slice(startIndex, breakPoint + 1);
+        let paragraphEnd = lookbackText.lastIndexOf('\n\n');
+        if (paragraphEnd === -1) {
+          // If no paragraph break, look for sentence endings
+          paragraphEnd = lookbackText.lastIndexOf('. ');
+          if (paragraphEnd === -1) {
+            paragraphEnd = lookbackText.lastIndexOf('.');
+          }
+        }
+        
+        if (paragraphEnd !== -1) {
+          splitIndex = startIndex + chunk.length - lookbackRange + paragraphEnd + 1;
+          chunk = content.slice(startIndex, splitIndex);
         }
       }
       
-      chunks.push(chunk.trim());
-      startIndex = endIndex - overlap;
+      // Only add non-empty chunks
+      if (chunk.trim().length > 50) { // Minimum chunk size
+        chunks.push(chunk.trim());
+      }
+      
+      // Move to next chunk with overlap
+      startIndex = Math.max(splitIndex - overlap, startIndex + 1);
+      if (startIndex >= splitIndex) break; // Prevent infinite loop
     }
     
-    // Store chunks
+    console.log(`Created ${chunks.length} chunks for document ${documentId}`);
+    
+    // Store chunks in database
     for (let i = 0; i < chunks.length; i++) {
       const chunkData: InsertDocumentChunk = {
         documentId,
-        content: chunks[i],
         chunkIndex: i,
-        embedding: null // We'll use simple text search instead of embeddings
+        content: chunks[i],
+        metadata: null
       };
       
       await dbStorage.createDocumentChunk(chunkData);
     }
   }
   
-  async searchDocuments(query: string): Promise<{ content: string; documentTitle: string; chunkIndex: number }[]> {
-    try {
-      console.log('DocumentService: Searching for query:', query);
-      const chunks = await dbStorage.searchDocumentChunks(query);
-      console.log('DocumentService: Found chunks from DB:', chunks.length);
-      
-      const results = [];
-      for (const chunk of chunks) {
-        // Access fields directly from database result (snake_case)
-        const documentId = (chunk as any).document_id;
-        const chunkIndex = (chunk as any).chunk_index;
+  async searchDocuments(query: string): Promise<any[]> {
+    console.log('DocumentService: Searching for query:', query);
+    
+    // Extract meaningful keywords from the query
+    const keywords = this.extractKeywords(query);
+    console.log('Extracted keywords:', keywords);
+    
+    // Search in document chunks using keywords (basic approach)
+    const chunks = await dbStorage.searchDocumentChunks(query);
+    console.log('DocumentService: Found chunks from DB:', chunks.length);
+    
+    // Process chunks to include document information and improve ranking
+    const results = [];
+    for (const chunk of chunks) {
+      const document = await dbStorage.getDocument(chunk.documentId);
+      if (document) {
+        // Calculate relevance score based on keyword matches
+        const relevanceScore = this.calculateRelevanceScore(chunk.content, keywords, query);
         
-        console.log('Processing chunk for document ID:', documentId, 'chunk index:', chunkIndex);
-        if (documentId) {
-          const document = await dbStorage.getDocument(documentId);
-          console.log('Found document:', document ? document.title : 'NOT FOUND');
-          if (document) {
-            results.push({
-              content: chunk.content,
-              documentTitle: document.title,
-              chunkIndex: chunkIndex || 0
-            });
-          }
-        } else {
-          console.log('No document_id found in chunk:', Object.keys(chunk));
-        }
+        results.push({
+          ...chunk,
+          documentTitle: document.title,
+          documentType: document.documentType,
+          relevanceScore
+        });
       }
-      
-      console.log('DocumentService: Returning results:', results.length);
-      return results;
-    } catch (error) {
-      console.error('Error searching documents:', error);
-      return [];
     }
+    
+    // Sort by relevance score (higher is better)
+    results.sort((a, b) => b.relevanceScore - a.relevanceScore);
+    
+    console.log('DocumentService: Returning results:', results.length);
+    return results.slice(0, 5); // Return top 5 most relevant chunks
+  }
+
+  private calculateRelevanceScore(content: string, keywords: string[], originalQuery: string): number {
+    const contentLower = content.toLowerCase();
+    const queryLower = originalQuery.toLowerCase();
+    
+    let score = 0;
+    
+    // Exact query match gets highest score
+    if (contentLower.includes(queryLower)) {
+      score += 10;
+    }
+    
+    // Keyword matches
+    keywords.forEach(keyword => {
+      const keywordLower = keyword.toLowerCase();
+      const matches = (contentLower.match(new RegExp(keywordLower, 'g')) || []).length;
+      score += matches * 2;
+    });
+    
+    // Bonus for citation-related terms
+    const citationTerms = ['cite', 'citation', 'format', 'reference', 'footnote', 'bibliography'];
+    citationTerms.forEach(term => {
+      if (contentLower.includes(term)) {
+        score += 1;
+      }
+    });
+    
+    return score;
   }
   
-  async getAvailableDocuments() {
-    return await dbStorage.getDocuments();
-  }
-  
-  async deleteDocument(id: number): Promise<boolean> {
-    return await dbStorage.deleteDocument(id);
+  private extractKeywords(query: string): string[] {
+    // Simple keyword extraction - remove common stop words
+    const stopWords = new Set([
+      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with',
+      'by', 'from', 'up', 'about', 'into', 'through', 'during', 'before', 'after',
+      'above', 'below', 'between', 'among', 'is', 'are', 'was', 'were', 'be', 'been',
+      'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+      'should', 'may', 'might', 'must', 'can', 'shall', 'what', 'how', 'when', 'where',
+      'who', 'which', 'why', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she',
+      'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them'
+    ]);
+    
+    return query
+      .toLowerCase()
+      .replace(/[^\w\s]/g, '') // Remove punctuation
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.has(word));
   }
 }
 

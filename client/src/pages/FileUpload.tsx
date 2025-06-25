@@ -14,7 +14,14 @@ export default function FileUpload() {
   // Fetch documents
   const { data: documents = [], isLoading } = useQuery({
     queryKey: ['/api/chat/documents'],
-    queryFn: () => fetch('/api/chat/documents', { credentials: 'include' }).then(res => res.json()),
+    queryFn: async () => {
+      const res = await fetch('/api/chat/documents', { credentials: 'include' });
+      if (!res.ok) {
+        throw new Error('Failed to fetch documents');
+      }
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
   });
 
   // Upload mutation

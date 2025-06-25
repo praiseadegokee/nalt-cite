@@ -55,7 +55,8 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 - Blog post management with thumbnail uploads
 - Glossary term administration
 - FAQ category and item management
-- File upload interface for resources
+- Knowledge base document upload interface with drag-and-drop support
+- Document management with deletion and processing status
 
 ## Data Flow
 
@@ -119,6 +120,7 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
+- June 25, 2025. Added comprehensive document upload system for knowledge base expansion - supports PDF and TXT files with intelligent processing
 - June 25, 2025. Enhanced AI chatbot with intelligent citation generation - now automatically detects citation requests and formats sources according to NALT standards
 - June 25, 2025. Fixed AI chatbot mobile responsiveness and overflow issues, improved session management
 - June 25, 2025. Fixed NALT guide download functionality - mapped file IDs to actual PDF filenames  
