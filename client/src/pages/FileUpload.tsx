@@ -1,239 +1,260 @@
 import { useState, useRef } from 'react';
-import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/use-toast';
+import { queryClient, apiRequest } from '@/lib/queryClient';
+import { Upload, FileText, Trash2, Download, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function FileUpload() {
-  const [files, setFiles] = useState<File[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<Record<string, 'pending' | 'success' | 'error'>>({});
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles(prev => [...prev, ...newFiles]);
-    }
-  };
+  // Fetch documents
+  const { data: documents = [], isLoading } = useQuery({
+    queryKey: ['/api/chat/documents'],
+    queryFn: () => fetch('/api/chat/documents', { credentials: 'include' }).then(res => res.json()),
+  });
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-
-    if (e.dataTransfer.files) {
-      const newFiles = Array.from(e.dataTransfer.files);
-      const allowedTypes = [
-        'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
-        'image/jpeg',  // .jpg, .jpeg
-        'image/png',   // .png
-        'image/gif',   // .gif
-        'image/webp'   // .webp
-      ];
-      
-      const validFiles = newFiles.filter(file => allowedTypes.includes(file.type));
-      
-      if (validFiles.length < newFiles.length) {
-        toast({
-          title: "Some files ignored",
-          description: "Only PDF, DOCX, XLSX, and image files (JPG, PNG, GIF, WEBP) are accepted",
-          variant: "destructive"
+  // Upload mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const response = await fetch('/api/chat/upload-document', {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
         });
-      }
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || `Failed to upload ${file.name}`);
+        }
+        
+        return response.json();
+      });
       
-      setFiles(prev => [...prev, ...validFiles]);
+      return Promise.all(uploadPromises);
+    },
+    onSuccess: (results) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
+      const successCount = results.length;
+      toast({ 
+        title: 'Success', 
+        description: `${successCount} document${successCount > 1 ? 's' : ''} uploaded and processed successfully` 
+      });
+    },
+    onError: (error) => {
+      console.error('Upload failed:', error);
+      toast({ title: 'Error', description: `Upload failed: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest('DELETE', `/api/chat/documents/${id}`);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
+      toast({ title: 'Success', description: 'Document deleted successfully' });
+    },
+    onError: (error) => {
+      toast({ title: 'Error', description: `Failed to delete document: ${error.message}`, variant: 'destructive' });
+    },
+  });
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
     }
   };
 
-  const removeFile = (index: number) => {
-    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
-  };
-
-  const uploadFile = async (file: File) => {
-    setUploadStatus(prev => ({ ...prev, [file.name]: 'pending' }));
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
     
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-      
-      setUploadStatus(prev => ({ ...prev, [file.name]: 'success' }));
-      
-      toast({
-        title: "File uploaded",
-        description: `${file.name} has been uploaded successfully`,
-      });
-      
-      return true;
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      setUploadStatus(prev => ({ ...prev, [file.name]: 'error' }));
-      
-      toast({
-        title: "Upload failed",
-        description: `Failed to upload ${file.name}`,
-        variant: "destructive"
-      });
-      
-      return false;
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      uploadMutation.mutate(e.dataTransfer.files);
     }
   };
 
-  const uploadAllFiles = async () => {
-    setIsUploading(true);
-    
-    for (const file of files) {
-      await uploadFile(file);
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      uploadMutation.mutate(e.target.files);
     }
-    
-    setIsUploading(false);
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
-    <div className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Upload Files</h1>
-          <p className="text-gray-600 mb-8">
-            Upload PDF files for the NALT guidelines or image files for cover art and illustrations.
-          </p>
-          
-          {/* File upload area */}
-          <Card 
-            className={`border-2 ${isDragging ? 'border-primary border-dashed bg-primary/5' : 'border-gray-200'} p-6 mb-8`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
+    <div className="container mx-auto p-6 max-w-4xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Knowledge Base Management</h1>
+        <p className="text-gray-600">
+          Upload legal documents to enhance the AI chatbot's knowledge base. Supported formats: PDF, TXT, DOC, DOCX
+        </p>
+      </div>
+
+      {/* Upload Area */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            Upload Documents
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div
+            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              dragActive 
+                ? 'border-green-500 bg-green-50' 
+                : 'border-gray-300 hover:border-gray-400'
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <Upload className="h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Drag & Drop Files</h3>
-              <p className="text-sm text-gray-500 mb-4 text-center">
-                Drop your files here, or click to browse
-              </p>
-              <input
-                type="file"
-                multiple
-                accept=".pdf,.docx,.xlsx,.jpg,.jpeg,.png,.gif,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,image/jpeg,image/png,image/gif,image/webp"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleFileChange}
-              />
-              <Button 
-                variant="outline" 
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Browse Files
-              </Button>
-            </CardContent>
-          </Card>
-          
-          {/* File list */}
-          {files.length > 0 && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Selected Files</CardTitle>
-                <CardDescription>
-                  {files.length} file{files.length !== 1 ? 's' : ''} selected for upload
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="divide-y divide-gray-200">
-                  {files.map((file, index) => (
-                    <li key={index} className="py-3 flex items-center justify-between">
-                      <div className="flex items-center">
-                        <FileText className="h-5 w-5 text-gray-400 mr-3" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                          <p className="text-sm text-gray-500">
-                            {(file.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {uploadStatus[file.name] === 'success' && (
-                          <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                        )}
-                        {uploadStatus[file.name] === 'error' && (
-                          <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
-                        )}
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => removeFile(index)}
-                          disabled={isUploading}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter className="flex justify-end space-x-4">
-                <Button 
-                  variant="outline"
-                  onClick={() => setFiles([])}
-                  disabled={isUploading}
-                >
-                  Clear All
-                </Button>
-                <Button 
-                  onClick={uploadAllFiles}
-                  disabled={files.length === 0 || isUploading}
-                >
-                  {isUploading ? 'Uploading...' : 'Upload All Files'}
-                </Button>
-              </CardFooter>
-            </Card>
-          )}
-          
-          {/* Instructions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Instructions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">Accepted File Types</h3>
-                <p className="text-sm text-gray-600">Only PDF files are accepted.</p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              accept=".pdf,.txt,.doc,.docx"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            <div className="space-y-4">
+              <div className="mx-auto w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                <Upload className="h-6 w-6 text-gray-600" />
               </div>
+              
               <div>
-                <h3 className="font-medium text-gray-900 mb-1">File Naming</h3>
-                <p className="text-sm text-gray-600">
-                  The system will use the original filename for the download. For NALT guideline parts, consider using 
-                  consistent naming such as "NALT Guide Part 1 - General Rules.pdf".
+                <p className="text-lg font-medium text-gray-900 mb-1">
+                  Drag and drop files here, or click to select
+                </p>
+                <p className="text-sm text-gray-500">
+                  PDF, TXT, DOC, DOCX files up to 10MB each
                 </p>
               </div>
-              <div>
-                <h3 className="font-medium text-gray-900 mb-1">File Size</h3>
-                <p className="text-sm text-gray-600">Maximum file size is 50MB per PDF.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {uploadMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  'Select Files'
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Upload Guidelines */}
+          <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="font-medium text-blue-900 mb-2">Recommended Documents:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Nigerian court rules and practice directions</li>
+              <li>• Legal writing style guides</li>
+              <li>• Citation format examples and templates</li>
+              <li>• Updated NALT and OSCOLA guidelines</li>
+              <li>• Case law with proper citation examples</li>
+              <li>• Statute citation reference materials</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Document List */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Uploaded Documents ({documents.length})
+            </span>
+            {documents.length > 0 && (
+              <Badge variant="outline" className="text-green-600 border-green-600">
+                <CheckCircle className="h-3 w-3 mr-1" />
+                Knowledge Base Active
+              </Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            </div>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-8">
+              <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-gray-500">No documents uploaded yet</p>
+              <p className="text-sm text-gray-400">Upload legal documents to get started</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {documents.map((doc: any) => (
+                <div key={doc.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-gray-900 truncate">{doc.title}</h4>
+                    <div className="flex items-center gap-4 mt-1">
+                      <span className="text-sm text-gray-500">{doc.filename}</span>
+                      <Badge 
+                        variant={doc.documentType === 'nalt' ? 'default' : 'secondary'}
+                        className="text-xs"
+                      >
+                        {doc.documentType?.toUpperCase() || 'NALT'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`/api/downloads/${doc.filename}`, '_blank')}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => deleteMutation.mutate(doc.id)}
+                      disabled={deleteMutation.isPending}
+                      className="text-red-600 hover:text-red-700"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

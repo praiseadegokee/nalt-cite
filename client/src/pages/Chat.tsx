@@ -311,12 +311,63 @@ export default function Chat() {
             </CardContent>
           </Card>
 
-          {/* Knowledge Base Status */}
+          {/* Knowledge Base Status & Upload */}
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardContent className="p-4">
+            <CardContent className="p-4 space-y-3">
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-600">Knowledge Base: {documents.length} documents loaded</span>
+                <span className="text-sm text-gray-600">Knowledge Base: {documents.length} documents</span>
+              </div>
+              
+              {/* Upload Section */}
+              <div className="space-y-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  multiple
+                />
+                <Button
+                  onClick={() => fileInputRef.current?.click()}
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs"
+                  disabled={uploadMutation.isPending}
+                >
+                  {uploadMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-green-600 mr-2"></div>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-3 w-3 mr-2" />
+                      Add Documents
+                    </>
+                  )}
+                </Button>
+                
+                {/* Document List */}
+                {documents.length > 0 && (
+                  <div className="space-y-1 max-h-20 overflow-y-auto">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between text-xs bg-gray-50 p-2 rounded">
+                        <span className="truncate flex-1">{doc.filename}</span>
+                        <Button
+                          onClick={() => deleteDocumentMutation.mutate(doc.id)}
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 text-red-500 hover:text-red-700"
+                          disabled={deleteDocumentMutation.isPending}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

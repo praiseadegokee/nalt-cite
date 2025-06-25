@@ -8,15 +8,40 @@ export class DocumentService {
   
   async processAndStorePDF(filePath: string, filename: string, documentType: 'nalt' | 'oscola'): Promise<number> {
     try {
-      // Read the PDF file
-      const pdfBuffer = fs.readFileSync(filePath);
+      let text: string;
       
-      // Extract text from PDF
-      const pdfData = await pdf(pdfBuffer);
-      const text = pdfData.text;
+      // Handle different file types
+      if (filename.toLowerCase().endsWith('.pdf')) {
+        // Read the PDF file
+        const pdfBuffer = fs.readFileSync(filePath);
+        
+        // Extract text from PDF
+        const pdfData = await pdf(pdfBuffer);
+        text = pdfData.text;
+      } else if (filename.toLowerCase().endsWith('.txt')) {
+        // Read text file
+        text = fs.readFileSync(filePath, 'utf-8');
+      } else {
+        throw new Error('Unsupported file type. Only PDF and TXT files are supported.');
+      }
+      
+      // Validate extracted text
+      if (!text || text.trim().length < 100) {
+        throw new Error('Document appears to be empty or too short. Please ensure the document contains readable text.');
+      }
       
       // Create document title based on filename
-      const title = filename.replace('.pdf', '').replace(/[-_]/g, ' ');
+      const title = filename.replace(/\.(pdf|txt|doc|docx)$/i, '').replace(/[-_]/g, ' ');
+      
+      // Check if document with same filename already exists
+      const existingDocuments = await dbStorage.getDocuments();
+      const existing = existingDocuments.find(doc => doc.filename === filename);
+      
+      if (existing) {
+        // Delete existing document and its chunks
+        await dbStorage.deleteDocument(existing.id);
+        console.log(`Replaced existing document: ${filename}`);
+      }
       
       // Store the document
       const document = await dbStorage.createDocument({
@@ -26,13 +51,22 @@ export class DocumentService {
         documentType
       });
       
+      console.log(`Created document: ${title} (${text.length} characters)`);
+      
       // Process and store chunks
       await this.chunkAndStoreDocument(document.id, text);
       
+      // Clean up uploaded file
+      try {
+        fs.unlinkSync(filePath);
+      } catch (cleanupError) {
+        console.warn('Failed to clean up uploaded file:', cleanupError);
+      }
+      
       return document.id;
     } catch (error) {
-      console.error('Error processing PDF:', error);
-      throw new Error('Failed to process PDF document');
+      console.error('Error processing document:', error);
+      throw new Error(`Failed to process document: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
   
