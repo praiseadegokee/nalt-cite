@@ -670,7 +670,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Map specific file IDs to actual filenames
       const fileMapping: { [key: string]: string } = {
-        'complete-guide': 'NALT_Complete_Guide.pdf',
+        'complete-guide': 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria .pdf',
         'nalt-complete': 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria.pdf',
         'part1': 'NALT Uniform Format and Citation Guide (Part One - Background Information to NALT Format).pdf',
         'part2': 'NALT Uniform Format and Citation Guide (Part Two - NALT Format and the Structuring of Research Topics).pdf',
@@ -685,7 +685,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Define valid locations to look for files
       const possibleLocations = [
-        // Try mapped filename first
+        // Try mapped filename first in attached_assets
+        path.resolve(process.cwd(), 'attached_assets', actualFilename),
+        // Try mapped filename in public/pdfs
         path.resolve(process.cwd(), 'public/pdfs', actualFilename),
         // Try exact filename as provided
         path.resolve(process.cwd(), 'public/pdfs', file),

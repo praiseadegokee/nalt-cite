@@ -43,7 +43,7 @@ export default function HeroSection() {
               <a 
                 href="/api/downloads/complete-guide" 
                 className="bg-white text-[#1B387A] font-bold py-4 px-8 rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-lg flex items-center justify-center group"
-                download="NALT_Complete_Guide.pdf"
+                download="NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria.pdf"
               >
                 <Download className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
                 <span>Download Complete Guide</span>
