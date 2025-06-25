@@ -38,10 +38,12 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 - NALT standard compliance
 
 ### AI Chat Assistant
+- Intelligent citation generation - automatically detects when users want to cite sources and generates properly formatted NALT citations
 - Document-based question answering using uploaded NALT and OSCOLA guides
 - Conversation persistence with session management
 - Multiple conversation support
 - Document upload and processing capabilities
+- Advanced citation parsing for cases, statutes, journal articles, books, and other legal sources
 
 ### Content Management
 - **Glossary**: Searchable legal terminology database with CRUD operations
@@ -117,7 +119,9 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
-- June 25, 2025. Fixed NALT guide download functionality - mapped file IDs to actual PDF filenames
+- June 25, 2025. Enhanced AI chatbot with intelligent citation generation - now automatically detects citation requests and formats sources according to NALT standards
+- June 25, 2025. Fixed AI chatbot mobile responsiveness and overflow issues, improved session management
+- June 25, 2025. Fixed NALT guide download functionality - mapped file IDs to actual PDF filenames  
 - June 24, 2025. Enhanced blog UI/UX with modern responsive design, search, and filtering
 - June 23, 2025. Initial setup
 ```
