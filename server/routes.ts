@@ -781,6 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (!sessionId) {
       sessionId = randomUUID();
       res.setHeader('x-session-id', sessionId);
+      console.log('Created new session ID:', sessionId);
     }
     return sessionId;
   };

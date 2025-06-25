@@ -172,7 +172,7 @@ export default function Chat() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
-      <div className="flex h-screen lg:h-auto lg:min-h-screen">
+      <div className="flex min-h-screen">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
@@ -186,13 +186,25 @@ export default function Chat() {
           className={`
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
             lg:translate-x-0 transition-transform duration-300 ease-in-out
-            fixed lg:relative z-40 lg:z-auto
-            w-80 lg:w-80 h-full bg-white lg:bg-transparent
+            fixed lg:relative z-40 lg:z-auto top-0 left-0
+            w-80 h-full lg:h-auto lg:min-h-screen bg-white lg:bg-transparent
             flex flex-col gap-4 p-4 lg:p-6
             overflow-y-auto shadow-xl lg:shadow-none
           `}
           onClick={(e) => e.stopPropagation()}
         >
+          {/* Mobile Close Button */}
+          <div className="lg:hidden flex justify-end mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
           {/* Header - Hidden on mobile */}
           <Card className="hidden lg:block bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="pb-4">
@@ -252,7 +264,7 @@ export default function Chat() {
               <CardTitle className="text-sm font-medium text-gray-700">Recent Conversations</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
-              <ScrollArea className="h-[400px]">
+              <ScrollArea className="h-[300px] lg:h-[400px]">
                 <div className="p-4 space-y-2">
                   {conversations.map((conversation) => (
                     <div
@@ -262,7 +274,10 @@ export default function Chat() {
                           ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
                           : 'hover:bg-gray-100'
                       }`}
-                      onClick={() => setSelectedConversationId(conversation.id)}
+                      onClick={() => {
+                        setSelectedConversationId(conversation.id);
+                        setSidebarOpen(false);
+                      }}
                     >
                       <MessageCircle className={`h-4 w-4 flex-shrink-0 ${
                         selectedConversationId === conversation.id ? 'text-white' : 'text-gray-400'
@@ -302,8 +317,8 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl m-2 sm:m-4 lg:mx-6 lg:mb-6 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col h-screen">
+          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl m-2 sm:m-4 lg:mx-6 lg:mb-6 flex flex-col overflow-hidden">
             <CardHeader className="border-b border-gray-100 p-3 sm:p-4 lg:p-6 flex-shrink-0">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2 lg:gap-3 min-w-0 flex-1">
@@ -323,18 +338,19 @@ export default function Chat() {
                     onClick={() => setSidebarOpen(true)}
                     className="lg:hidden text-xs px-2 py-1"
                   >
-                    History
+                    <Menu className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-0 min-h-0">
-              {selectedConversationId ? (
-                <>
-                  {/* Messages */}
-                  <ScrollArea className="flex-1 p-3 sm:p-4 lg:p-6">
-                    <div className="space-y-3 sm:space-y-4 lg:space-y-6">
-                      {messagesLoading ? (
+            
+            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto">
+                <ScrollArea className="h-full">
+                  <div className="p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
+                    {selectedConversationId ? (
+                      messagesLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <div className="flex items-center gap-3 text-gray-500">
                             <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
@@ -379,26 +395,26 @@ export default function Chat() {
                         messages.map((message) => (
                           <div
                             key={message.id}
-                            className={`flex gap-4 ${
+                            className={`flex gap-2 sm:gap-4 ${
                               message.role === 'user' ? 'justify-end' : 'justify-start'
                             }`}
                           >
-                            <div className={`flex gap-2 lg:gap-3 max-w-[95%] lg:max-w-[85%] ${
+                            <div className={`flex gap-2 lg:gap-3 max-w-[90%] sm:max-w-[85%] ${
                               message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                             }`}>
-                              <div className={`w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              <div className={`w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                 message.role === 'user' 
                                   ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg' 
                                   : 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg'
                               }`}>
                                 {message.role === 'user' ? (
-                                  <User className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                                  <User className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white" />
                                 ) : (
-                                  <Bot className="h-4 w-4 lg:h-5 lg:w-5 text-white" />
+                                  <Bot className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white" />
                                 )}
                               </div>
                               <div className="space-y-1 min-w-0 flex-1">
-                                <div className={`inline-block px-3 lg:px-4 py-2 lg:py-3 rounded-2xl shadow-sm max-w-full ${
+                                <div className={`inline-block px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm max-w-full ${
                                   message.role === 'user'
                                     ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
                                     : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
@@ -432,98 +448,49 @@ export default function Chat() {
                             </div>
                           </div>
                         ))
-                      )}
-                      <div ref={messagesEndRef} />
-                    </div>
-                  </ScrollArea>
-
-                  {/* Message Input */}
-                  <div className="border-t border-gray-100 bg-gray-50/50 p-3 lg:p-4 rounded-b-xl">
-                    <div className="flex gap-2 lg:gap-3 items-end">
-                      <div className="flex-1 relative">
-                        <Textarea
-                          placeholder="Ask about NALT guidelines, citation formats, or legal writing standards..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && !e.shiftKey) {
-                              e.preventDefault();
-                              handleSendMessage();
-                            }
-                          }}
-                          className="min-h-[48px] lg:min-h-[56px] max-h-32 resize-none border-0 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pr-12 text-sm lg:text-base"
-                          disabled={sendMessageMutation.isPending}
-                        />
-                        {sendMessageMutation.isPending && (
-                          <div className="absolute bottom-3 right-3">
-                            <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
+                      )
+                    ) : (
+                      <div className="text-center py-8 lg:py-12 px-4">
+                        <div className="max-w-lg mx-auto">
+                          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
                           </div>
-                        )}
+                          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
+                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
+                          <div className="grid gap-2 lg:gap-3">
+                            {[
+                              "How do I cite a Nigerian court case using NALT format?",
+                              "What is the NALT citation style for statutes?", 
+                              "How does NALT differ from OSCOLA citation?",
+                              "What are the footnote requirements in NALT?"
+                            ].map((question, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  setNewMessage(question);
+                                  setSidebarOpen(false);
+                                }}
+                                className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
+                              >
+                                <div className="flex items-center gap-2 lg:gap-3">
+                                  <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                                    <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
+                                  </div>
+                                  <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       </div>
-                      <Button
-                        onClick={handleSendMessage}
-                        disabled={!newMessage.trim() || sendMessageMutation.isPending}
-                        className="h-12 w-12 lg:h-14 lg:w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {sendMessageMutation.isPending ? (
-                          <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                          <Send className="h-4 w-4 lg:h-5 lg:w-5" />
-                        )}
-                      </Button>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-2 text-xs text-gray-500">
-                      <div className="flex items-center gap-4">
-                        <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
-                        <span className="sm:hidden">Tap send or press Enter</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                        <span>Powered by NALT & OSCOLA guides</span>
-                      </div>
-                    </div>
+                    )}
+                    <div ref={messagesEndRef} />
                   </div>
-                </>
-              ) : (
-                <div className="flex-1 p-6 flex items-center justify-center">
-                  <div className="text-center py-8 lg:py-12 px-4">
-                    <div className="max-w-lg mx-auto">
-                      <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-                      </div>
-                      <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                      <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
-                      <div className="grid gap-2 lg:gap-3">
-                        {[
-                          "How do I cite a Nigerian court case using NALT format?",
-                          "What is the NALT citation style for statutes?", 
-                          "How does NALT differ from OSCOLA citation?",
-                          "What are the footnote requirements in NALT?"
-                        ].map((question, index) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              setNewMessage(question);
-                              setSidebarOpen(false);
-                            }}
-                            className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
-                          >
-                            <div className="flex items-center gap-2 lg:gap-3">
-                              <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                                <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
-                              </div>
-                              <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
+                </ScrollArea>
+              </div>
 
-              {/* Message Input - Always Show */}
-              <div className="border-t border-gray-100 bg-gray-50/50 p-3 sm:p-4 lg:p-4 rounded-b-xl flex-shrink-0">
+              {/* Message Input */}
+              <div className="border-t border-gray-100 bg-gray-50/50 p-3 sm:p-4 lg:p-4 flex-shrink-0">
                 <div className="flex gap-2 lg:gap-3 items-end">
                   <div className="flex-1 relative">
                     <Textarea
