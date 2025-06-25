@@ -668,13 +668,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const file = req.params.file;
       
+      // Map specific file IDs to actual filenames
+      const fileMapping: { [key: string]: string } = {
+        'complete-guide': 'NALT_Complete_Guide.pdf',
+        'nalt-complete': 'NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria.pdf',
+        'part1': 'NALT Uniform Format and Citation Guide (Part One - Background Information to NALT Format).pdf',
+        'part2': 'NALT Uniform Format and Citation Guide (Part Two - NALT Format and the Structuring of Research Topics).pdf',
+        'part3': 'NALT Uniform Format and Citation Guide (Part Three - NALT Citation Guidelines for Style of Referencing).pdf',
+        'part4': 'NALT Uniform Format and Citation Guide (Part Four - Format for Articles in Journal for Publication).pdf',
+        'oscola-guide': 'OSCOLA_Guide.pdf',
+        'nalt-guide': 'NALT_Guide.pdf'
+      };
+      
+      // Get the actual filename or use the requested file as is
+      const actualFilename = fileMapping[file] || file;
+      
       // Define valid locations to look for files
       const possibleLocations = [
+        // Try mapped filename first
+        path.resolve(process.cwd(), 'public/pdfs', actualFilename),
         // Try exact filename as provided
         path.resolve(process.cwd(), 'public/pdfs', file),
         // Try with .pdf extension
         path.resolve(process.cwd(), 'public/pdfs', `${file}.pdf`),
         // Try in other potential directories
+        path.resolve(process.cwd(), 'public/downloads', actualFilename),
         path.resolve(process.cwd(), 'public/downloads', file),
         path.resolve(process.cwd(), 'public/downloads', `${file}.pdf`)
       ];
@@ -685,9 +703,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle file not found
       if (!filePath) {
         console.log(`File not found: ${file}`);
+        console.log(`Mapped to: ${actualFilename}`);
+        console.log(`Checked locations:`, possibleLocations);
         return res.status(404).json({ 
           message: "File not found",
           requestedFile: file,
+          mappedFilename: actualFilename,
           checkedLocations: possibleLocations.map(p => path.relative(process.cwd(), p))
         });
       }
