@@ -117,6 +117,8 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
+- June 25, 2025. Fixed NALT guide download functionality - mapped file IDs to actual PDF filenames
+- June 24, 2025. Enhanced blog UI/UX with modern responsive design, search, and filtering
 - June 23, 2025. Initial setup
 ```
 

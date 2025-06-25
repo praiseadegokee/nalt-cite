@@ -703,12 +703,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle file not found
       if (!filePath) {
         console.log(`File not found: ${file}`);
-        console.log(`Mapped to: ${actualFilename}`);
-        console.log(`Checked locations:`, possibleLocations);
         return res.status(404).json({ 
           message: "File not found",
           requestedFile: file,
-          mappedFilename: actualFilename,
           checkedLocations: possibleLocations.map(p => path.relative(process.cwd(), p))
         });
       }
