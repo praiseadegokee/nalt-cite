@@ -38,6 +38,7 @@ export class RAGChatService {
   async getConversation(id: number, sessionId?: string) {
     const conversation = await dbStorage.getChatConversation(id);
     if (sessionId && conversation && conversation.sessionId !== sessionId) {
+      console.log(`Access denied: session ${sessionId} tried to access conversation ${id} owned by ${conversation.sessionId}`);
       return null; // Access denied
     }
     return conversation;
@@ -129,9 +130,11 @@ Please provide a comprehensive answer based on your general knowledge of legal c
       });
 
       // Generate response using Gemini
+      console.log('Sending prompt to Gemini AI...');
       const result = await this.model!.generateContent(fullPrompt);
       const response = result.response;
       const answer = response.text();
+      console.log('Received response from Gemini AI, length:', answer.length);
 
       // Store assistant message with sources
       const assistantMessage = await dbStorage.createChatMessage({
@@ -148,6 +151,18 @@ Please provide a comprehensive answer based on your general knowledge of legal c
 
     } catch (error) {
       console.error('Error generating answer:', error);
+      
+      // If it's a Gemini API error, provide more specific error
+      if (error instanceof Error) {
+        if (error.message.includes('API_KEY')) {
+          throw new Error('AI service configuration error. Please check your settings.');
+        } else if (error.message.includes('quota') || error.message.includes('limit')) {
+          throw new Error('AI service is temporarily unavailable. Please try again later.');
+        } else if (error.message.includes('safety')) {
+          throw new Error('Question could not be processed due to content policies.');
+        }
+      }
+      
       throw new Error('Failed to generate answer. Please try again.');
     }
   }

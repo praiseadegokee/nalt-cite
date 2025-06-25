@@ -93,7 +93,13 @@ export default function Chat() {
     },
     onError: (error) => {
       console.error('Message sending failed:', error);
-      toast({ title: 'Error', description: `Failed to send message: ${error.message}`, variant: 'destructive' });
+      // If it's a session/access error, refresh conversations to sync session
+      if (error.message.includes('404') || error.message.includes('access denied')) {
+        queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
+        toast({ title: 'Error', description: 'Session expired. Please try again.', variant: 'destructive' });
+      } else {
+        toast({ title: 'Error', description: `Failed to send message: ${error.message}`, variant: 'destructive' });
+      }
     },
   });
 

@@ -22,8 +22,17 @@ function getSessionHeaders(): Record<string, string> {
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    let errorMessage = res.statusText;
+    try {
+      const text = await res.text();
+      if (text) {
+        const parsed = JSON.parse(text);
+        errorMessage = parsed.message || text;
+      }
+    } catch {
+      // If we can't parse the response, use the status text
+    }
+    throw new Error(`${res.status}: ${errorMessage}`);
   }
 }
 
@@ -44,6 +53,13 @@ export async function apiRequest(
     credentials: "include",
   });
 
+  // Store session ID from response headers if provided
+  const responseSessionId = res.headers.get('x-session-id');
+  if (responseSessionId && responseSessionId !== sessionId) {
+    sessionId = responseSessionId;
+    localStorage.setItem('chat-session-id', responseSessionId);
+  }
+
   await throwIfResNotOk(res);
   return res;
 }
@@ -58,6 +74,13 @@ export const getQueryFn: <T>(options: {
       headers: getSessionHeaders(),
       credentials: "include",
     });
+
+    // Store session ID from response headers if provided
+    const responseSessionId = res.headers.get('x-session-id');
+    if (responseSessionId && responseSessionId !== sessionId) {
+      sessionId = responseSessionId;
+      localStorage.setItem('chat-session-id', responseSessionId);
+    }
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;
