@@ -120,6 +120,7 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
+- June 26, 2025. Optimized NALT knowledge base - removed redundant chunks, standardized content length (avg 255 chars), improved search performance with 31 focused citation examples
 - June 25, 2025. Added comprehensive document upload system for knowledge base expansion - supports PDF and TXT files with intelligent processing
 - June 25, 2025. Enhanced AI chatbot with intelligent citation generation - now automatically detects citation requests and formats sources according to NALT standards
 - June 25, 2025. Fixed AI chatbot mobile responsiveness and overflow issues, improved session management
