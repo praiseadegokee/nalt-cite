@@ -1,0 +1,63 @@
+Chunk Set 1: General Guidelines
+These chunks cover the overall principles of the NALT citation style.
+
+JSON
+
+{
+  "id": "GEN_001",
+  "content": "Rule: Punctuation Minimalism. NALT's citation guide uses punctuation marks minimally. Full stops are often omitted after abbreviations (e.g., LFN not L.F.N.). The letter 'v' is used for 'versus' without a full stop. No full stops are used in law report abbreviations.",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Punctuation"
+  }
+}
+JSON
+
+{
+  "id": "GEN_002",
+  "content": "Rule: Multiple Citations. When providing more than one citation in a single footnote, separate them with semi-colons (;). Example: Patrick Ndubisi Oche, Petroleum Law in Nigeria... (Heirs Great Commission 2003); Vearumun Vitalis Tarhule, Corrections under Nigerian Law... (Innovative Communications 2014).",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Footnotes"
+  }
+}
+JSON
+
+{
+  "id": "GEN_003",
+  "content": "Rule: Cross-referencing. Latin expressions like 'supra', 'infra', 'op. cit.' are abolished. Only 'ibid.' is retained for immediately preceding citations. For other cross-references, use (n...) where 'n' is the footnote number of the original citation. Example: If a source was first cited in footnote 5, a later reference would be (n5).",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Cross-referencing"
+  }
+}
+JSON
+
+{
+  "id": "GEN_004",
+  "content": "Rule: Short Quotations. Quotations of three lines or less should be incorporated into the main text and enclosed in single quotation marks. Example: Justice Oduyemi remarked that 'To my mind, if a court directs parties to a suit to prepare the issues for settlement... it becomes mandatory for the court to settle the issues…'³.",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Quotations"
+  }
+}
+JSON
+
+{
+  "id": "GEN_005",
+  "content": "Rule: Long Quotations. Quotations longer than three lines should be indented on both sides without quotation marks. A single-line space must be provided before and after the quotation. If you add emphasis, indicate this with '(emphasis added)' in brackets.",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Quotations"
+  }
+}
+JSON
+
+{
+  "id": "GEN_006",
+  "content": "Rule: Omissions in Quotations. Use ellipses (...) to indicate omitted text from a quotation. If a quotation starts a sentence but was not capitalized in the original, capitalize the first letter and enclose it in square brackets. Example: '[A] court of competent jurisdiction....'.",
+  "metadata": {
+    "category": "General Guidelines",
+    "topic": "Quotations"
+  }
+}
