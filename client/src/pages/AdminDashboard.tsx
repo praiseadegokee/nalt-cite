@@ -14,6 +14,23 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 
 export default function AdminDashboard() {
+  // Prevent access to admin in production
+  if (!import.meta.env.DEV) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <p className="text-gray-600">Admin access is not available in production.</p>
+          <Link href="/">
+            <span className="text-blue-600 hover:text-blue-800 cursor-pointer mt-4 inline-block">
+              Return to Home
+            </span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-8">
       <div className="flex items-center justify-between mb-8">
