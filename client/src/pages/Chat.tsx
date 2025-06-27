@@ -690,7 +690,7 @@ export default function Chat() {
                   <Button
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim() || sendMessageMutation.isPending || createConversationMutation.isPending}
-                    className="h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
                     {(sendMessageMutation.isPending || createConversationMutation.isPending) ? (
                       <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
