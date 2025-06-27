@@ -121,8 +121,7 @@ export class DocumentService {
       const chunkData: InsertDocumentChunk = {
         documentId,
         chunkIndex: i,
-        content: chunks[i],
-        metadata: null
+        content: chunks[i]
       };
       
       await dbStorage.createDocumentChunk(chunkData);
@@ -164,7 +163,11 @@ export class DocumentService {
     results.sort((a, b) => b.relevanceScore - a.relevanceScore);
     
     console.log('DocumentService: Results with score > 0:', results.length);
-    console.log('Top result scores:', results.slice(0, 3).map(r => ({ score: r.relevanceScore, preview: r.content.substring(0, 50) })));
+    if (results.length === 0 && chunks.length > 0) {
+      console.log('DEBUG: All chunks had score 0. Sample chunk content:');
+      console.log(chunks[0].content.substring(0, 100));
+      console.log('Keywords being searched:', keywords);
+    }
     
     return results.slice(0, 5); // Return top 5 most relevant chunks
   }
@@ -175,53 +178,58 @@ export class DocumentService {
     
     let score = 0;
     
-    // Exact query match gets highest score
-    if (contentLower.includes(queryLower)) {
-      score += 10;
+    // High score for NALT-specific content
+    if (contentLower.includes('nalt')) {
+      score += 5;
     }
     
-    // Keyword matches with fuzzy matching for common misspellings
+    // Keyword matches with improved fuzzy matching
     keywords.forEach(keyword => {
       const keywordLower = keyword.toLowerCase();
       
-      // Direct match
-      const matches = (contentLower.match(new RegExp(keywordLower, 'g')) || []).length;
-      score += matches * 3;
+      // Direct keyword match
+      if (contentLower.includes(keywordLower)) {
+        score += 3;
+      }
       
-      // Fuzzy matching for common misspellings
-      if (keywordLower === 'inagural' && contentLower.includes('inaugural')) {
-        score += 5; // High score for corrected spelling
-      }
-      if (keywordLower === 'theses' && contentLower.includes('thesis')) {
-        score += 3;
-      }
-      if (keywordLower === 'dissertations' && contentLower.includes('dissertation')) {
-        score += 3;
-      }
-      if (keywordLower === 'lectures' && contentLower.includes('lecture')) {
-        score += 3;
+      // Fuzzy matching for common variations and misspellings
+      const variations: Record<string, string[]> = {
+        'inagural': ['inaugural'],
+        'inaugural': ['inaugural', 'lecture'],
+        'theses': ['thesis', 'dissertation'],
+        'dissertations': ['dissertation', 'thesis'], 
+        'dissertation': ['dissertation', 'thesis'],
+        'thesis': ['thesis', 'dissertation'],
+        'lectures': ['lecture', 'inaugural'],
+        'lecture': ['lecture', 'inaugural'],
+        'cited': ['citation', 'cite', 'footnote', 'bibliography'],
+        'cite': ['citation', 'cite', 'footnote', 'bibliography'],
+        'citation': ['citation', 'cite', 'footnote', 'bibliography']
+      };
+      
+      if (variations[keywordLower]) {
+        variations[keywordLower].forEach((variant: string) => {
+          if (contentLower.includes(variant)) {
+            score += 4;
+          }
+        });
       }
     });
     
     // Bonus for citation-related terms
-    const citationTerms = ['cite', 'citation', 'format', 'reference', 'footnote', 'bibliography', 'nalt'];
+    const citationTerms = ['footnote', 'bibliography', 'citation', 'format', 'reference'];
     citationTerms.forEach(term => {
       if (contentLower.includes(term)) {
         score += 2;
       }
     });
     
-    // Always return at least 1 if any content matches key terms
-    if (score === 0) {
-      const keyTerms = ['nalt', 'footnote', 'bibliography', 'citation'];
-      for (const term of keyTerms) {
-        if (contentLower.includes(term)) {
-          score = 1;
-          break;
-        }
-      }
+    // Give minimal score to any NALT content to ensure it's included
+    if (score === 0 && contentLower.includes('nalt')) {
+      score = 1;
     }
     
+    console.log(`Score for "${content.substring(0, 50)}...": ${score}`);
     return score;
   }
   
