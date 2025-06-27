@@ -586,7 +586,7 @@ export default function Chat() {
                             <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
                           </div>
                           <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
+                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Start by asking a question below, or try these examples:</p>
                           <div className="grid gap-2 lg:gap-3">
                             {[
                               "How do I cite a Nigerian court case using NALT format?",
