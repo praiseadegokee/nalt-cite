@@ -95,25 +95,35 @@ By following these instructions, you will serve as a reliable and trusted guide 
     }
     
     try {
-      // Check if this is a citation request
-      const isCitationRequest = await citationParserService.detectCitationIntent(question);
+      // Check if this is asking for citation formats/guidance rather than parsing specific details
+      const isFormatRequest = question.toLowerCase().includes('how') && 
+                             (question.toLowerCase().includes('cite') || question.toLowerCase().includes('format')) ||
+                             question.toLowerCase().includes('how should i cite') ||
+                             question.toLowerCase().includes('citation format') ||
+                             question.toLowerCase().includes('cite the following');
+
+      // Check if this is a citation request for specific parsing (not format guidance)
+      const isCitationRequest = !isFormatRequest && await citationParserService.detectCitationIntent(question);
       console.log('Citation intent detected:', isCitationRequest);
+      console.log('Format request detected:', isFormatRequest);
 
       if (isCitationRequest) {
-        // Try to parse and format the citation
+        // Try to parse and format the citation only if it's not a format request
         try {
           const citationResult = await citationParserService.parseAndFormatCitation(question);
           
-          // Store user message
-          await dbStorage.createChatMessage({
-            conversationId,
-            role: 'user',
-            content: question,
-            sources: null
-          });
+          // Only proceed if we got a valid citation (not null)
+          if (citationResult.citation && citationResult.citation !== 'null') {
+            // Store user message
+            await dbStorage.createChatMessage({
+              conversationId,
+              role: 'user',
+              content: question,
+              sources: null
+            });
 
-          // Create formatted response with better formatting
-          let formattedResponse = `**NALT Citation Generated:**
+            // Create formatted response with better formatting
+            let formattedResponse = `**NALT Citation Generated:**
 
 \`${citationResult.citation}\`
 
@@ -123,20 +133,27 @@ By following these instructions, you will serve as a reliable and trusted guide 
 
 Need help with a different citation or want to modify this one? Just provide the source details!`;
 
-          // Store assistant message
-          const assistantMessage = await dbStorage.createChatMessage({
-            conversationId,
-            role: 'assistant',
-            content: formattedResponse,
-            sources: JSON.stringify(['NALT Citation Assistant'])
-          });
+            // Store assistant message
+            const assistantMessage = await dbStorage.createChatMessage({
+              conversationId,
+              role: 'assistant',
+              content: formattedResponse,
+              sources: JSON.stringify(['NALT Citation Assistant'])
+            });
 
-          return {
-            message: assistantMessage,
-            sources: ['NALT Citation Assistant']
-          };
+            return {
+              message: assistantMessage,
+              sources: ['NALT Citation Assistant']
+            };
+          }
         } catch (citationError) {
-          console.log('Citation parsing failed, falling back to template guidance:', citationError);
+          console.log('Citation parsing failed, falling back to knowledge base:', citationError);
+          // Fall through to regular knowledge base processing
+        }
+      }
+      
+      // For format requests, always use knowledge base
+      // This ensures questions like "how should I cite..." go to RAG system
           
           // Provide template guidance if parsing fails
           const templateResponse = `I'd be happy to help you create a proper NALT citation! 
