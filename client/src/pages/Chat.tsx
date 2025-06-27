@@ -243,6 +243,9 @@ export default function Chat() {
     }
   }, [conversations.length, selectedConversationId]);
 
+  // Show welcome screen when no conversations exist
+  const showWelcomeScreen = conversations.length === 0 && !selectedConversationId;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       <div className="flex min-h-screen">
@@ -340,19 +343,26 @@ export default function Chat() {
             <CardContent className="p-0">
               <ScrollArea className="h-[300px] lg:h-[400px]">
                 <div className="p-4 space-y-2">
-                  {conversations.map((conversation) => (
-                    <div
-                      key={conversation.id}
-                      className={`group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                        selectedConversationId === conversation.id
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
-                          : 'hover:bg-gray-100'
-                      }`}
-                      onClick={() => {
-                        setSelectedConversationId(conversation.id);
-                        setSidebarOpen(false);
-                      }}
-                    >
+                  {conversations.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      <MessageCircle className="h-8 w-8 mx-auto mb-3 text-gray-300" />
+                      <p className="text-sm">No conversations yet</p>
+                      <p className="text-xs text-gray-400 mt-1">Start a new chat to get help</p>
+                    </div>
+                  ) : (
+                    conversations.map((conversation) => (
+                      <div
+                        key={conversation.id}
+                        className={`group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                          selectedConversationId === conversation.id
+                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
+                            : 'hover:bg-gray-100'
+                        }`}
+                        onClick={() => {
+                          setSelectedConversationId(conversation.id);
+                          setSidebarOpen(false);
+                        }}
+                      >
                       <MessageCircle className={`h-4 w-4 flex-shrink-0 ${
                         selectedConversationId === conversation.id ? 'text-white' : 'text-gray-400'
                       }`} />
@@ -373,7 +383,8 @@ export default function Chat() {
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </ScrollArea>
             </CardContent>
@@ -479,7 +490,41 @@ export default function Chat() {
               <div className="flex-1 overflow-y-auto">
                 <ScrollArea className="h-full">
                   <div className="p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
-                    {selectedConversationId ? (
+                    {showWelcomeScreen ? (
+                      <div className="text-center py-8 lg:py-12 px-4">
+                        <div className="max-w-lg mx-auto">
+                          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
+                          </div>
+                          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
+                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Start by asking a question below, or try these examples:</p>
+                          <div className="grid gap-2 lg:gap-3">
+                            {[
+                              "How do I cite a Nigerian court case using NALT format?",
+                              "What is the NALT citation style for statutes?", 
+                              "How does NALT differ from OSCOLA citation?",
+                              "What are the footnote requirements in NALT?"
+                            ].map((question, index) => (
+                              <button
+                                key={index}
+                                onClick={() => {
+                                  setNewMessage(question);
+                                  setSidebarOpen(false);
+                                }}
+                                className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
+                              >
+                                <div className="flex items-center gap-2 lg:gap-3">
+                                  <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
+                                    <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
+                                  </div>
+                                  <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
+                                </div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : selectedConversationId ? (
                       messagesLoading ? (
                         <div className="flex items-center justify-center py-12">
                           <div className="flex items-center gap-3 text-gray-500">
@@ -660,8 +705,8 @@ export default function Chat() {
                     <span className="sm:hidden">Tap send or press Enter</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                    <span>Powered by NALT & OSCOLA guides</span>
+                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                    <span>AI Assistant Online</span>
                   </div>
                 </div>
               </div>
