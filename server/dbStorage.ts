@@ -404,7 +404,13 @@ export class DbStorage implements IStorage {
     const chunks = [];
     for (const keyword of keywords) {
       const result = await sqlClient`
-        SELECT * FROM document_chunks 
+        SELECT 
+          id,
+          document_id as "documentId",
+          content,
+          chunk_index as "chunkIndex",
+          embedding
+        FROM document_chunks 
         WHERE content ILIKE ${'%' + keyword + '%'}
         ORDER BY chunk_index
         LIMIT 5

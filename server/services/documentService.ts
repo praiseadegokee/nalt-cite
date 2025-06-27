@@ -143,25 +143,36 @@ export class DocumentService {
     const results = [];
     console.log(`Processing ${chunks.length} chunks for scoring...`);
     
-    for (const chunk of chunks) {
-      const document = await dbStorage.getDocument(chunk.documentId);
-      if (document) {
-        console.log(`Processing chunk ${chunk.id} with content preview: "${chunk.content.substring(0, 100)}..."`);
-        
-        // Calculate relevance score based on keyword matches
-        const relevanceScore = this.calculateRelevanceScore(chunk.content, keywords, query);
-        
-        console.log(`Chunk ${chunk.id} scored: ${relevanceScore}`);
-        
-        // Only include results with relevance score > 0
-        if (relevanceScore > 0) {
-          results.push({
-            ...chunk,
-            documentTitle: document.title,
-            documentType: document.documentType,
-            relevanceScore
-          });
+    for (let i = 0; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      console.log(`Processing chunk ${i + 1}/${chunks.length}: ID ${chunk.id}, documentId: ${chunk.documentId}`);
+      
+      try {
+        const document = await dbStorage.getDocument(chunk.documentId);
+        if (document) {
+          console.log(`Found document: ${document.title}`);
+          console.log(`Content preview: "${chunk.content.substring(0, 100)}..."`);
+          
+          // Calculate relevance score based on keyword matches
+          const relevanceScore = this.calculateRelevanceScore(chunk.content, keywords, query);
+          
+          console.log(`Relevance score: ${relevanceScore}`);
+          
+          // Include results with score > 0 OR any NALT content
+          if (relevanceScore > 0 || chunk.content.toLowerCase().includes('nalt')) {
+            results.push({
+              ...chunk,
+              documentTitle: document.title,
+              documentType: document.documentType || 'nalt',
+              relevanceScore: Math.max(relevanceScore, 1) // Ensure minimum score of 1
+            });
+            console.log(`Added chunk ${chunk.id} to results with score ${Math.max(relevanceScore, 1)}`);
+          }
+        } else {
+          console.log(`No document found for documentId: ${chunk.documentId}`);
         }
+      } catch (error) {
+        console.log(`Error processing chunk ${chunk.id}:`, error);
       }
     }
     
