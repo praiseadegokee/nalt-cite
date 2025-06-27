@@ -216,9 +216,13 @@ export default function Chat() {
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (sidebarOpen) {
-        setSidebarOpen(false);
+        const target = event.target as HTMLElement;
+        // Don't close if clicking on the sidebar itself or the open button
+        if (!target.closest('[data-sidebar]') && !target.closest('[data-sidebar-trigger]')) {
+          setSidebarOpen(false);
+        }
       }
     };
 
@@ -455,10 +459,15 @@ export default function Chat() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setSidebarOpen(true)}
-                    className="lg:hidden text-xs px-2 py-1"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSidebarOpen(true);
+                    }}
+                    data-sidebar-trigger
+                    className="lg:hidden flex items-center gap-2 text-xs px-3 py-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 transition-all duration-200"
                   >
-                    <Menu className="h-4 w-4" />
+                    <MessageCircle className="h-4 w-4" />
+                    <span>Chats</span>
                   </Button>
                 </div>
               </div>
