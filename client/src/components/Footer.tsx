@@ -105,6 +105,9 @@ export default function Footer() {
             <span className="hover:text-white cursor-pointer">Privacy Policy</span>
             <span className="hover:text-white cursor-pointer">Terms of Service</span>
             <span className="hover:text-white cursor-pointer">Cookie Policy</span>
+            <Link href="/admin">
+              <span className="hover:text-white cursor-pointer opacity-60">Admin</span>
+            </Link>
           </div>
         </div>
       </div>

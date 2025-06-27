@@ -36,12 +36,6 @@ export default function Header() {
                 />
               </div>
             </Link>
-            {/* Admin link - not prominent, only for administrator use */}
-            <Link href="/admin">
-              <span className="ml-2 text-[#1c3877] opacity-50 hover:opacity-80 text-xs cursor-pointer transition-opacity">
-                Admin
-              </span>
-            </Link>
           </div>
           
           {/* Desktop Navigation */}
