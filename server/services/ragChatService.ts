@@ -275,7 +275,7 @@ Please provide guidance based on the NALT style guide you have access to.`;
 
   async uploadDocument(filePath: string, filename: string, documentType: 'nalt' | 'oscola') {
     try {
-      const document = await documentService.processDocument(filePath, filename, documentType);
+      const document = await documentService.processAndStorePDF(filePath, filename, documentType);
       return `Successfully processed ${filename} as ${documentType} document`;
     } catch (error) {
       console.error('Failed to process document:', error);
