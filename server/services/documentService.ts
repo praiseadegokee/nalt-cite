@@ -141,11 +141,17 @@ export class DocumentService {
     
     // Process chunks to include document information and improve ranking
     const results = [];
+    console.log(`Processing ${chunks.length} chunks for scoring...`);
+    
     for (const chunk of chunks) {
       const document = await dbStorage.getDocument(chunk.documentId);
       if (document) {
+        console.log(`Processing chunk ${chunk.id} with content preview: "${chunk.content.substring(0, 100)}..."`);
+        
         // Calculate relevance score based on keyword matches
         const relevanceScore = this.calculateRelevanceScore(chunk.content, keywords, query);
+        
+        console.log(`Chunk ${chunk.id} scored: ${relevanceScore}`);
         
         // Only include results with relevance score > 0
         if (relevanceScore > 0) {
@@ -207,8 +213,9 @@ export class DocumentService {
         'citation': ['citation', 'cite', 'footnote', 'bibliography']
       };
       
-      if (variations[keywordLower]) {
-        variations[keywordLower].forEach((variant: string) => {
+      const variantList = variations[keywordLower];
+      if (variantList) {
+        variantList.forEach((variant: string) => {
           if (contentLower.includes(variant)) {
             score += 4;
           }
@@ -229,7 +236,15 @@ export class DocumentService {
       score = 1;
     }
     
-    console.log(`Score for "${content.substring(0, 50)}...": ${score}`);
+    // Debug logging for scoring issues
+    if (keywords.includes('inaugural') || keywords.includes('lecture')) {
+      console.log(`DEBUG SCORING for "${content.substring(0, 80)}..."`);
+      console.log(`Content includes 'inaugural': ${contentLower.includes('inaugural')}`);
+      console.log(`Content includes 'lecture': ${contentLower.includes('lecture')}`);
+      console.log(`Content includes 'nalt': ${contentLower.includes('nalt')}`);
+      console.log(`Final score: ${score}`);
+    }
+    
     return score;
   }
   
