@@ -148,19 +148,24 @@ export class DocumentService {
         // Calculate relevance score based on keyword matches
         const relevanceScore = this.calculateRelevanceScore(chunk.content, keywords, query);
         
-        results.push({
-          ...chunk,
-          documentTitle: document.title,
-          documentType: document.documentType,
-          relevanceScore
-        });
+        // Only include results with relevance score > 0
+        if (relevanceScore > 0) {
+          results.push({
+            ...chunk,
+            documentTitle: document.title,
+            documentType: document.documentType,
+            relevanceScore
+          });
+        }
       }
     }
     
     // Sort by relevance score (higher is better)
     results.sort((a, b) => b.relevanceScore - a.relevanceScore);
     
-    console.log('DocumentService: Returning results:', results.length);
+    console.log('DocumentService: Results with score > 0:', results.length);
+    console.log('Top result scores:', results.slice(0, 3).map(r => ({ score: r.relevanceScore, preview: r.content.substring(0, 50) })));
+    
     return results.slice(0, 5); // Return top 5 most relevant chunks
   }
 
@@ -175,20 +180,47 @@ export class DocumentService {
       score += 10;
     }
     
-    // Keyword matches
+    // Keyword matches with fuzzy matching for common misspellings
     keywords.forEach(keyword => {
       const keywordLower = keyword.toLowerCase();
+      
+      // Direct match
       const matches = (contentLower.match(new RegExp(keywordLower, 'g')) || []).length;
-      score += matches * 2;
+      score += matches * 3;
+      
+      // Fuzzy matching for common misspellings
+      if (keywordLower === 'inagural' && contentLower.includes('inaugural')) {
+        score += 5; // High score for corrected spelling
+      }
+      if (keywordLower === 'theses' && contentLower.includes('thesis')) {
+        score += 3;
+      }
+      if (keywordLower === 'dissertations' && contentLower.includes('dissertation')) {
+        score += 3;
+      }
+      if (keywordLower === 'lectures' && contentLower.includes('lecture')) {
+        score += 3;
+      }
     });
     
     // Bonus for citation-related terms
-    const citationTerms = ['cite', 'citation', 'format', 'reference', 'footnote', 'bibliography'];
+    const citationTerms = ['cite', 'citation', 'format', 'reference', 'footnote', 'bibliography', 'nalt'];
     citationTerms.forEach(term => {
       if (contentLower.includes(term)) {
-        score += 1;
+        score += 2;
       }
     });
+    
+    // Always return at least 1 if any content matches key terms
+    if (score === 0) {
+      const keyTerms = ['nalt', 'footnote', 'bibliography', 'citation'];
+      for (const term of keyTerms) {
+        if (contentLower.includes(term)) {
+          score = 1;
+          break;
+        }
+      }
+    }
     
     return score;
   }
