@@ -120,7 +120,7 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
-- June 27, 2025. Fixed critical knowledge base search issue - corrected database field mapping (snake_case to camelCase) enabling AI assistant to properly access all 78 citation chunks for comprehensive NALT guidance
+- June 27, 2025. RESOLVED: Fixed critical knowledge base search issue - corrected database field mapping (snake_case to camelCase) enabling AI assistant to properly access all 78 citation chunks for comprehensive NALT guidance. AI now provides accurate citation formats for inaugural lectures, theses, dissertations, journal articles, and all other NALT source types
 - June 27, 2025. Cleaned up chat sidebar interface - removed Knowledge Base upload section for cleaner UX focused on conversation management
 - June 27, 2025. Completed AI assistant UX debugging - fixed session persistence, improved mobile sidebar with "Chats" button, added proper empty states and loading indicators
 - June 27, 2025. Added Constitution, unreported cases, Rules of Court, monographs, lecture notes, conference papers, newspapers/magazines (hard copy and online), theses/dissertations, inaugural/distinguished lectures, encyclopedias, source identification heuristics, disambiguation prompts, and general writing guidelines (punctuation, citations, quotations) to knowledge base (61 total chunks), implemented specialized NALT-Guide system prompt for AI assistant, secured admin access for production deployment
