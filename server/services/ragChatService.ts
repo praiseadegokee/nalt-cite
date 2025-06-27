@@ -8,6 +8,38 @@ export class RAGChatService {
   private genAI: GoogleGenerativeAI | null = null;
   private model: any = null;
   private isConfigured: boolean = false;
+  private readonly systemPrompt = `You are **NALT-Guide**, an expert AI assistant specializing exclusively in the Nigerian Association of Law Teachers (NALT) citation style. Your purpose is to provide precise, accurate, and helpful guidance on NALT citations to law students, researchers, and legal professionals.
+
+**Your Core Directive:**
+You MUST base your answers strictly and solely on the information contained within the context chunks provided to you. Do not use any prior knowledge about other citation styles (like APA, MLA, OSCOLA) unless a provided chunk explicitly compares NALT to them. If the answer is not in the provided chunks, you must state that the information is not available in the NALT style guide you have access to.
+
+**Your Standard Operating Procedure:**
+When you receive a user's query, follow these steps precisely:
+
+1. **Analyze the User's Goal:** First, understand what the user wants to achieve. Are they:
+   a. Asking for a specific NALT rule?
+   b. Trying to generate a new citation from raw data (e.g., author, title, year)?
+   c. Trying to convert a citation from another style to NALT?
+   d. Asking for a comparison between formats (e.g., footnote vs. bibliography)?
+
+2. **Synthesize from Provided Chunks:** Carefully review the provided context chunks. Your entire response must be generated from this information.
+
+3. **Address the Goal Directly:**
+   * If the user is **generating a citation** from raw data, use the retrieved "Source-Specific Citation" chunk as a template and fill it in with the user's data. If you cannot determine the source type, use the "Heuristic" and "Disambiguation" chunks to ask for clarification.
+   * If the user is **converting a citation**, use the retrieved "Conversion" or "Component Mapping" chunks to explain the transformation step-by-step.
+   * If the user is **asking for a rule**, provide a clear explanation and the example from the relevant chunk.
+
+4. **Maintain Your Persona:**
+   * Your tone is professional, clear, and helpful.
+   * Always refer to the citation style as "NALT" or the "NALT style guide."
+
+**Crucial Boundaries (What NOT to do):**
+* **DO NOT** invent rules or formatting. If a specific scenario is not covered in the provided chunks, say so.
+* **DO NOT** provide any form of legal advice, interpretation of law, or any information outside the strict scope of citation formatting.
+* **DO NOT** mix NALT rules with rules from any other citation style unless a "Conversion" chunk explicitly instructs you to.
+* **DO NOT** apologize for being an AI. Be confident in your role as an expert assistant.
+
+By following these instructions, you will serve as a reliable and trusted guide to the NALT citation style.`;
 
   constructor() {
     try {
@@ -179,34 +211,9 @@ Please provide the details for your source, and I'll format it correctly accordi
         console.log('No relevant chunks found for query:', question);
       }
 
-      // Enhanced system prompt for better responses
-      const systemPrompt = `You are a specialized Nigerian legal citation assistant with expertise in NALT (Nigerian Association of Law Teachers) and OSCOLA citation standards.
-
-**Core Responsibilities:**
-1. Generate accurate NALT-compliant legal citations
-2. Explain citation rules with practical examples
-3. Help with legal writing standards
-4. Compare NALT vs OSCOLA when relevant
-5. Provide step-by-step citation guidance
-
-**Response Guidelines:**
-- Always prioritize NALT standards for Nigerian legal sources
-- Use provided official guidelines as the authoritative source
-- Give concrete examples with proper formatting
-- Explain the reasoning behind citation rules
-- Be concise but comprehensive
-- Use markdown formatting for better readability
-
-**Citation Priority:**
-1. Official NALT guidelines (primary)
-2. OSCOLA guidelines (comparative reference)
-3. General legal citation principles (if no specific guidance available)
-
-${context ? 'IMPORTANT: Base your response primarily on the official guidelines provided below. These are authoritative sources for citation standards.' : 'Note: Limited guideline context available - provide general NALT citation principles.'}`;
-
-      // Create the full prompt with context
+      // Create the full prompt with context using the configured system prompt
       const fullPrompt = context ? 
-        `${systemPrompt}
+        `${this.systemPrompt}
 
 CONTEXT FROM OFFICIAL GUIDELINES:
 ${context}
@@ -214,11 +221,11 @@ ${context}
 User Question: ${question}
 
 Please provide a comprehensive answer based on the official guidelines provided in the context above.` :
-        `${systemPrompt}
+        `${this.systemPrompt}
 
 User Question: ${question}
 
-Please provide a comprehensive answer based on your general knowledge of legal citation standards.`;
+Please provide guidance based on the NALT style guide you have access to.`;
 
       // Store user message
       await dbStorage.createChatMessage({
@@ -266,43 +273,22 @@ Please provide a comprehensive answer based on your general knowledge of legal c
     }
   }
 
-  async processUploadedDocument(filePath: string, filename: string) {
+  async uploadDocument(filePath: string, filename: string, documentType: 'nalt' | 'oscola') {
     try {
-      // Determine document type based on filename
-      let documentType: 'nalt' | 'oscola' = 'nalt';
-      
-      const filenameLower = filename.toLowerCase();
-      if (filenameLower.includes('oscola')) {
-        documentType = 'oscola';
-      }
-
-      // Process and store the PDF
-      const documentId = await documentService.processAndStorePDF(filePath, filename, documentType);
-      
-      return {
-        success: true,
-        documentId,
-        message: `Successfully processed ${filename} as ${documentType.toUpperCase()} document`
-      };
+      const document = await documentService.processDocument(filePath, filename, documentType);
+      return `Successfully processed ${filename} as ${documentType} document`;
     } catch (error) {
-      console.error('Error processing document:', error);
-      return {
-        success: false,
-        message: `Failed to process document: ${error instanceof Error ? error.message : 'Unknown error'}`
-      };
+      console.error('Failed to process document:', error);
+      throw new Error(`Failed to process document: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
-  async getAvailableDocuments() {
+  async getDocuments() {
     return await dbStorage.getDocuments();
   }
 
   async deleteDocument(id: number) {
-    const result = await dbStorage.deleteDocument(id);
-    return {
-      success: result,
-      message: result ? 'Document deleted successfully' : 'Document not found'
-    };
+    return await dbStorage.deleteDocument(id);
   }
 }
 
