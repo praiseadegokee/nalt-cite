@@ -287,6 +287,10 @@ Please provide guidance based on the NALT style guide you have access to.`;
     return await dbStorage.getDocuments();
   }
 
+  async getAvailableDocuments() {
+    return this.getDocuments();
+  }
+
   async deleteDocument(id: number) {
     return await dbStorage.deleteDocument(id);
   }
