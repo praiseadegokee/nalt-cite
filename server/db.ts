@@ -284,6 +284,10 @@ export async function initializeDatabase() {
     try {
       const { initializeRAGDocuments } = await import('./initialize-rag-docs');
       await initializeRAGDocuments();
+      
+      // Add FAQ content to knowledge base after RAG documents are initialized
+      const { addFAQsToKnowledgeBase } = await import('./add-faq-to-knowledge-base');
+      await addFAQsToKnowledgeBase();
     } catch (error) {
       console.error('Error initializing RAG documents:', error);
       // Don't fail the entire startup if RAG documents fail to initialize
