@@ -132,37 +132,39 @@ const formSchema = z.object({
   additionalInfo: z.string().optional(),
 });
 
-// Add custom validation for conditional case fields
-const caseFormSchema = formSchema.refine(
+// Enhanced form schema with conditional validation for different source types
+const enhancedFormSchema = formSchema.refine(
   (data) => {
-    // Skip validation if not a case citation
-    if (data.sourceType !== 'case') return true;
+    // Skip validation for undefined source types
+    if (!data.sourceType) return true;
     
-    // For reported cases
-    if (data.caseType === 'reported') {
-      const hasYearReported = !!data.yearReported;
-      const hasLawReportAbbreviation = !!data.lawReportAbbreviation;
-      
-      if (!hasYearReported || !hasLawReportAbbreviation) {
+    // Case-specific validation
+    if (data.sourceType === 'case') {
+      // Require case name or parties for case citations
+      if (!data.caseName && (!data.parties || data.parties.length < 2)) {
         return false;
       }
-    }
-    
-    // For unreported cases (not using simple format)
-    if (data.caseType === 'unreported' && !data.isUnreportedSimple) {
-      const hasCaseNumber = !!data.caseNumber;
-      const hasCourt = !!data.court;
       
-      if (!hasCaseNumber || !hasCourt) {
-        return false;
+      // For reported cases
+      if (data.caseType === 'reported') {
+        if (!data.yearReported || !data.lawReportAbbreviation) {
+          return false;
+        }
+      }
+      
+      // For unreported cases (not using simple format)
+      if (data.caseType === 'unreported' && !data.isUnreportedSimple) {
+        if (!data.caseNumber || !data.court) {
+          return false;
+        }
       }
     }
     
     return true;
   },
   {
-    message: "Missing required fields for the selected case type",
-    path: ["caseType"], // Show error on the case type field
+    message: "Missing required fields for the selected source type",
+    path: ["sourceType"],
   }
 );
 
@@ -170,7 +172,7 @@ export type CitationFormValues = z.infer<typeof formSchema>;
 
 export function useCitationForm() {
   const form = useForm<CitationFormValues>({
-    resolver: zodResolver(caseFormSchema),
+    resolver: zodResolver(enhancedFormSchema),
     mode: "onSubmit", // Only validate on submit to prevent premature validation errors
     defaultValues: {
       sourceType: "case", // Set a default source type to avoid undefined issues
