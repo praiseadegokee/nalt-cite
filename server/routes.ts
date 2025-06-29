@@ -126,6 +126,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // SEO routes
+  app.get('/sitemap.xml', generateSitemap);
+  app.get('/robots.txt', generateRobotsTxt);
+  app.get('/structured-data.json', generateStructuredData);
+
   // Health check endpoint
   app.get(`${apiPrefix}/health`, (req: Request, res: Response) => {
     res.json({ status: "ok", message: "NALT Cite API is running" });

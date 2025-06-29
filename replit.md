@@ -120,6 +120,8 @@ NALT Cite is a comprehensive web application designed to assist with legal citat
 
 ```
 Changelog:
+- June 29, 2025. OPTIMIZED: Comprehensive SEO implementation for Google search indexing - added meta tags, Open Graph, Twitter Cards, structured data (JSON-LD), dynamic sitemap generation, robots.txt, canonical URLs, and page-specific SEO hooks across all major pages (Home, Citation Generator, Chat, Glossary). Created dynamic SEO routes for search engine crawling and indexed content discovery
+- June 29, 2025. RESOLVED: Citation generator form validation debugging - fixed schema validation issues, updated conditional validation for all source types, and corrected case citation requirements ensuring proper citation generation for all document types
 - June 27, 2025. ENHANCED: Redesigned AI system prompt for practical citation conversion - AI assistant now effectively converts citations from any style (APA, MLA, OSCOLA, Chicago, Harvard) to NALT format, addressing the primary user need for citation transformation rather than just Q&A
 - June 27, 2025. ENHANCED: Integrated FAQ content into AI knowledge base - added 99 FAQ items as searchable chunks, expanding AI assistant's ability to answer common questions about NALT citations, thesis writing, research methodologies, and academic formatting requirements
 - June 27, 2025. RESOLVED: Fixed critical knowledge base search issue - corrected database field mapping (snake_case to camelCase) enabling AI assistant to properly access all 78 citation chunks for comprehensive NALT guidance. AI now provides accurate citation formats for inaugural lectures, theses, dissertations, journal articles, and all other NALT source types
