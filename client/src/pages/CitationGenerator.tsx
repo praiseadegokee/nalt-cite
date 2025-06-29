@@ -3,6 +3,7 @@ import { CitationProvider, useCitation } from '@/context/CitationContext';
 import { useCitationForm, CitationFormValues } from '@/hooks/citation/useCitationForm';
 import CitationFormContainer from '@/components/citation/CitationFormContainer';
 import CitationResult from '@/components/citation/CitationResult';
+import { useSEO } from '@/hooks/use-seo';
 
 // Main generator component that uses CitationContext
 function CitationGeneratorContent() {
@@ -48,6 +49,13 @@ function CitationGeneratorContent() {
 
 // Wrapping component with CitationProvider
 export default function CitationGenerator() {
+  useSEO({
+    title: "NALT Citation Generator - Create Accurate Nigerian Legal Citations",
+    description: "Generate professional NALT format citations for Nigerian legal documents. Support for cases, statutes, books, journal articles, and more. Automatic formatting according to NALT standards.",
+    keywords: "NALT citation generator, Nigerian legal citations, case citation, statute citation, legal bibliography, NALT format, Nigerian law citations",
+    canonicalUrl: "https://naltcite.com/citation-generator"
+  });
+
   return (
     <CitationProvider>
       <CitationGeneratorContent />
