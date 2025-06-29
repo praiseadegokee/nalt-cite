@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { dbStorage } from "./dbStorage";
 import { randomUUID } from "crypto";
+import { generateSitemap, generateRobotsTxt, generateStructuredData } from "./seo-routes";
 
 // Use database storage instead of memory storage
 const activeStorage = dbStorage;

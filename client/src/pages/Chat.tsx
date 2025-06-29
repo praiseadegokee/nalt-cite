@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { useSEO } from '@/hooks/use-seo';
 import { 
   MessageCircle, 
   Plus, 
@@ -24,6 +25,13 @@ import type { ChatConversation, ChatMessage, Document } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function Chat() {
+  useSEO({
+    title: "AI Legal Assistant - NALT Citation Help & Legal Writing Support",
+    description: "Get instant help with NALT citations and legal writing from our AI assistant. Ask questions about Nigerian law citations, convert between citation formats, and get expert guidance on legal research.",
+    keywords: "AI legal assistant, NALT citation help, legal writing assistant, Nigerian law AI, citation conversion, legal research help, NALT guide AI",
+    canonicalUrl: "https://naltcite.com/chat"
+  });
+
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [showNewConversation, setShowNewConversation] = useState(false);

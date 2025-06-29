@@ -6,6 +6,7 @@ import GlossaryTerm from '@/components/GlossaryTerm';
 import { GlossaryTerm as GlossaryTermType } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'wouter';
+import { useSEO } from '@/hooks/use-seo';
 import { 
   Loader2, 
   Search, 
@@ -28,6 +29,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function Glossary() {
+  useSEO({
+    title: "Legal Glossary - Nigerian Law Terms & Definitions | NALT Cite",
+    description: "Comprehensive glossary of Nigerian legal terms and definitions. Search alphabetically or by keyword. Essential reference for law students and legal practitioners studying Nigerian law.",
+    keywords: "legal glossary, Nigerian law terms, legal definitions, law dictionary Nigeria, legal terminology, NALT legal terms, Nigerian legal vocabulary",
+    canonicalUrl: "https://naltcite.com/glossary"
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedLetter, setSelectedLetter] = useState('A');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
