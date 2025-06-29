@@ -29,7 +29,7 @@ export default function Chat() {
     title: "AI Legal Assistant - NALT Citation Help & Legal Writing Support",
     description: "Get instant help with NALT citations and legal writing from our AI assistant. Ask questions about Nigerian law citations, convert between citation formats, and get expert guidance on legal research.",
     keywords: "AI legal assistant, NALT citation help, legal writing assistant, Nigerian law AI, citation conversion, legal research help, NALT guide AI",
-    canonicalUrl: "https://naltcite.com/chat"
+    canonicalUrl: "https://naltcite.replit.app/chat"
   });
 
   const [selectedConversationId, setSelectedConversationId] = useState<number | null>(null);

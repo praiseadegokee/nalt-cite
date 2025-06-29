@@ -53,7 +53,7 @@ export default function CitationGenerator() {
     title: "NALT Citation Generator - Create Accurate Nigerian Legal Citations",
     description: "Generate professional NALT format citations for Nigerian legal documents. Support for cases, statutes, books, journal articles, and more. Automatic formatting according to NALT standards.",
     keywords: "NALT citation generator, Nigerian legal citations, case citation, statute citation, legal bibliography, NALT format, Nigerian law citations",
-    canonicalUrl: "https://naltcite.com/citation-generator"
+    canonicalUrl: "https://naltcite.replit.app/citation-generator"
   });
 
   return (

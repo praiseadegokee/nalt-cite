@@ -33,7 +33,7 @@ export default function Glossary() {
     title: "Legal Glossary - Nigerian Law Terms & Definitions | NALT Cite",
     description: "Comprehensive glossary of Nigerian legal terms and definitions. Search alphabetically or by keyword. Essential reference for law students and legal practitioners studying Nigerian law.",
     keywords: "legal glossary, Nigerian law terms, legal definitions, law dictionary Nigeria, legal terminology, NALT legal terms, Nigerian legal vocabulary",
-    canonicalUrl: "https://naltcite.com/glossary"
+    canonicalUrl: "https://naltcite.replit.app/glossary"
   });
 
   const [searchTerm, setSearchTerm] = useState('');
