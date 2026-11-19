@@ -6,9 +6,15 @@ export class EmbeddingService {
   private isConfigured: boolean = false;
 
   constructor() {
+    this.ensureInitialized();
+  }
+
+  private ensureInitialized() {
+    if (this.isConfigured && this.model) return;
     try {
-      if (process.env.GEMINI_API_KEY) {
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey) {
+        this.genAI = new GoogleGenerativeAI(apiKey);
         this.model = this.genAI.getGenerativeModel({ model: 'text-embedding-004' });
         this.isConfigured = true;
       }
@@ -18,6 +24,7 @@ export class EmbeddingService {
   }
 
   async generateEmbedding(text: string): Promise<number[]> {
+    this.ensureInitialized();
     if (!this.isConfigured) {
       throw new Error('Embedding service not configured');
     }

@@ -52,7 +52,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const generalFileStorage = multer.diskStorage({
     destination: function(req, file, cb) {
       let uploadDir;
-      if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/')) {
+      if (file.mimetype === 'application/pdf' || file.mimetype === 'text/plain' || file.mimetype.startsWith('image/')) {
         uploadDir = path.resolve(process.cwd(), 'public/pdfs');
       } else {
         uploadDir = path.resolve(process.cwd(), 'public/downloads');
@@ -72,6 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     fileFilter: (req, file, cb) => {
       const allowedMimeTypes = [
         'application/pdf',
+        'text/plain',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'image/jpeg', 'image/png', 'image/gif', 'image/webp'
@@ -924,7 +925,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'No file uploaded' });
       }
 
-      const { filename, path: filePath, mimetype } = req.file;
+      const { originalname, path: filePath, mimetype } = req.file;
       
       // Validate file type
       const allowedTypes = ['application/pdf', 'text/plain'];
@@ -934,7 +935,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Import and use ragChatService
       const { ragChatService } = await import('./services/ragChatService');
-      const result = await ragChatService.processUploadedDocument(filePath, filename);
+      const result = await ragChatService.processUploadedDocument(filePath, originalname);
       
       res.json(result);
     } catch (error) {

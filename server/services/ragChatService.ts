@@ -56,10 +56,20 @@ Help users transform citations from APA, MLA, OSCOLA, Chicago, Harvard, or any o
 Your goal is to be the most helpful and effective NALT citation assistant possible, making it easy for users to get properly formatted NALT citations regardless of what format they start with.`;
 
   constructor() {
+    this.ensureInitialized();
+  }
+
+  private ensureInitialized() {
+    if (this.isConfigured && this.model) return;
     try {
-      if (process.env.GEMINI_API_KEY) {
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey) {
+        this.genAI = new GoogleGenerativeAI(apiKey);
+        const modelName = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+        this.model = this.genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: this.systemPrompt
+        });
         this.isConfigured = true;
       }
     } catch (error) {
@@ -68,6 +78,7 @@ Your goal is to be the most helpful and effective NALT citation assistant possib
   }
 
   private checkConfiguration() {
+    this.ensureInitialized();
     if (!this.isConfigured) {
       throw new Error('GEMINI_API_KEY environment variable is required for AI chat functionality');
     }
@@ -153,21 +164,15 @@ Your goal is to be the most helpful and effective NALT citation assistant possib
         console.log('No relevant chunks found for query:', question);
       }
 
-      // Create the full prompt with context using the configured system prompt
+      // Create the prompt with context (system prompt is already passed via systemInstruction)
       const fullPrompt = context ? 
-        `${this.systemPrompt}
-
-CONTEXT FROM OFFICIAL GUIDELINES:
+        `CONTEXT FROM OFFICIAL GUIDELINES:
 ${context}
 
 User Question: ${question}
 
 Please provide a comprehensive answer based on the official guidelines provided in the context above.` :
-        `${this.systemPrompt}
-
-User Question: ${question}
-
-Please provide guidance based on the NALT style guide you have access to.`;
+        question;
 
       // Store user message
       await dbStorage.createChatMessage({
@@ -177,11 +182,31 @@ Please provide guidance based on the NALT style guide you have access to.`;
         sources: null
       });
 
-      // Generate response using Gemini
+      // Generate response using Gemini with automatic fallbacks
       console.log('Sending prompt to Gemini AI...');
-      const result = await this.model!.generateContent(fullPrompt);
-      const response = result.response;
-      const answer = response.text();
+      let answer: string;
+      try {
+        const result = await this.model!.generateContent(fullPrompt);
+        answer = result.response.text();
+      } catch (err: any) {
+        console.warn('Primary model error, attempting gemini-2.0-flash fallback:', err?.message);
+        try {
+          const fallbackModel = this.genAI!.getGenerativeModel({
+            model: 'gemini-2.0-flash',
+            systemInstruction: this.systemPrompt
+          });
+          const fallbackResult = await fallbackModel.generateContent(fullPrompt);
+          answer = fallbackResult.response.text();
+        } catch (fallbackErr: any) {
+          console.warn('2.0-flash failed, attempting gemini-1.5-flash fallback:', fallbackErr?.message);
+          const legacyModel = this.genAI!.getGenerativeModel({
+            model: 'gemini-1.5-flash',
+            systemInstruction: this.systemPrompt
+          });
+          const legacyResult = await legacyModel.generateContent(fullPrompt);
+          answer = legacyResult.response.text();
+        }
+      }
       console.log('Received response from Gemini AI, length:', answer.length);
 
       // Store assistant message with sources
@@ -217,10 +242,33 @@ Please provide guidance based on the NALT style guide you have access to.`;
 
   async uploadDocument(filePath: string, filename: string, documentType: 'nalt' | 'oscola') {
     try {
-      const document = await documentService.processAndStorePDF(filePath, filename, documentType);
+      await documentService.processAndStorePDF(filePath, filename, documentType);
       return `Successfully processed ${filename} as ${documentType} document`;
     } catch (error) {
       console.error('Failed to process document:', error);
+      throw new Error(`Failed to process document: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Process an uploaded document file — auto-detects document type from filename.
+   * This is the method called by the /chat/upload-document route.
+   */
+  async processUploadedDocument(filePath: string, filename: string) {
+    try {
+      // Auto-detect document type from filename
+      const nameLower = filename.toLowerCase();
+      const documentType: 'nalt' | 'oscola' = nameLower.includes('oscola') ? 'oscola' : 'nalt';
+
+      const docId = await documentService.processAndStorePDF(filePath, filename, documentType);
+      return {
+        success: true,
+        message: `Successfully processed "${filename}" (${documentType.toUpperCase()} document)`,
+        documentId: docId,
+        documentType
+      };
+    } catch (error) {
+      console.error('Failed to process uploaded document:', error);
       throw new Error(`Failed to process document: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

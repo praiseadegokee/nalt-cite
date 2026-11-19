@@ -1,3 +1,5 @@
+import fs from "fs";
+import path from "path";
 import { 
   users, type User, type InsertUser,
   citationSources, type CitationSource, type InsertCitationSource,
@@ -69,10 +71,10 @@ export interface IStorage {
   searchDocumentChunks(query: string): Promise<DocumentChunk[]>;
   
   // Chat conversation methods
-  getChatConversations(): Promise<ChatConversation[]>;
+  getChatConversations(sessionId?: string): Promise<ChatConversation[]>;
   getChatConversation(id: number): Promise<ChatConversation | undefined>;
   createChatConversation(conversation: InsertChatConversation): Promise<ChatConversation>;
-  deleteChatConversation(id: number): Promise<boolean>;
+  deleteChatConversation(id: number, sessionId?: string): Promise<boolean>;
   
   // Chat message methods
   getChatMessages(conversationId: number): Promise<ChatMessage[]>;
@@ -138,7 +140,49 @@ export class MemStorage implements IStorage {
   }
   
   private initializeData() {
-    // Sample glossary terms
+    try {
+      const seedPath = path.resolve(import.meta.dirname, 'seed-data.json');
+      if (fs.existsSync(seedPath)) {
+        const raw = fs.readFileSync(seedPath, 'utf-8');
+        const data = JSON.parse(raw);
+
+        // Seed glossary terms
+        if (Array.isArray(data.glossary)) {
+          data.glossary.forEach((term: InsertGlossaryTerm) => this.createGlossaryTerm(term));
+        }
+
+        // Seed FAQ categories
+        const categoryMap = new Map<number, number>();
+        if (Array.isArray(data.faqCategories)) {
+          data.faqCategories.forEach((cat: InsertFaqCategory, idx: number) => {
+            const id = this.nextId.faqCategories++;
+            this.faqCategories.set(id, { ...cat, id });
+            categoryMap.set(idx + 1, id);
+          });
+        }
+
+        // Seed FAQ items
+        if (Array.isArray(data.faqItems)) {
+          data.faqItems.forEach((faq: InsertFaqItem) => {
+            const id = this.nextId.faqItems++;
+            const categoryId = categoryMap.get(faq.categoryId) || faq.categoryId || 1;
+            this.faqItems.set(id, { ...faq, id, categoryId });
+          });
+        }
+
+        // Seed Blog posts
+        if (Array.isArray(data.blogs)) {
+          data.blogs.forEach((post: InsertBlogPost) => this.createBlogPost(post));
+        }
+
+        console.log(`[Storage] Loaded ${this.glossaryTerms.size} glossary terms, ${this.faqItems.size} FAQs (${this.faqCategories.size} categories), and ${this.blogPosts.size} blog articles from seed-data.json`);
+        return;
+      }
+    } catch (err) {
+      console.warn("Failed to load seed-data.json, falling back to defaults", err);
+    }
+
+    // Fallback sample glossary terms
     const sampleTerms: InsertGlossaryTerm[] = [
       {
         term: 'Ab Initio',
@@ -179,65 +223,20 @@ export class MemStorage implements IStorage {
       },
     ];
     
-    // Create categories and store their IDs
-    const categoryIds: Record<string, number> = {};
     sampleCategories.forEach(async (category) => {
       const newCategory = await this.createFaqCategory(category);
-      categoryIds[category.name] = newCategory.id;
     });
     
-    // Ensure at least one category exists for sample data
     const defaultCategoryId = 1;
-    
-    // Sample FAQ items
     const sampleFaqs: InsertFaqItem[] = [
       {
         question: 'What is the NALT Citation Guide?',
-        answer: 'The NALT Citation Guide is the official standard published by the Nigerian Association of Law Teachers for formatting legal citations in academic writing, research papers, and publications in Nigeria. It provides comprehensive rules for citing various legal sources including cases, statutes, books, journal articles, and other materials relevant to Nigerian legal scholarship.',
+        answer: 'The NALT Citation Guide is the official standard published by the Nigerian Association of Law Teachers for formatting legal citations in academic writing, research papers, and publications in Nigeria.',
         categoryId: defaultCategoryId,
         order: 1,
       },
-      {
-        question: 'How does NALT citation differ from OSCOLA?',
-        answer: 'While NALT citation format shares some similarities with the Oxford Standard for Citation of Legal Authorities (OSCOLA), it has been specifically adapted for the Nigerian legal system. Key differences include specialized rules for citing Nigerian cases, statutes, and legal materials, as well as variations in punctuation, abbreviation conventions, and formatting requirements tailored to Nigerian legal scholarship practices.',
-        categoryId: defaultCategoryId,
-        order: 2,
-      },
-      {
-        question: 'How do I cite Nigerian court cases?',
-        answer: 'Nigerian court cases should be cited following this format: <i>Case Name</i> [Year] Volume Law Report Abbreviation Starting Page. For example: <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550. If citing a specific page, add the page number after the starting page, e.g., <i>Garba v. University of Maiduguri</i> [1986] 1 NWLR (Pt 18) 550, 575.',
-        categoryId: defaultCategoryId,
-        order: 3,
-      },
     ];
-    
     sampleFaqs.forEach(faq => this.createFaqItem(faq));
-    
-    // Sample blog posts
-    const sampleBlogPosts: InsertBlogPost[] = [
-      {
-        title: 'Understanding the New NALT Citation Rules for Online Sources',
-        excerpt: 'The digital age has brought new challenges for legal citation. Learn how the latest NALT Guide addresses electronic resources, social media citations, and other digital materials in legal writing.',
-        content: '<p>The digital revolution has transformed legal research and writing, bringing with it new challenges for citation standards. The Nigerian Association of Law Teachers has responded by updating the NALT Citation Guide to address electronic resources, online databases, social media content, and other digital materials that are increasingly being cited in legal scholarship.</p><p>This article explores the key changes in the latest edition of the NALT Guide, providing practical examples and clarity on how to properly cite everything from online journal articles to social media posts in your legal writing.</p>',
-        date: '2023-09-15',
-        author: 'Dr. Amina Bello',
-        readTime: 8,
-        category: 'Citation Tips',
-        tags: JSON.stringify(['Digital Resources', 'Online Citation', 'NALT Updates', 'Legal Writing'])
-      },
-      {
-        title: 'Common Citation Mistakes in Nigerian Legal Writing',
-        excerpt: 'Explore the most frequent errors in legal citations and how to avoid them in your academic papers and legal documents.',
-        content: '<p>Even experienced legal scholars can make citation errors that may diminish the credibility and clarity of their work. This article identifies the most common citation mistakes found in Nigerian legal writing and provides guidance on how to avoid them.</p><p>From inconsistent formatting of case names to incorrect abbreviations of law reports, understanding these pitfalls will help you produce more professional and accurate legal documents that adhere properly to NALT citation standards.</p>',
-        date: '2023-10-05',
-        author: 'Prof. Emmanuel Okonkwo',
-        readTime: 6,
-        category: 'Best Practices',
-        tags: JSON.stringify(['Common Errors', 'Citation Format', 'Legal Writing', 'NALT Standards'])
-      }
-    ];
-    
-    sampleBlogPosts.forEach(post => this.createBlogPost(post));
   }
 
   // User methods
@@ -574,15 +573,45 @@ export class MemStorage implements IStorage {
   }
 
   async searchDocumentChunks(query: string): Promise<DocumentChunk[]> {
-    const queryLower = query.toLowerCase();
-    return Array.from(this.documentChunks.values())
-      .filter(chunk => chunk.content.toLowerCase().includes(queryLower))
-      .slice(0, 10); // Return top 10 results
+    const stopWords = new Set([
+      'the','a','an','and','or','but','in','on','at','to','for','of','with',
+      'by','from','is','are','was','were','be','been','being','have','has','had',
+      'do','does','did','will','would','could','should','may','might','must','can',
+      'what','how','when','where','who','which','why','this','that','these','those',
+      'i','you','he','she','it','we','they','me','him','her','us','them'
+    ]);
+    // Tokenize query into meaningful keywords
+    const keywords = query.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 2 && !stopWords.has(w));
+
+    if (keywords.length === 0) {
+      // Fall back to full-string match if no keywords
+      const queryLower = query.toLowerCase();
+      return Array.from(this.documentChunks.values())
+        .filter(chunk => chunk.content.toLowerCase().includes(queryLower))
+        .slice(0, 10);
+    }
+
+    // Score each chunk by how many keywords it matches
+    const scored = Array.from(this.documentChunks.values())
+      .map(chunk => {
+        const contentLower = chunk.content.toLowerCase();
+        const score = keywords.reduce((acc, kw) => acc + (contentLower.includes(kw) ? 1 : 0), 0);
+        return { chunk, score };
+      })
+      .filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(({ chunk }) => chunk);
+
+    return scored.slice(0, 10); // Return top 10 results
   }
 
   // Chat conversation methods
-  async getChatConversations(): Promise<ChatConversation[]> {
+  async getChatConversations(sessionId?: string): Promise<ChatConversation[]> {
     return Array.from(this.chatConversations.values())
+      .filter(c => !sessionId || c.sessionId === sessionId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
@@ -601,8 +630,12 @@ export class MemStorage implements IStorage {
     return conversation;
   }
 
-  async deleteChatConversation(id: number): Promise<boolean> {
-    if (!this.chatConversations.has(id)) {
+  async deleteChatConversation(id: number, sessionId?: string): Promise<boolean> {
+    const conv = this.chatConversations.get(id);
+    if (!conv) {
+      return false;
+    }
+    if (sessionId && conv.sessionId !== sessionId) {
       return false;
     }
     

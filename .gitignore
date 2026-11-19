@@ -4,3 +4,12 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.neon
+.env
+.env.*
+!.env.example
+test-nalt.txt
+test/data/*.txt
+scripts/test-*.ts
+scripts/list-models.ts
+neon.ts

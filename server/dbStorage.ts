@@ -12,10 +12,10 @@ import {
   type ChatConversation, type InsertChatConversation,
   type ChatMessage, type InsertChatMessage
 } from "@shared/schema";
-import { IStorage } from './storage';
+import { IStorage, storage } from './storage';
 
 // Create direct SQL connection using Neon
-const sqlClient = neon(process.env.DATABASE_URL!);
+const sqlClient = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null as any;
 
 export class DbStorage implements IStorage {
   // Initialize database connection
@@ -536,5 +536,5 @@ export class DbStorage implements IStorage {
   }
 }
 
-// Export a singleton instance of the DbStorage
-export const dbStorage = new DbStorage();
+// Export a singleton instance of the DbStorage or fallback to in-memory storage
+export const dbStorage: IStorage = process.env.DATABASE_URL ? new DbStorage() : storage;

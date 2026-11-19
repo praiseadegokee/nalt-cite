@@ -28,10 +28,22 @@ export class CitationParserService {
   private isConfigured: boolean = false;
 
   constructor() {
+    this.ensureInitialized();
+  }
+
+  private ensureInitialized() {
+    if (this.isConfigured && this.model) return;
     try {
-      if (process.env.GEMINI_API_KEY) {
-        this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (apiKey) {
+        this.genAI = new GoogleGenerativeAI(apiKey);
+        const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+        this.model = this.genAI.getGenerativeModel({
+          model: modelName,
+          generationConfig: {
+            responseMimeType: 'application/json'
+          }
+        });
         this.isConfigured = true;
       }
     } catch (error) {
@@ -40,6 +52,7 @@ export class CitationParserService {
   }
 
   async parseAndFormatCitation(userInput: string): Promise<{ citation: string; type: string; details: ParsedCitation }> {
+    this.ensureInitialized();
     if (!this.isConfigured) {
       throw new Error('AI service not configured for citation parsing');
     }
@@ -89,12 +102,16 @@ If you cannot determine enough details, ask for the missing information.`;
       const response = result.response.text();
       
       // Parse the JSON response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('Invalid response format from AI');
+      let parsed: any;
+      try {
+        parsed = JSON.parse(response);
+      } catch {
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('Invalid response format from AI');
+        }
+        parsed = JSON.parse(jsonMatch[0]);
       }
-
-      const parsed = JSON.parse(jsonMatch[0]);
       
       return {
         citation: parsed.formattedCitation,
