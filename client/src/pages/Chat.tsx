@@ -427,206 +427,173 @@ export default function Chat() {
   const activeConversation = conversations.find(c => c.id === selectedConversationId);
 
   return (
-    <div className="h-[calc(100vh-70px)] bg-[#F8FAFC] text-slate-900 flex flex-col font-sans overflow-hidden">
-      {/* Top Studio Bar */}
-      <div className="bg-[#1c3877] text-white border-b border-[#0f2047]/30 px-4 sm:px-6 py-2 flex items-center justify-between text-xs shrink-0">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold tracking-wider uppercase text-blue-200">NALT Research Studio</span>
-          <span className="hidden md:inline text-white/40">|</span>
-          <div className="hidden md:flex items-center gap-2 text-white/80">
-            <ShieldCheck className="h-3.5 w-3.5 text-blue-300" />
-            <span>Official NALT Bluebook (2021) & OSCOLA (4th Ed) Knowledge Base</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDocDrawer(!showDocDrawer)}
-            className="h-7 text-xs text-white/90 hover:text-white hover:bg-white/10 px-2.5 rounded"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5 text-blue-300" />
-            <span>Reference Manuals ({documents.length})</span>
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex-1 flex overflow-hidden relative">
-        {/* Mobile Sidebar Overlay */}
-        {sidebarOpen && (
-          <div 
-            className="fixed inset-0 bg-slate-900/60 z-30 lg:hidden backdrop-blur-xs"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Sidebar */}
-        <aside
-          className={`
-            ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-            lg:translate-x-0 transition-transform duration-200 ease-in-out
-            fixed lg:static z-40 top-0 left-0 bottom-0
-            w-72 bg-white border-r border-slate-200
-            flex flex-col shrink-0
-          `}
-        >
-          {/* Sidebar Header */}
-          <div className="p-3.5 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-xs">
-                N
-              </div>
-              <div>
-                <h2 className="text-xs font-semibold text-slate-900 leading-tight">Research Sessions</h2>
-                <p className="text-[10px] text-slate-500">History & active queries</p>
-              </div>
+    <div className="bg-[#F8FAFC] text-slate-900 font-sans py-6 px-3 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto space-y-4">
+        {/* Top Studio Bar */}
+        <div className="bg-[#1c3877] text-white rounded-lg px-4 sm:px-6 py-3 flex items-center justify-between text-xs shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="font-semibold tracking-wider uppercase text-blue-200">NALT Research Studio</span>
+            <span className="hidden md:inline text-white/40">|</span>
+            <div className="hidden md:flex items-center gap-2 text-white/80">
+              <ShieldCheck className="h-3.5 w-3.5 text-blue-300" />
+              <span>Official NALT Bluebook (2021) & OSCOLA (4th Ed) Knowledge Base</span>
             </div>
+          </div>
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden h-7 w-7 p-0 text-slate-500"
+              onClick={() => setShowDocDrawer(!showDocDrawer)}
+              className="h-7 text-xs text-white/90 hover:text-white hover:bg-white/10 px-2.5 rounded"
             >
-              <X className="h-4 w-4" />
+              <BookOpen className="h-3.5 w-3.5 mr-1.5 text-blue-300" />
+              <span>Reference Manuals ({documents.length})</span>
             </Button>
           </div>
+        </div>
 
-          {/* New Session Button */}
-          <div className="p-2.5 border-b border-slate-100">
-            {showNewConversation ? (
-              <div className="space-y-2 p-2 bg-slate-50 rounded border border-slate-200">
-                <input
-                  type="text"
-                  placeholder="Session title..."
-                  value={newConversationTitle}
-                  onChange={(e) => setNewConversationTitle(e.target.value)}
-                  className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-[#1c3877]"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      if (newConversationTitle.trim()) {
-                        createConversationMutation.mutate(newConversationTitle);
-                      }
-                    } else if (e.key === 'Escape') {
-                      setShowNewConversation(false);
-                    }
-                  }}
-                />
-                <div className="flex gap-1.5">
-                  <Button
-                    size="sm"
-                    onClick={() => {
-                      if (newConversationTitle.trim()) {
-                        createConversationMutation.mutate(newConversationTitle);
-                      }
-                    }}
-                    disabled={!newConversationTitle.trim() || createConversationMutation.isPending}
-                    className="flex-1 h-7 text-xs bg-[#1c3877] hover:bg-[#142752] text-white"
-                  >
-                    Create
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowNewConversation(false)}
-                    className="h-7 text-xs text-slate-600"
-                  >
-                    Cancel
-                  </Button>
+        {/* Studio Card Container */}
+        <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col md:flex-row h-[720px]">
+          {/* Sidebar */}
+          <aside
+            className="w-full md:w-72 bg-slate-50/50 border-r border-slate-200 flex flex-col shrink-0"
+          >
+            {/* Sidebar Header */}
+            <div className="p-3.5 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-xs">
+                  N
+                </div>
+                <div>
+                  <h2 className="text-xs font-semibold text-slate-900 leading-tight">Research Sessions</h2>
+                  <p className="text-[10px] text-slate-500">History & active queries</p>
                 </div>
               </div>
-            ) : (
-              <Button
-                onClick={() => setShowNewConversation(true)}
-                className="w-full h-8 text-xs font-medium bg-[#1c3877] hover:bg-[#142752] text-white shadow-xs rounded flex items-center justify-center gap-1.5"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>New Research Session</span>
-              </Button>
-            )}
-          </div>
+            </div>
 
-          {/* Sessions List */}
-          <div className="flex-1 overflow-y-auto p-2">
-            {conversations.length === 0 ? (
-              <div className="text-center py-10 px-4">
-                <MessageCircle className="h-5 w-5 mx-auto mb-2 text-slate-300" />
-                <p className="text-xs font-medium text-slate-600">No active sessions</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Start an inquiry to begin</p>
-              </div>
-            ) : (
-              <div className="space-y-1">
-                {conversations.map((conv) => {
-                  const isSelected = selectedConversationId === conv.id;
-                  return (
-                    <div
-                      key={conv.id}
+            {/* New Session Button */}
+            <div className="p-2.5 border-b border-slate-200 bg-white">
+              {showNewConversation ? (
+                <div className="space-y-2 p-2 bg-slate-50 rounded border border-slate-200">
+                  <input
+                    type="text"
+                    placeholder="Session title..."
+                    value={newConversationTitle}
+                    onChange={(e) => setNewConversationTitle(e.target.value)}
+                    className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-[#1c3877]"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (newConversationTitle.trim()) {
+                          createConversationMutation.mutate(newConversationTitle);
+                        }
+                      } else if (e.key === 'Escape') {
+                        setShowNewConversation(false);
+                      }
+                    }}
+                  />
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
                       onClick={() => {
-                        setSelectedConversationId(conv.id);
-                        setSidebarOpen(false);
+                        if (newConversationTitle.trim()) {
+                          createConversationMutation.mutate(newConversationTitle);
+                        }
                       }}
-                      className={`group flex items-center justify-between px-2.5 py-1.5 rounded text-xs cursor-pointer transition-colors ${
-                        isSelected 
-                          ? 'bg-[#1c3877]/10 text-[#1c3877] font-medium' 
-                          : 'text-slate-700 hover:bg-slate-100'
-                      }`}
+                      disabled={!newConversationTitle.trim() || createConversationMutation.isPending}
+                      className="flex-1 h-7 text-xs bg-[#1c3877] hover:bg-[#142752] text-white"
                     >
-                      <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                        <MessageCircle className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-[#1c3877]' : 'text-slate-400'}`} />
-                        <span className="truncate">{conv.title}</span>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteConversationMutation.mutate(conv.id);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 h-5 w-5 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-opacity"
-                        title="Delete session"
+                      Create
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowNewConversation(false)}
+                      className="h-7 text-xs text-slate-600"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setShowNewConversation(true)}
+                  className="w-full h-8 text-xs font-medium bg-[#1c3877] hover:bg-[#142752] text-white shadow-xs rounded flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>New Research Session</span>
+                </Button>
+              )}
+            </div>
+
+            {/* Sessions List */}
+            <div className="flex-1 overflow-y-auto p-2">
+              {conversations.length === 0 ? (
+                <div className="text-center py-10 px-4">
+                  <MessageCircle className="h-5 w-5 mx-auto mb-2 text-slate-300" />
+                  <p className="text-xs font-medium text-slate-600">No active sessions</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Start an inquiry to begin</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {conversations.map((conv) => {
+                    const isSelected = selectedConversationId === conv.id;
+                    return (
+                      <div
+                        key={conv.id}
+                        onClick={() => setSelectedConversationId(conv.id)}
+                        className={`group flex items-center justify-between px-2.5 py-1.5 rounded text-xs cursor-pointer transition-colors ${
+                          isSelected 
+                            ? 'bg-[#1c3877]/10 text-[#1c3877] font-medium' 
+                            : 'text-slate-700 hover:bg-slate-100'
+                        }`}
                       >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Guidelines Footer in Sidebar */}
-          <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 space-y-1">
-            <div className="font-semibold text-slate-800 flex items-center justify-between">
-              <span>Indexed Standards</span>
-              <Badge variant="outline" className="text-[9px] font-normal py-0 h-4 border-slate-300 text-slate-600">Active</Badge>
+                        <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                          <MessageCircle className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-[#1c3877]' : 'text-slate-400'}`} />
+                          <span className="truncate">{conv.title}</span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteConversationMutation.mutate(conv.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 h-5 w-5 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-opacity"
+                          title="Delete session"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <div className="space-y-0.5 text-slate-500 text-[10.5px]">
-              <div className="flex items-center gap-1.5 truncate">
-                <FileCheck2 className="h-3 w-3 text-[#1c3877] shrink-0" />
-                <span className="truncate">NALT Bluebook (2021)</span>
+
+            {/* Guidelines Footer in Sidebar */}
+            <div className="p-3 border-t border-slate-200 bg-white text-[11px] text-slate-600 space-y-1">
+              <div className="font-semibold text-slate-800 flex items-center justify-between">
+                <span>Indexed Standards</span>
+                <Badge variant="outline" className="text-[9px] font-normal py-0 h-4 border-slate-300 text-slate-600">Active</Badge>
               </div>
-              <div className="flex items-center gap-1.5 truncate">
-                <FileCheck2 className="h-3 w-3 text-blue-600 shrink-0" />
-                <span className="truncate">OSCOLA (4th Edition)</span>
+              <div className="space-y-0.5 text-slate-500 text-[10.5px]">
+                <div className="flex items-center gap-1.5 truncate">
+                  <FileCheck2 className="h-3 w-3 text-[#1c3877] shrink-0" />
+                  <span className="truncate">NALT Bluebook (2021)</span>
+                </div>
+                <div className="flex items-center gap-1.5 truncate">
+                  <FileCheck2 className="h-3 w-3 text-blue-600 shrink-0" />
+                  <span className="truncate">OSCOLA (4th Edition)</span>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+          </aside>
 
-        {/* Main Studio Work Area */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] h-full overflow-hidden">
-          {/* Work Area Sub-Header */}
-          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSidebarOpen(true)}
-                className="lg:hidden h-7 px-2 text-slate-600"
-              >
-                <Menu className="h-3.5 w-3.5 mr-1" />
-                <span className="text-xs">Sessions</span>
-              </Button>
+          {/* Main Studio Work Area */}
+          <main className="flex-1 flex flex-col min-w-0 bg-white h-full overflow-hidden">
+            {/* Work Area Sub-Header */}
+            <div className="border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0 bg-slate-50/50">
               <div className="min-w-0">
                 <h1 className="text-xs sm:text-sm font-semibold text-slate-900 truncate">
                   {activeConversation ? activeConversation.title : 'Legal Citation & Formatting Assistant'}
@@ -635,123 +602,122 @@ export default function Chat() {
                   Verified answers from official Nigerian legal formatting standards
                 </p>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".pdf,.txt"
-                multiple
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadMutation.isPending}
-                className="h-7 text-xs border-slate-300 text-slate-700 hover:text-[#1c3877] hover:border-[#1c3877]"
-              >
-                <Upload className="h-3 w-3 mr-1 text-slate-500" />
-                <span className="hidden sm:inline">Upload Guide PDF</span>
-                <span className="sm:hidden">Upload</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Reference Document Drawer (Collapsible) */}
-          {showDocDrawer && (
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 shrink-0 shadow-xs z-10">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                  Active Knowledge Base Materials
-                </h3>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept=".pdf,.txt"
+                  multiple
+                  className="hidden"
+                />
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={() => setShowDocDrawer(false)}
-                  className="h-6 w-6 p-0 text-slate-400"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadMutation.isPending}
+                  className="h-7 text-xs border-slate-300 text-slate-700 hover:text-[#1c3877] hover:border-[#1c3877]"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <Upload className="h-3 w-3 mr-1 text-slate-500" />
+                  <span className="hidden sm:inline">Upload Guide PDF</span>
+                  <span className="sm:hidden">Upload</span>
                 </Button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {documents.map((doc) => (
-                  <div 
-                    key={doc.id}
-                    className="p-2.5 rounded border border-slate-200 bg-slate-50 flex items-start justify-between text-xs"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <div className="font-medium text-slate-900 truncate">{doc.title}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-                        <span className="uppercase font-semibold text-[#1c3877]">{doc.documentType}</span>
-                        <span>·</span>
-                        <span>{doc.filename}</span>
-                      </div>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteDocumentMutation.mutate(doc.id)}
-                      className="h-5 w-5 p-0 text-slate-400 hover:text-red-600 shrink-0"
-                      title="Remove manual"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
             </div>
-          )}
 
-          {/* Messages Stream - INTERNAL SCROLL ONLY */}
-          <div 
-            ref={scrollContainerRef}
-            className="flex-1 overflow-y-auto"
-          >
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-              {messagesLoading ? (
-                <div className="flex items-center justify-center py-20 text-slate-400">
-                  <div className="w-5 h-5 border-2 border-slate-300 border-t-[#1c3877] rounded-full animate-spin mr-3"></div>
-                  <span className="text-xs font-medium">Retrieving legal consultation records...</span>
+            {/* Reference Document Drawer (Collapsible) */}
+            {showDocDrawer && (
+              <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-3 shrink-0 shadow-xs z-10">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    Active Knowledge Base Materials
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowDocDrawer(false)}
+                    className="h-6 w-6 p-0 text-slate-400"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
-              ) : messages.length === 0 ? (
-                /* Editorial Welcome / Preset Grid */
-                <div className="py-4 sm:py-8 space-y-6">
-                  <div className="text-center max-w-xl mx-auto space-y-2">
-                    <div className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-[#1c3877] text-white shadow-xs font-serif font-bold text-base mb-1">
-                      §
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                  {documents.map((doc) => (
+                    <div 
+                      key={doc.id}
+                      className="p-2.5 rounded border border-slate-200 bg-white flex items-start justify-between text-xs"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="font-medium text-slate-900 truncate">{doc.title}</div>
+                        <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                          <span className="uppercase font-semibold text-[#1c3877]">{doc.documentType}</span>
+                          <span>·</span>
+                          <span>{doc.filename}</span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteDocumentMutation.mutate(doc.id)}
+                        className="h-5 w-5 p-0 text-slate-400 hover:text-red-600 shrink-0"
+                        title="Remove manual"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
-                    <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 tracking-tight">
-                      NALT Citation & Legal Research Assistant
-                    </h2>
-                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                      Consult the official Nigerian Association of Law Teachers Uniform Format, convert foreign referencing styles, or structure academic dissertations.
-                    </p>
-                  </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-                  {/* Preset Action Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                    {LEGAL_PRESETS.map((preset, idx) => {
-                      const Icon = preset.icon;
-                      return (
-                        <div
-                          key={idx}
-                          onClick={() => {
-                            setNewMessage(preset.prompt);
-                            if (!selectedConversationId) {
-                              createConversationMutation.mutate(preset.title);
-                            }
-                          }}
-                          className="group p-3.5 bg-white border border-slate-200 hover:border-[#1c3877] rounded-lg shadow-xs hover:shadow-sm cursor-pointer transition-all duration-150 flex flex-col justify-between"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded bg-slate-100 group-hover:bg-[#1c3877]/10 text-slate-700 group-hover:text-[#1c3877] transition-colors shrink-0">
-                              <Icon className="h-4 w-4" />
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="text-xs font-semibold text-slate-900 group-hover:text-[#1c3877] transition-colors flex items-center gap-1">
+            {/* Messages Stream - INTERNAL SCROLL ONLY */}
+            <div 
+              ref={scrollContainerRef}
+              className="flex-1 overflow-y-auto bg-slate-50/30"
+            >
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+                {messagesLoading ? (
+                  <div className="flex items-center justify-center py-20 text-slate-400">
+                    <div className="w-5 h-5 border-2 border-slate-300 border-t-[#1c3877] rounded-full animate-spin mr-3"></div>
+                    <span className="text-xs font-medium">Retrieving legal consultation records...</span>
+                  </div>
+                ) : messages.length === 0 ? (
+                  /* Editorial Welcome / Preset Grid */
+                  <div className="py-4 sm:py-8 space-y-6">
+                    <div className="text-center max-w-xl mx-auto space-y-2">
+                      <div className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-[#1c3877] text-white shadow-xs font-serif font-bold text-base mb-1">
+                        §
+                      </div>
+                      <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 tracking-tight">
+                        NALT Citation & Legal Research Assistant
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        Consult the official Nigerian Association of Law Teachers Uniform Format, convert foreign referencing styles, or structure academic dissertations.
+                      </p>
+                    </div>
+
+                    {/* Preset Action Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      {LEGAL_PRESETS.map((preset, idx) => {
+                        const Icon = preset.icon;
+                        return (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              setNewMessage(preset.prompt);
+                              if (!selectedConversationId) {
+                                createConversationMutation.mutate(preset.title);
+                              }
+                            }}
+                            className="group p-3.5 bg-white border border-slate-200 hover:border-[#1c3877] rounded-lg shadow-xs hover:shadow-sm cursor-pointer transition-all duration-150 flex flex-col justify-between"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 rounded bg-slate-100 group-hover:bg-[#1c3877]/10 text-slate-700 group-hover:text-[#1c3877] transition-colors shrink-0">
+                                <Icon className="h-4 w-4" />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-xs font-semibold text-slate-900 group-hover:text-[#1c3877] transition-colors flex items-center gap-1">
                                 <span>{preset.title}</span>
                                 <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                               </h3>
@@ -904,5 +870,6 @@ export default function Chat() {
         </main>
       </div>
     </div>
-  );
+  </div>
+);
 }
