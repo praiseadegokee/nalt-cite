@@ -1,69 +1,60 @@
 import FeatureCard from '@/components/FeatureCard';
 import { features } from '@/lib/data';
+import { BookOpen, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function FeaturesSection() {
   return (
-    <section className="py-28 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-100/40 blur-3xl"></div>
-        <div className="absolute -bottom-48 -left-24 w-96 h-96 rounded-full bg-indigo-100/30 blur-3xl"></div>
-      </div>
-      
-      {/* Decorative dot pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{ 
-          backgroundImage: "radial-gradient(#1B387A 1px, transparent 1px)", 
-          backgroundSize: "30px 30px" 
-        }}></div>
-      </div>
-      
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-20">
-          <div className="inline-block bg-[#1B387A]/10 px-5 py-2 rounded-full mb-4 shadow-sm">
-            <span className="text-[#1B387A] font-medium tracking-wide">What We Offer</span>
+    <section className="py-20 sm:py-24 bg-[#F8FAFC] relative">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1c3877]/10 text-[#1c3877] text-xs font-semibold uppercase tracking-wider">
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Academic Writing Platform</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-[#1B387A] via-[#2c4da3] to-[#3a61cc]">
-            Key Features
+          
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-slate-900 tracking-tight">
+            Complete Legal Research & Citation Suite
           </h2>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
-            Explore the tools and resources that make NALT Citation Guide the premier solution for Nigerian legal citation standards
+          
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
+            Built specifically to uphold the official Nigerian Association of Law Teachers Uniform Format across case law, statutory provisions, dissertations, and law journals.
           </p>
         </div>
-        
-        {/* Subtle divider */}
-        <div className="relative max-w-3xl mx-auto mb-16">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200"></div>
-          </div>
-          <div className="relative flex justify-center">
-            <span className="bg-white px-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-[#1B387A]/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </span>
-          </div>
-        </div>
-        
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
+
+        {/* Feature Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <div key={index} 
-              className="transform transition duration-500 hover:-translate-y-2" 
-              style={{ transitionDelay: `${index * 50}ms` }}
-            >
-              <FeatureCard
-                title={feature.title} 
-                description={feature.description} 
-                icon={feature.icon} 
-                link={feature.link} 
-                linkText={feature.linkText} 
-                borderColor={index % 3 === 0 ? 'border-[#1B387A]' : (index % 3 === 1 ? 'border-[#294D98]' : 'border-[#3a61cc]')}
-                iconBgColor={index % 3 === 0 ? 'bg-[#1B387A]/10' : (index % 3 === 1 ? 'bg-[#294D98]/10' : 'bg-[#3a61cc]/10')}
-                iconColor={index % 3 === 0 ? 'text-[#1B387A]' : (index % 3 === 1 ? 'text-[#294D98]' : 'text-[#3a61cc]')}
-              />
-            </div>
+            <FeatureCard
+              key={index}
+              title={feature.title} 
+              description={feature.description} 
+              icon={feature.icon} 
+              link={feature.link} 
+              linkText={feature.linkText} 
+            />
           ))}
         </div>
+
+        {/* Academic Standard Bar */}
+        <div className="mt-14 p-6 bg-white border border-slate-200 rounded-xl flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-base shrink-0">
+              §
+            </div>
+            <div>
+              <div className="font-semibold text-slate-900">NALT Uniform Format & Citation Guide (2021 Series No. 2)</div>
+              <div className="text-slate-500">Adopted by Nigerian law faculties, the Nigerian Law School, and Nigerian law reviews.</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-slate-600 shrink-0">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span className="font-medium text-slate-800">100% Rules Compliant</span>
+          </div>
+        </div>
+
       </div>
     </section>
   );

@@ -1,90 +1,130 @@
 import { Link } from 'wouter';
-import { Download, Plus, CheckCircle } from 'lucide-react';
+import { Download, Sparkles, ShieldCheck, Scale, ArrowRight, CheckCircle2, BookOpen } from 'lucide-react';
 import mockupCoverImg from '@/assets/mockup-cover.png';
 
 export default function HeroSection() {
   return (
-    <section className="bg-gradient-to-tr from-[#172B5E] via-[#1B387A] to-[#294D98] text-white py-24 md:py-32 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute top-0 left-0 w-full h-full">
-        <div className="absolute -top-8 -left-8 w-64 h-64 rounded-full bg-blue-400/10 blur-3xl animate-pulse" style={{ animationDuration: '8s' }}></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-indigo-400/10 blur-3xl animate-pulse" style={{ animationDuration: '10s' }}></div>
-        <div className="absolute top-1/3 -right-12 w-64 h-64 rounded-full bg-purple-400/10 blur-3xl animate-pulse" style={{ animationDuration: '12s' }}></div>
-        
-        {/* Subtle pattern overlay */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-900/5 to-transparent opacity-70 mix-blend-overlay"></div>
-      </div>
-      
+    <section className="bg-gradient-to-b from-[#0f2047] via-[#1c3877] to-[#1c3877] text-white pt-16 pb-24 md:pt-20 md:pb-28 relative overflow-hidden border-b border-[#0f2047]">
+      {/* Subtle architectural grid pattern */}
+      <div 
+        className="absolute inset-0 opacity-[0.04] pointer-events-none"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)',
+          backgroundSize: '24px 24px'
+        }}
+      />
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-12 lg:gap-20 max-w-7xl mx-auto">
-          {/* Text Content */}
-          <div className="md:w-7/12 lg:w-1/2 text-center md:text-left">
-            <div className="inline-block bg-white/10 backdrop-blur-sm px-5 py-2 rounded-full mb-8 border border-white/20 shadow-lg">
-              <span className="text-white/90 font-medium tracking-wide">Nigeria's Official Citation Guide</span>
-            </div>
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 max-w-7xl mx-auto">
+          
+          {/* Main Editorial Copy */}
+          <div className="w-full lg:w-7/12 text-center lg:text-left space-y-6">
             
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-8 leading-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-blue-100">
+            {/* Accreditation Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs font-medium text-blue-100 backdrop-blur-xs shadow-xs">
+              <ShieldCheck className="h-4 w-4 text-emerald-400" />
+              <span>Official Reference standard • NALT Series 2021 No. 2</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-[54px] font-serif font-bold tracking-tight text-white leading-[1.15]">
               Nigerian Association of Law Teachers Citation Guide
             </h1>
-            
-            <p className="text-lg md:text-xl opacity-90 mb-8 leading-relaxed">The comprehensive resource for legal research and writing standards in Nigeria. Ensure your citations are accurate, consistent, and meet all academic requirements.</p>
-            
-            <div className="space-y-3 mb-10">
-              {['Standardized citation formats', 'Comprehensive legal guidelines', 'Academic writing best practices'].map((feature, i) => (
-                <div key={i} className="flex items-center gap-2 text-white/85">
-                  <CheckCircle className="h-5 w-5 text-blue-200" />
-                  <span>{feature}</span>
-                </div>
-              ))}
+
+            <p className="text-base sm:text-lg text-blue-100/90 leading-relaxed max-w-2xl mx-auto lg:mx-0 font-sans">
+              The authoritative referencing manual and AI research studio for legal scholars, bar aspirants, and legal practitioners across Nigeria. Complete NALT Bluebook, OSCOLA alignment, and automated formatting.
+            </p>
+
+            {/* Value checklist */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs sm:text-sm text-blue-100/80 max-w-xl mx-auto lg:mx-0">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Supreme Court & NWLR citation formats</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Instant Footnote & Bibliography inversion</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Official PDF manuals ingested into RAG</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Export directly to Word & BibTeX</span>
+              </div>
             </div>
-            
-            {/* Primary CTA Buttons */}
-            <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-4 md:gap-6">
-              <a 
-                href="/api/downloads/complete-guide" 
-                className="bg-white text-[#1B387A] font-bold py-4 px-8 rounded-xl hover:bg-blue-50 transition-all duration-300 shadow-lg flex items-center justify-center group"
-                download="NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria.pdf"
-              >
-                <Download className="h-5 w-5 mr-2 group-hover:scale-110 transition-transform" />
-                <span>Download Complete Guide</span>
-              </a>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3.5 pt-4">
               <Link href="/citation-generator">
-                <span className="bg-blue-600/30 hover:bg-blue-600/40 backdrop-blur-sm text-white font-bold py-4 px-8 rounded-xl border border-white/30 transition-all duration-300 shadow-lg flex items-center justify-center cursor-pointer group">
-                  <Plus className="h-5 w-5 mr-2 group-hover:rotate-90 transition-transform" />
-                  <span>Generate Citation</span>
-                </span>
+                <a className="inline-flex items-center justify-center gap-2 bg-white text-[#1c3877] hover:bg-slate-100 font-semibold text-sm px-6 py-3.5 rounded-lg shadow-sm transition-all duration-150">
+                  <Scale className="h-4 w-4 text-[#1c3877]" />
+                  <span>Open Citation Generator</span>
+                  <ArrowRight className="h-4 w-4 text-[#1c3877]/60" />
+                </a>
+              </Link>
+
+              <Link href="/chat">
+                <a className="inline-flex items-center justify-center gap-2 bg-[#0f2047]/80 hover:bg-[#0f2047] text-white border border-white/20 font-semibold text-sm px-6 py-3.5 rounded-lg shadow-sm transition-all duration-150">
+                  <Sparkles className="h-4 w-4 text-blue-300" />
+                  <span>NALT AI Research Studio</span>
+                </a>
               </Link>
             </div>
+
+            {/* Quick download link */}
+            <div className="text-xs text-blue-200/70 pt-1">
+              Need the offline guide?{' '}
+              <a 
+                href="/api/downloads/complete-guide" 
+                className="text-white underline hover:text-blue-100 font-medium"
+                download="NALT Uniform Format and Citation Guide for Legal Research Writing in Nigeria.pdf"
+              >
+                Download Official NALT Guide (PDF)
+              </a>
+            </div>
+
           </div>
-          
-          {/* Book Mockup Image */}
-          <div className="md:w-5/12 lg:w-1/2 mt-8 md:mt-0 flex justify-center">
-            <div className="relative perspective-1000">
-              {/* Animated glow effect */}
-              <div className="absolute -inset-8 bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 rounded-full blur-2xl opacity-70 animate-pulse" style={{ animationDuration: '4s' }}></div>
+
+          {/* Book Mockup / Interactive Authority Card */}
+          <div className="w-full lg:w-5/12 flex justify-center lg:justify-end">
+            <div className="relative max-w-sm sm:max-w-md w-full">
               
-              {/* Book reflection/shadow */}
-              <div className="absolute -bottom-12 w-full h-24 bg-black/20 blur-2xl rounded-full transform rotate-12 scale-75"></div>
-              
-              <img 
-                src={mockupCoverImg} 
-                alt="NALT Citation Guide Book Cover" 
-                className="w-72 md:w-80 lg:w-96 relative z-10 drop-shadow-2xl transform transition-all duration-700 hover:scale-105 hover:rotate-1 rounded-sm"
-              />
-              
-              {/* Floating elements for visual interest */}
-              <div className="absolute -top-4 -right-4 w-16 h-16 rounded-lg border border-white/20 bg-white/5 backdrop-blur-sm transform rotate-12 animate-float"></div>
-              <div className="absolute -bottom-6 -left-6 w-12 h-12 rounded-full border border-white/20 bg-white/5 backdrop-blur-sm animate-float" style={{ animationDuration: '6s' }}></div>
+              {/* Subtle back ambient card */}
+              <div className="bg-white/5 border border-white/15 rounded-2xl p-6 backdrop-blur-sm shadow-xl">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10 text-xs">
+                  <span className="font-serif font-bold text-blue-200 uppercase tracking-wider text-[11px]">
+                    Uniform Format Edition
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">
+                    2021 Series
+                  </span>
+                </div>
+
+                <div className="py-6 flex justify-center">
+                  <img 
+                    src={mockupCoverImg} 
+                    alt="NALT Uniform Format and Citation Guide" 
+                    className="w-48 sm:w-56 h-auto drop-shadow-2xl rounded shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
+                  />
+                </div>
+
+                {/* Live sample citation banner inside card */}
+                <div className="bg-[#0f2047]/80 border border-white/10 rounded-lg p-3 text-left space-y-1">
+                  <div className="flex items-center justify-between text-[10px] text-blue-200 uppercase tracking-wider font-semibold">
+                    <span>Sample Citation Standard</span>
+                    <span className="text-emerald-400 font-mono">Reported Case</span>
+                  </div>
+                  <div className="text-xs font-serif text-white break-words">
+                    <em>Fawehinmi v. Abacha</em> [1996] 9 NWLR (Pt. 475) 710
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
+
         </div>
-      </div>
-      
-      {/* Bottom curve */}
-      <div className="absolute bottom-0 left-0 w-full">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 80" className="w-full h-20 fill-current text-gray-50 transform translate-y-1">
-          <path d="M0,64L80,58.7C160,53,320,43,480,42.7C640,43,800,53,960,58.7C1120,64,1280,64,1360,64L1440,64L1440,80L1360,80C1280,80,1120,80,960,80C800,80,640,80,480,80C320,80,160,80,80,80L0,80Z"></path>
-        </svg>
       </div>
     </section>
   );
