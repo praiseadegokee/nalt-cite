@@ -1,13 +1,18 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, Download, FileText, Share2 } from 'lucide-react';
+import { 
+  Copy, 
+  Check, 
+  Download, 
+  FileText, 
+  FileCode, 
+  BookOpen, 
+  ListOrdered, 
+  Sparkles,
+  ExternalLink,
+  ShieldCheck
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,126 +24,263 @@ import {
 import { 
   copyCitationToClipboard, 
   downloadCitationAsText, 
-  exportToWord 
+  exportToWord,
+  downloadBibTeX,
+  getPlainTextCitation
 } from '@/lib/citationExportUtils';
 
 interface CitationResultProps {
   citation: string;
+  bibliography?: string;
+  bibtex?: string;
+  isLivePreview?: boolean;
 }
 
-export default function CitationResult({ citation }: CitationResultProps) {
+export default function CitationResult({ 
+  citation, 
+  bibliography = '', 
+  bibtex = '', 
+  isLivePreview = false 
+}: CitationResultProps) {
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<'footnote' | 'bibliography' | 'bibtex'>('footnote');
   const [hasCopied, setHasCopied] = useState(false);
   const citationRef = useRef<HTMLDivElement>(null);
 
+  const currentContent = activeTab === 'footnote' 
+    ? citation 
+    : activeTab === 'bibliography' 
+      ? (bibliography || citation) 
+      : bibtex;
+
+  const currentLabel = activeTab === 'footnote'
+    ? 'Footnote Citation'
+    : activeTab === 'bibliography'
+      ? 'Bibliography Entry'
+      : 'BibTeX Source';
+
   // Function to copy citation to clipboard
-  const copyToClipboard = async () => {
-    const success = await copyCitationToClipboard(citation);
+  const handleCopy = async () => {
+    if (!currentContent) return;
+    const textToCopy = activeTab === 'bibtex' ? currentContent : currentContent;
+    const success = await copyCitationToClipboard(textToCopy);
     
     if (success) {
       setHasCopied(true);
       toast({
-        title: "Copied to clipboard",
-        description: "Citation has been copied to your clipboard.",
+        title: "Copied to Clipboard",
+        description: `${currentLabel} copied with formatting preserved.`,
       });
-      
-      // Reset the copied state after 2 seconds
-      setTimeout(() => {
-        setHasCopied(false);
-      }, 2000);
+      setTimeout(() => setHasCopied(false), 2000);
     } else {
       toast({
-        title: "Copy failed",
-        description: "Could not copy to clipboard. Please try again.",
+        title: "Copy Failed",
+        description: "Could not copy to clipboard. Please copy manually.",
         variant: "destructive",
       });
     }
   };
 
-  // Function to download text file
   const handleDownloadText = () => {
-    downloadCitationAsText(citation);
-    
+    if (!currentContent) return;
+    downloadCitationAsText(currentContent, `nalt-${activeTab}.txt`);
     toast({
-      title: "Citation downloaded",
-      description: "Your citation has been downloaded as a text file.",
-    });
-  };
-  
-  // Function to export to Word
-  const handleExportToWord = () => {
-    exportToWord(citation);
-    
-    toast({
-      title: "Citation exported",
-      description: "Your citation has been exported as a Word document.",
+      title: "Text Downloaded",
+      description: `Your ${activeTab} citation has been downloaded.`,
     });
   };
 
-  return (
-    <div className="mt-8 p-6 bg-[#C3CDE1]/30 border border-[#C3CDE1] rounded-md shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-medium text-gray-700">Generated Citation:</h3>
-        <div className="text-xs text-gray-500">NALT Format</div>
-      </div>
-      <div 
-        ref={citationRef}
-        className="p-6 bg-white border border-gray-300 rounded-md shadow-inner font-serif text-base break-words leading-relaxed tracking-wide"
-        dangerouslySetInnerHTML={{ __html: citation }}
-      />
-      <div className="mt-6 flex justify-between items-center">
-        <div className="text-xs text-gray-500">
-          Use this citation in your legal document
+  const handleExportToWord = () => {
+    if (!currentContent) return;
+    exportToWord(currentContent, `NALT ${currentLabel}`);
+    toast({
+      title: "Exported to Word",
+      description: "Word document downloaded with standard 0.5in hanging indent.",
+    });
+  };
+
+  const handleDownloadBibTeX = () => {
+    if (!bibtex) return;
+    downloadBibTeX(bibtex, 'citation.bib');
+    toast({
+      title: "BibTeX Exported",
+      description: "Downloaded citation.bib for LaTeX / Zotero / Mendeley.",
+    });
+  };
+
+  const hasContent = Boolean(citation && citation.trim() !== '');
+
+  if (!hasContent) {
+    return (
+      <div className="p-8 bg-slate-50 border border-dashed border-slate-200 rounded-xl text-center">
+        <div className="w-10 h-10 rounded-full bg-slate-100 text-[#1c3877] flex items-center justify-center mx-auto mb-3">
+          <Sparkles className="w-5 h-5 text-[#1c3877]/70" />
         </div>
-        <div className="flex space-x-3">
+        <h4 className="text-sm font-semibold text-slate-800">Live Citation Preview</h4>
+        <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+          Complete the form fields on the left. Your NALT-compliant footnote and bibliography entries will appear here instantly.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden transition-all duration-200">
+      {/* Card Header & Format Switcher Tabs */}
+      <div className="bg-[#1c3877] px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 text-white">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded bg-white/10 flex items-center justify-center text-xs font-serif font-bold text-blue-200">
+            §
+          </div>
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-wider text-blue-100">
+              {isLivePreview ? 'Live NALT Preview' : 'Generated Citation'}
+            </span>
+            <div className="flex items-center gap-1.5 text-[11px] text-white/70">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>NALT Uniform Format (2021)</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Buttons */}
+        <div className="flex items-center bg-[#0f2047]/60 p-1 rounded-lg border border-white/10 text-xs">
+          <button
+            type="button"
+            onClick={() => setActiveTab('footnote')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all duration-150 ${
+              activeTab === 'footnote'
+                ? 'bg-white text-[#1c3877] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <ListOrdered className="w-3.5 h-3.5" />
+            <span>Footnote</span>
+          </button>
+          
+          <button
+            type="button"
+            onClick={() => setActiveTab('bibliography')}
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all duration-150 ${
+              activeTab === 'bibliography'
+                ? 'bg-white text-[#1c3877] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Bibliography</span>
+          </button>
+
+          {bibtex && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('bibtex')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md font-medium transition-all duration-150 ${
+                activeTab === 'bibtex'
+                  ? 'bg-white text-[#1c3877] shadow-xs'
+                  : 'text-white/80 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              <FileCode className="w-3.5 h-3.5" />
+              <span>BibTeX</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Main Display Area */}
+      <div className="p-5 sm:p-6 bg-slate-50/50">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-slate-500">
+            {activeTab === 'footnote' && 'Standard Footnote (Bottom of Page)'}
+            {activeTab === 'bibliography' && 'Bibliography / Table of Authorities (Alphabetized)'}
+            {activeTab === 'bibtex' && 'BibTeX Citation Entry'}
+          </span>
+          <span className="text-[11px] text-slate-400 font-mono">
+            {activeTab === 'bibtex' ? 'raw syntax' : 'rendered text'}
+          </span>
+        </div>
+
+        {activeTab === 'bibtex' ? (
+          <pre className="p-4 bg-slate-900 text-emerald-400 rounded-lg text-xs font-mono overflow-x-auto border border-slate-800 leading-relaxed">
+            {bibtex}
+          </pre>
+        ) : (
+          <div 
+            ref={citationRef}
+            className="p-4 sm:p-5 bg-white border border-slate-200 rounded-lg shadow-xs font-serif text-slate-900 text-sm sm:text-base break-words leading-relaxed tracking-wide select-all"
+            dangerouslySetInnerHTML={{ 
+              __html: activeTab === 'footnote' ? citation : (bibliography || citation) 
+            }}
+          />
+        )}
+
+        {/* NALT Editorial Guidance Note */}
+        <div className="mt-3 text-[11px] text-slate-500 flex items-start gap-1.5">
+          <span className="font-semibold text-slate-700 shrink-0">Rule Note:</span>
+          <span>
+            {activeTab === 'footnote' && 'In footnotes, authors are cited Firstname Initial Surname without inversion. Case names are strictly italicized with italicized "v."'}
+            {activeTab === 'bibliography' && 'In bibliography, primary authors are inverted (Surname, Initial.) for alphabetical listing. Punctuation follows NALT rules with no final full stop.'}
+            {activeTab === 'bibtex' && 'BibTeX keys and field structures conform to standard LaTeX/BibLaTeX Nigerian law referencing conventions.'}
+          </span>
+        </div>
+      </div>
+
+      {/* Card Action Footer */}
+      <div className="px-5 sm:px-6 py-3.5 bg-white border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="text-xs text-slate-500">
+          Ready for legal briefs, dissertations, and law journals.
+        </div>
+
+        <div className="flex items-center gap-2">
           <DropdownMenu>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <DropdownMenuTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Export
-                    </Button>
-                  </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Export citation in different formats</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Export Options</DropdownMenuLabel>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="h-8 text-xs font-medium border-slate-300 text-slate-700 hover:text-[#1c3877] hover:bg-slate-50 gap-1.5"
+              >
+                <Download className="h-3.5 w-3.5 text-slate-500" />
+                <span>Export</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 text-xs">
+              <DropdownMenuLabel className="text-[11px] font-semibold text-slate-500">
+                Download Options
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleDownloadText}>
-                <FileText className="h-4 w-4 mr-2" />
-                <span>Text (.txt)</span>
+              <DropdownMenuItem onClick={handleExportToWord} className="cursor-pointer">
+                <FileText className="h-3.5 w-3.5 mr-2 text-blue-600" />
+                <span>Microsoft Word (.doc)</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleExportToWord}>
-                <FileText className="h-4 w-4 mr-2" />
-                <span>Word (.docx)</span>
+              <DropdownMenuItem onClick={handleDownloadText} className="cursor-pointer">
+                <FileText className="h-3.5 w-3.5 mr-2 text-slate-600" />
+                <span>Plain Text (.txt)</span>
               </DropdownMenuItem>
+              {bibtex && (
+                <DropdownMenuItem onClick={handleDownloadBibTeX} className="cursor-pointer">
+                  <FileCode className="h-3.5 w-3.5 mr-2 text-emerald-600" />
+                  <span>BibTeX File (.bib)</span>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
-          
+
           <Button 
             type="button" 
-            onClick={copyToClipboard}
-            variant="outline" 
-            className="bg-white hover:bg-gray-100 text-[#1B387A] font-medium py-1.5 px-3 rounded-md border border-gray-300 text-sm flex items-center transition-colors"
+            onClick={handleCopy}
+            size="sm"
+            className="h-8 text-xs font-medium bg-[#1c3877] hover:bg-[#0f2047] text-white shadow-xs gap-1.5 transition-colors"
           >
             {hasCopied ? (
               <>
-                <Check className="h-4 w-4 mr-1 text-green-500" />
-                Copied!
+                <Check className="h-3.5 w-3.5 text-emerald-300" />
+                <span>Copied!</span>
               </>
             ) : (
               <>
-                <Copy className="h-4 w-4 mr-1" />
-                Copy to Clipboard
+                <Copy className="h-3.5 w-3.5 text-blue-200" />
+                <span>Copy {activeTab === 'footnote' ? 'Footnote' : activeTab === 'bibliography' ? 'Bibliography' : 'BibTeX'}</span>
               </>
             )}
           </Button>

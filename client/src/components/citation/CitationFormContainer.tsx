@@ -3,9 +3,9 @@ import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
-import { validateSourceFields } from '@/lib/citationValidator';
 import { CitationFormValues } from '@/hooks/citation/useCitationForm';
 import SourceTypeSelector from './SourceTypeSelector';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface CitationFormContainerProps {
   form: UseFormReturn<CitationFormValues>;
@@ -23,12 +23,8 @@ export default function CitationFormContainer({
   const { toast } = useToast();
   
   const handleSubmit = (data: CitationFormValues) => {
-    // Debug log to see what's in the form data
-    console.log("Form data being submitted:", data);
-    
     const sourceType = data.sourceType;
     if (!sourceType) {
-      console.log("Source type is missing");
       toast({
         title: "Missing source type",
         description: "Please select a source type to generate your citation.",
@@ -39,31 +35,21 @@ export default function CitationFormContainer({
     
     // Check form errors
     if (Object.keys(form.formState.errors).length > 0) {
-      // Get error messages
-      const errorMessages = Object.entries(form.formState.errors)
-        .map(([field, error]) => `${field}: ${error.message}`)
-        .join(', ');
-      
-      console.log("Form validation errors:", form.formState.errors);
-      console.log("Error messages:", errorMessages);
-      
       toast({
-        title: "Form validation errors",
-        description: "Please correct the errors in the form before submitting.",
+        title: "Incomplete details",
+        description: "Please check the required fields marked in the form.",
         variant: "destructive",
       });
       return;
     }
     
-    // For case citations, do additional validation based on case type
+    // For case citations, validate parties
     if (sourceType === 'case') {
       const caseType = data.caseType;
-      
-      // Make sure parties are entered properly
       if (!data.parties || data.parties.length < 2) {
         toast({
           title: "Missing party information",
-          description: "Please enter at least two parties (plaintiff and defendant).",
+          description: "Please enter both parties (e.g. Plaintiff vs Defendant).",
           variant: "destructive",
         });
         return;
@@ -72,8 +58,8 @@ export default function CitationFormContainer({
       if (caseType === 'reported') {
         if (!data.yearReported || !data.lawReportAbbreviation) {
           toast({
-            title: "Missing reported case information",
-            description: "For reported cases, please enter the Year and Law Report Abbreviation.",
+            title: "Missing reported case details",
+            description: "For reported cases, Year and Law Report abbreviation (e.g. NWLR) are required.",
             variant: "destructive",
           });
           return;
@@ -81,8 +67,8 @@ export default function CitationFormContainer({
       } else if (caseType === 'unreported' && !data.isUnreportedSimple) {
         if (!data.caseNumber || !data.court) {
           toast({
-            title: "Missing unreported case information",
-            description: "For detailed unreported cases, please enter the Case Number and Court.",
+            title: "Missing unreported case details",
+            description: "Please provide the Suit/Appeal number and the Court name.",
             variant: "destructive",
           });
           return;
@@ -90,47 +76,61 @@ export default function CitationFormContainer({
       }
     }
     
-    // All validation passed, submit the form
     onSubmit(data);
   };
   
   return (
-    <div className="bg-gray-50 rounded-lg border border-gray-200 shadow-md p-6">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-          <div className="mb-6 pb-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-[#1B387A]">Citation Details</h3>
-            <p className="text-sm text-gray-500 mt-1">
-              Select a source type and fill in the required information to generate a citation.
-            </p>
-          </div>
-          
-          {/* Source Type Selection and Dynamic Form Fields */}
-          <SourceTypeSelector />
-          
-          {/* Any additional form elements */}
-          {children}
-          
-          {/* Generate button */}
-          <div className="mt-8 pt-4 border-t border-gray-200">
-            <Button 
-              type="submit" 
-              className="w-full bg-[#1B387A] hover:bg-[#294D98] text-white font-bold py-3 px-4 rounded-md shadow transition duration-150"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <div className="flex items-center justify-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Generating...
-                </div>
-              ) : 'Generate Citation'}
-            </Button>
-          </div>
-        </form>
-      </Form>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* Container Header */}
+      <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <span>Citation Parameters</span>
+            <span className="text-[10px] font-normal text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" /> Live Sync Active
+            </span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Select a legal source and enter publication records.
+          </p>
+        </div>
+      </div>
+
+      <div className="p-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Source Type Selection and Dynamic Form Fields */}
+            <SourceTypeSelector />
+            
+            {/* Additional custom form elements */}
+            {children}
+            
+            {/* Submit / Format Action */}
+            <div className="pt-4 border-t border-slate-200 flex items-center justify-between gap-4">
+              <span className="text-xs text-slate-500 hidden sm:inline">
+                Live preview updates as you type
+              </span>
+              <Button 
+                type="submit" 
+                className="w-full sm:w-auto ml-auto bg-[#1c3877] hover:bg-[#0f2047] text-white font-medium text-xs py-2.5 px-6 rounded-lg shadow-xs transition-colors flex items-center justify-center gap-2"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <span>Formatting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+                    <span>Generate Official Citations</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 }

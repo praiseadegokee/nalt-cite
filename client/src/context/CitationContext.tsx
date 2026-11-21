@@ -1,18 +1,23 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { generateCitation } from '@/lib/citationUtils';
+import { generateBibliography, generateBibTeX } from '@/lib/citationBiblioFormatters';
 
 interface CitationContextType {
   citation: string;
+  bibliography: string;
+  bibtex: string;
+  formData: any;
   isSubmitting: boolean;
   generateCitationFromData: (data: any) => Promise<void>;
+  updateLivePreview: (data: any) => void;
   clearCitation: () => void;
 }
 
 const CitationContext = createContext<CitationContextType | undefined>(undefined);
 
 // Custom hook to use the citation context
-const useCitation = () => {
+export const useCitation = () => {
   const context = useContext(CitationContext);
   if (context === undefined) {
     throw new Error('useCitation must be used within a CitationProvider');
@@ -20,60 +25,75 @@ const useCitation = () => {
   return context;
 };
 
-function CitationProvider({ children }: { children: ReactNode }) {
+export function CitationProvider({ children }: { children: ReactNode }) {
   const [citation, setCitation] = useState<string>('');
+  const [bibliography, setBibliography] = useState<string>('');
+  const [bibtex, setBibtex] = useState<string>('');
+  const [formData, setFormData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const { toast } = useToast();
+
+  // Helper to format case data with parties
+  const prepareData = (data: any) => {
+    const prepared = { ...data };
+    if (prepared.sourceType === 'case') {
+      if (!prepared.caseName && prepared.parties && prepared.parties.length >= 2) {
+        const plaintiff = prepared.parties.find((p: any) => 
+          ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(p.role) && p.name?.trim() !== ''
+        );
+        const defendant = prepared.parties.find((p: any) => 
+          ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role) && p.name?.trim() !== ''
+        );
+        if (plaintiff?.name && defendant?.name) {
+          prepared.caseName = `${plaintiff.name} v ${defendant.name}`;
+        }
+      }
+    }
+    return prepared;
+  };
+
+  // Live preview updater without toast or artificial delay
+  function updateLivePreview(data: any) {
+    if (!data || !data.sourceType) return;
+    try {
+      const prepared = prepareData(data);
+      setFormData(prepared);
+      const formattedFootnote = generateCitation(prepared);
+      const formattedBiblio = generateBibliography(prepared);
+      const formattedBibtex = generateBibTeX(prepared);
+      
+      setCitation(formattedFootnote);
+      setBibliography(formattedBiblio);
+      setBibtex(formattedBibtex);
+    } catch (err) {
+      // Silent error during live typing
+      console.debug("Live preview formatting error:", err);
+    }
+  }
 
   async function generateCitationFromData(data: any) {
     try {
       setIsSubmitting(true);
-      console.log("CitationContext: Starting citation generation with data:", data);
+      await new Promise(r => setTimeout(r, 300));
       
-      // Add a small delay to show loading state
-      await new Promise(r => setTimeout(r, 500));
-      
-      // Validate sourceType
       if (!data.sourceType) {
-        console.error("CitationContext: Missing sourceType in data");
         throw new Error("Missing source type");
       }
       
-      console.log(`CitationContext: Generating citation for sourceType: ${data.sourceType}`);
+      const prepared = prepareData(data);
+      setFormData(prepared);
       
-      // For case citations, ensure case name is set
-      if (data.sourceType === 'case') {
-        if (!data.caseName && data.parties && data.parties.length >= 2) {
-          // If case name is missing but we have parties, try to generate it
-          const plaintiff = data.parties.find((p: any) => 
-            ['Plaintiff', 'Appellant', 'Applicant', 'Petitioner'].includes(p.role) && p.name.trim() !== ''
-          );
-          
-          const defendant = data.parties.find((p: any) => 
-            ['Defendant', 'Respondent', 'Accused', 'Objector'].includes(p.role) && p.name.trim() !== ''
-          );
-          
-          if (plaintiff?.name && defendant?.name) {
-            data.caseName = `${plaintiff.name} v ${defendant.name}`;
-            console.log(`CitationContext: Auto-generated case name: ${data.caseName}`);
-          }
-        }
-        
-        if (!data.caseName) {
-          console.error("CitationContext: Missing case name for case citation");
-        }
-      }
-      
-      // Generate citation based on form data
-      const formattedCitation = generateCitation(data);
-      console.log("CitationContext: Generated citation:", formattedCitation);
+      const formattedCitation = generateCitation(prepared);
+      const formattedBiblio = generateBibliography(prepared);
+      const formattedBibtex = generateBibTeX(prepared);
       
       setCitation(formattedCitation);
+      setBibliography(formattedBiblio);
+      setBibtex(formattedBibtex);
       
-      // Show success message
       toast({
         title: "Citation Generated",
-        description: "Your citation has been successfully generated.",
+        description: "Your official NALT citations (Footnote & Bibliography) are ready.",
       });
     } catch (error) {
       console.error("Citation generation error:", error);
@@ -89,14 +109,21 @@ function CitationProvider({ children }: { children: ReactNode }) {
 
   function clearCitation() {
     setCitation('');
+    setBibliography('');
+    setBibtex('');
+    setFormData(null);
   }
 
   return (
     <CitationContext.Provider 
       value={{ 
         citation, 
+        bibliography,
+        bibtex,
+        formData,
         isSubmitting, 
         generateCitationFromData, 
+        updateLivePreview,
         clearCitation 
       }}
     >
@@ -104,5 +131,4 @@ function CitationProvider({ children }: { children: ReactNode }) {
     </CitationContext.Provider>
   );
 }
-
-export { CitationProvider, useCitation };
+export default CitationProvider;
