@@ -246,12 +246,12 @@ export default function BlogPost() {
               
               <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
                 <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-                  <p className="text-base sm:text-lg lg:text-xl text-gray-700 font-medium leading-relaxed mb-6 sm:mb-8">
+                  <p className="text-base sm:text-lg lg:text-xl text-gray-800 font-medium leading-relaxed mb-6 sm:mb-8 text-justify font-sans">
                     {post.excerpt}
                   </p>
                   
                   <div 
-                    className="prose-headings:text-gray-900 prose-headings:font-bold prose-p:text-gray-700 prose-p:leading-relaxed prose-li:text-gray-700 prose-strong:text-gray-900 prose-a:text-[#294D98] hover:prose-a:text-[#1B387A] prose-img:rounded-lg prose-img:shadow-md"
+                    className="prose-headings:text-slate-900 prose-headings:font-serif prose-headings:font-bold prose-p:text-slate-800 prose-p:leading-relaxed prose-p:text-justify prose-li:text-slate-800 prose-li:text-justify prose-strong:text-slate-900 prose-a:text-[#1c3877] hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md font-sans"
                     dangerouslySetInnerHTML={{ __html: post.content }} 
                   />
                 </div>

@@ -150,7 +150,7 @@ export default function Blog() {
                           {featuredPost.title}
                         </h2>
                       </Link>
-                      <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed mb-4 sm:mb-6 line-clamp-3">{featuredPost.excerpt}</p>
+                      <p className="text-gray-600 text-sm sm:text-base lg:text-lg leading-relaxed mb-4 sm:mb-6 line-clamp-3 text-justify">{featuredPost.excerpt}</p>
                       <div className="flex items-center">
                         <div className="flex-shrink-0">
                           <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center">

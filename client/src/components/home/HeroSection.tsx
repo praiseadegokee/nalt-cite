@@ -101,23 +101,12 @@ export default function HeroSection() {
                   </span>
                 </div>
 
-                <div className="py-6 flex justify-center">
+                <div className="py-8 flex justify-center">
                   <img 
                     src={mockupCoverImg} 
                     alt="NALT Uniform Format and Citation Guide" 
-                    className="w-48 sm:w-56 h-auto drop-shadow-2xl rounded shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
+                    className="w-52 sm:w-64 h-auto drop-shadow-2xl rounded shadow-2xl transition-transform duration-300 hover:scale-[1.02]"
                   />
-                </div>
-
-                {/* Live sample citation banner inside card */}
-                <div className="bg-[#0f2047]/80 border border-white/10 rounded-lg p-3 text-left space-y-1">
-                  <div className="flex items-center justify-between text-[10px] text-blue-200 uppercase tracking-wider font-semibold">
-                    <span>Sample Citation Standard</span>
-                    <span className="text-emerald-400 font-mono">Reported Case</span>
-                  </div>
-                  <div className="text-xs font-serif text-white break-words">
-                    <em>Fawehinmi v. Abacha</em> [1996] 9 NWLR (Pt. 475) 710
-                  </div>
                 </div>
               </div>
 

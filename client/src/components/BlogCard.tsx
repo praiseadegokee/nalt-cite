@@ -79,7 +79,7 @@ export default function BlogCard({ post }: BlogCardProps) {
         </Link>
         
         {/* Excerpt */}
-        <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3">
+        <p className="text-gray-600 text-sm leading-relaxed mb-4 line-clamp-3 text-justify">
           {post.excerpt}
         </p>
         
