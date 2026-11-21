@@ -26,6 +26,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/citation-generator" component={CitationGenerator} />
+        <Route path="/generate" component={CitationGenerator} />
         <Route path="/chat" component={Chat} />
         <Route path="/glossary" component={Glossary} />
         <Route path="/faq" component={FAQPage} />
