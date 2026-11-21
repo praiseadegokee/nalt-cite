@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useSEO } from '@/hooks/use-seo';
 import { 
@@ -12,23 +11,55 @@ import {
   Plus, 
   Trash2, 
   Send, 
-  Bot, 
-  User, 
   FileText,
   BookOpen,
-  Sparkles,
+  Scale,
   Menu,
   X,
-  Upload
+  Upload,
+  Copy,
+  Check,
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  BookmarkCheck,
+  FileCheck2
 } from 'lucide-react';
 import type { ChatConversation, ChatMessage, Document } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
+const LEGAL_PRESETS = [
+  {
+    icon: Scale,
+    title: 'Nigerian Case Law',
+    subtitle: 'Supreme Court, Court of Appeal, NWLR & unreported suits',
+    prompt: 'How do I cite a Nigerian reported case (e.g. NWLR) and an unreported case according to the NALT Guide?'
+  },
+  {
+    icon: FileText,
+    title: 'Convert Foreign Citation',
+    subtitle: 'Transform APA, Harvard, or OSCOLA into NALT format',
+    prompt: 'Please convert this citation into standard NALT format: Ojo, A. (2018). Constitutional Developments in Nigeria. Nigerian Law Journal, 22(1), 45-67.'
+  },
+  {
+    icon: BookmarkCheck,
+    title: 'Statutes & Constitution',
+    subtitle: 'CFRN 1999 (as amended), Federal Acts & Subsidiary Legislation',
+    prompt: 'What are the exact NALT rules for citing the Constitution of the Federal Republic of Nigeria 1999 and federal statutes in footnotes vs bibliography?'
+  },
+  {
+    icon: BookOpen,
+    title: 'LLM & PhD Thesis Structure',
+    subtitle: 'Doctrinal vs Non-doctrinal chapters, abstracts & margins',
+    prompt: 'What are the mandatory chapter structures and abstract word count limits for a Master dissertation versus a PhD thesis under the NALT format?'
+  }
+];
+
 export default function Chat() {
   useSEO({
-    title: "AI Legal Assistant - NALT Citation Help & Legal Writing Support",
-    description: "Get instant help with NALT citations and legal writing from our AI assistant. Ask questions about Nigerian law citations, convert between citation formats, and get expert guidance on legal research.",
-    keywords: "AI legal assistant, NALT citation help, legal writing assistant, Nigerian law AI, citation conversion, legal research help, NALT guide AI",
+    title: "NALT Research Studio - Official Legal Citation Assistant",
+    description: "Interactive legal research workbench for Nigerian legal writing and NALT citation standards. Powered by official NALT Bluebook (Series No. 2, 2021) and OSCOLA 4th Edition.",
+    keywords: "NALT citation assistant, Nigerian legal research, NALT Bluebook, OSCOLA legal citation, legal writing workbench, Nigerian law citation",
     canonicalUrl: "https://naltcite.replit.app/chat"
   });
 
@@ -37,6 +68,9 @@ export default function Chat() {
   const [showNewConversation, setShowNewConversation] = useState(false);
   const [newConversationTitle, setNewConversationTitle] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [showDocDrawer, setShowDocDrawer] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -61,54 +95,42 @@ export default function Chat() {
   // Create conversation mutation
   const createConversationMutation = useMutation({
     mutationFn: async (title: string) => {
-      console.log('Creating conversation with title:', title);
       const response = await apiRequest('POST', '/api/chat/conversations', { title });
-      console.log('Response status:', response.status);
       return response.json();
     },
     onSuccess: (conversation) => {
-      console.log('Conversation created successfully:', conversation);
       queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
       setSelectedConversationId(conversation.id);
       setShowNewConversation(false);
       setNewConversationTitle('');
       
-      // Auto-send the pending message if we have one
       if (newMessage.trim()) {
         setTimeout(() => {
           sendMessageMutation.mutate(newMessage);
-        }, 100);
+        }, 80);
       }
-      
-      toast({ title: 'Success', description: 'Conversation created successfully' });
     },
-    onError: (error) => {
-      console.error('Conversation creation failed:', error);
-      toast({ title: 'Error', description: `Failed to create conversation: ${error.message}`, variant: 'destructive' });
+    onError: (error: any) => {
+      toast({ title: 'Error', description: `Failed to create session: ${error.message}`, variant: 'destructive' });
     },
   });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async (question: string) => {
-      console.log('Sending message:', question);
       const response = await apiRequest('POST', `/api/chat/conversations/${selectedConversationId}/messages`, { question });
-      console.log('Message sent successfully');
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/chat/conversations/${selectedConversationId}/messages`] });
       setNewMessage('');
-      toast({ title: 'Success', description: 'Message sent successfully' });
     },
-    onError: (error) => {
-      console.error('Message sending failed:', error);
-      // If it's a session/access error, refresh conversations to sync session
+    onError: (error: any) => {
       if (error.message.includes('404') || error.message.includes('access denied')) {
         queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
-        toast({ title: 'Error', description: 'Session expired. Please try again.', variant: 'destructive' });
+        toast({ title: 'Session Expired', description: 'Please start a new research session.', variant: 'destructive' });
       } else {
-        toast({ title: 'Error', description: `Failed to send message: ${error.message}`, variant: 'destructive' });
+        toast({ title: 'Error', description: `Failed to process inquiry: ${error.message}`, variant: 'destructive' });
       }
     },
   });
@@ -116,19 +138,15 @@ export default function Chat() {
   // Delete conversation mutation
   const deleteConversationMutation = useMutation({
     mutationFn: async (id: number) => {
-      console.log('Deleting conversation:', id);
-      const response = await apiRequest('DELETE', `/api/chat/conversations/${id}`);
-      console.log('Conversation deleted successfully');
-      return response;
+      return await apiRequest('DELETE', `/api/chat/conversations/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chat/conversations'] });
       setSelectedConversationId(null);
-      toast({ title: 'Success', description: 'Conversation deleted successfully' });
+      toast({ title: 'Session Removed', description: 'Research session has been deleted.' });
     },
-    onError: (error) => {
-      console.error('Conversation deletion failed:', error);
-      toast({ title: 'Error', description: `Failed to delete conversation: ${error.message}`, variant: 'destructive' });
+    onError: (error: any) => {
+      toast({ title: 'Error', description: `Failed to delete session: ${error.message}`, variant: 'destructive' });
     },
   });
 
@@ -148,7 +166,6 @@ export default function Chat() {
         if (!response.ok) {
           throw new Error(`Failed to upload ${file.name}`);
         }
-        
         return response.json();
       });
       
@@ -156,15 +173,13 @@ export default function Chat() {
     },
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
-      const successCount = results.length;
       toast({ 
-        title: 'Success', 
-        description: `${successCount} document${successCount > 1 ? 's' : ''} uploaded successfully` 
+        title: 'Document Added', 
+        description: `Successfully indexed ${results.length} document${results.length > 1 ? 's' : ''} into the NALT knowledge base.` 
       });
     },
-    onError: (error) => {
-      console.error('Upload failed:', error);
-      toast({ title: 'Error', description: `Upload failed: ${error.message}`, variant: 'destructive' });
+    onError: (error: any) => {
+      toast({ title: 'Upload Failed', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -176,15 +191,13 @@ export default function Chat() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/chat/documents'] });
-      toast({ title: 'Success', description: 'Document removed successfully' });
+      toast({ title: 'Document Removed', description: 'Reference manual removed from knowledge base.' });
     },
-    onError: (error) => {
-      console.error('Failed to delete document:', error);
+    onError: (error: any) => {
       toast({ title: 'Error', description: `Failed to delete document: ${error.message}`, variant: 'destructive' });
     },
   });
 
-  // Handle file upload
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
@@ -197,8 +210,7 @@ export default function Chat() {
     if (!newMessage.trim()) return;
     
     if (!selectedConversationId && !createConversationMutation.isPending) {
-      // Auto-create conversation if none exists
-      const title = newMessage.length > 50 ? newMessage.substring(0, 50) + '...' : newMessage;
+      const title = newMessage.length > 40 ? newMessage.substring(0, 40) + '...' : newMessage;
       createConversationMutation.mutate(title);
       return;
     }
@@ -208,460 +220,501 @@ export default function Chat() {
     }
   };
 
-  const handleCreateConversation = () => {
-    if (!newConversationTitle.trim()) return;
-    createConversationMutation.mutate(newConversationTitle);
+  const copyToClipboard = (text: string, id: number) => {
+    navigator.clipboard.writeText(text);
+    setCopiedId(id);
+    toast({ title: 'Copied to Clipboard', description: 'Citation content copied.' });
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleDeleteConversation = (id: number) => {
-    deleteConversationMutation.mutate(id);
-  };
-
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, sendMessageMutation.isPending]);
 
-  // Close sidebar when clicking outside on mobile
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (sidebarOpen) {
-        const target = event.target as HTMLElement;
-        // Don't close if clicking on the sidebar itself or the open button
-        if (!target.closest('[data-sidebar]') && !target.closest('[data-sidebar-trigger]')) {
-          setSidebarOpen(false);
-        }
-      }
-    };
-
-    if (sidebarOpen) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
-  }, [sidebarOpen]);
-
-  // Auto-select most recent conversation if available
+  // Auto-select most recent
   useEffect(() => {
     if (conversations.length > 0 && !selectedConversationId) {
-      // Select the most recent conversation
-      const mostRecent = conversations.sort((a, b) => 
+      const mostRecent = [...conversations].sort((a, b) => 
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )[0];
       setSelectedConversationId(mostRecent.id);
     }
-  }, [conversations.length, selectedConversationId]);
+  }, [conversations, selectedConversationId]);
 
-  // Show welcome screen when no conversations exist
-  const showWelcomeScreen = conversations.length === 0 && !selectedConversationId;
+  const activeConversation = conversations.find(c => c.id === selectedConversationId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
-      <div className="flex min-h-screen">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans">
+      {/* Top Studio Bar */}
+      <div className="bg-[#1c3877] text-white border-b border-[#0f2047]/30 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs">
+        <div className="flex items-center gap-3">
+          <span className="font-semibold tracking-wider uppercase text-blue-200">NALT Research Studio</span>
+          <span className="hidden md:inline text-white/40">|</span>
+          <div className="hidden md:flex items-center gap-2 text-white/80">
+            <ShieldCheck className="h-3.5 w-3.5 text-blue-300" />
+            <span>Grounded in Official NALT Bluebook (2021) & OSCOLA (4th Ed)</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDocDrawer(!showDocDrawer)}
+            className="h-7 text-xs text-white/90 hover:text-white hover:bg-white/10 px-2.5 rounded"
+          >
+            <BookOpen className="h-3.5 w-3.5 mr-1.5 text-blue-300" />
+            <span>Knowledge Base ({documents.length} docs)</span>
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex-1 flex overflow-hidden relative">
         {/* Mobile Sidebar Overlay */}
         {sidebarOpen && (
           <div 
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            className="fixed inset-0 bg-slate-900/60 z-30 lg:hidden backdrop-blur-xs"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         {/* Sidebar */}
-        <div 
-          data-sidebar
+        <aside
           className={`
             ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-            lg:translate-x-0 transition-transform duration-300 ease-in-out
-            fixed lg:relative z-40 lg:z-auto top-0 left-0
-            w-80 h-full lg:h-auto lg:min-h-screen bg-white lg:bg-transparent
-            flex flex-col gap-4 p-4 lg:p-6
-            overflow-y-auto shadow-xl lg:shadow-none
+            lg:translate-x-0 transition-transform duration-200 ease-in-out
+            fixed lg:static z-40 top-0 left-0 bottom-0
+            w-72 bg-white border-r border-slate-200
+            flex flex-col
           `}
-          onClick={(e) => e.stopPropagation()}
         >
-          {/* Mobile Close Button */}
-          <div className="lg:hidden flex justify-end mb-2">
+          {/* Sidebar Header */}
+          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-sm">
+                N
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-900 leading-tight">Research Sessions</h2>
+                <p className="text-[11px] text-slate-500">History & active queries</p>
+              </div>
+            </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(false)}
-              className="h-8 w-8 p-0"
+              className="lg:hidden h-7 w-7 p-0 text-slate-500"
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Header - Hidden on mobile */}
-          <Card className="hidden lg:block bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <div className="text-lg font-bold text-gray-900">NALT Citation Assistant</div>
-                  <div className="text-xs text-gray-500 font-normal">Powered by AI</div>
-                </div>
-              </CardTitle>
-            </CardHeader>
-          </Card>
-
-          {/* New Conversation */}
-          {showNewConversation ? (
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-              <CardContent className="p-4 space-y-3">
-                <Textarea
-                  placeholder="Enter conversation title..."
+          {/* New Session Button */}
+          <div className="p-3 border-b border-slate-100">
+            {showNewConversation ? (
+              <div className="space-y-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+                <input
+                  type="text"
+                  placeholder="Session title..."
                   value={newConversationTitle}
                   onChange={(e) => setNewConversationTitle(e.target.value)}
-                  className="min-h-[60px] resize-none"
+                  className="w-full text-xs px-2.5 py-1.5 bg-white border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-[#1c3877]"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (newConversationTitle.trim()) {
+                        createConversationMutation.mutate(newConversationTitle);
+                      }
+                    } else if (e.key === 'Escape') {
+                      setShowNewConversation(false);
+                    }
+                  }}
                 />
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <Button
-                    onClick={handleCreateConversation}
+                    size="sm"
+                    onClick={() => {
+                      if (newConversationTitle.trim()) {
+                        createConversationMutation.mutate(newConversationTitle);
+                      }
+                    }}
                     disabled={!newConversationTitle.trim() || createConversationMutation.isPending}
-                    className="flex-1"
+                    className="flex-1 h-7 text-xs bg-[#1c3877] hover:bg-[#142752] text-white"
                   >
                     Create
                   </Button>
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => setShowNewConversation(false)}
-                    className="flex-1"
+                    className="h-7 text-xs text-slate-600"
                   >
                     Cancel
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Button
-              onClick={() => setShowNewConversation(true)}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white shadow-lg"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Conversation
-            </Button>
-          )}
+              </div>
+            ) : (
+              <Button
+                onClick={() => setShowNewConversation(true)}
+                className="w-full h-8 text-xs font-medium bg-[#1c3877] hover:bg-[#142752] text-white shadow-xs rounded flex items-center justify-center gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>New Research Session</span>
+              </Button>
+            )}
+          </div>
 
-          {/* Conversations List */}
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-sm font-medium text-gray-700">Recent Conversations</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[300px] lg:h-[400px]">
-                <div className="p-4 space-y-2">
-                  {conversations.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <MessageCircle className="h-8 w-8 mx-auto mb-3 text-gray-300" />
-                      <p className="text-sm">No conversations yet</p>
-                      <p className="text-xs text-gray-400 mt-1">Start a new chat to get help</p>
-                    </div>
-                  ) : (
-                    conversations.map((conversation) => (
-                      <div
-                        key={conversation.id}
-                        className={`group flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                          selectedConversationId === conversation.id
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg'
-                            : 'hover:bg-gray-100'
-                        }`}
-                        onClick={() => {
-                          setSelectedConversationId(conversation.id);
-                          setSidebarOpen(false);
-                        }}
-                      >
-                      <MessageCircle className={`h-4 w-4 flex-shrink-0 ${
-                        selectedConversationId === conversation.id ? 'text-white' : 'text-gray-400'
-                      }`} />
-                      <span className="flex-1 text-sm font-medium truncate">{conversation.title}</span>
+          {/* Sessions List */}
+          <div className="flex-1 overflow-y-auto p-2">
+            {conversations.length === 0 ? (
+              <div className="text-center py-10 px-4">
+                <MessageCircle className="h-6 w-6 mx-auto mb-2 text-slate-300" />
+                <p className="text-xs font-medium text-slate-600">No active sessions</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Start an inquiry below to begin</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {conversations.map((conv) => {
+                  const isSelected = selectedConversationId === conv.id;
+                  return (
+                    <div
+                      key={conv.id}
+                      onClick={() => {
+                        setSelectedConversationId(conv.id);
+                        setSidebarOpen(false);
+                      }}
+                      className={`group flex items-center justify-between px-2.5 py-2 rounded text-xs cursor-pointer transition-colors ${
+                        isSelected 
+                          ? 'bg-[#1c3877]/10 text-[#1c3877] font-medium' 
+                          : 'text-slate-700 hover:bg-slate-100'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                        <MessageCircle className={`h-3.5 w-3.5 shrink-0 ${isSelected ? 'text-[#1c3877]' : 'text-slate-400'}`} />
+                        <span className="truncate">{conv.title}</span>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleDeleteConversation(conversation.id);
+                          deleteConversationMutation.mutate(conv.id);
                         }}
-                        className={`opacity-0 group-hover:opacity-100 transition-opacity h-6 w-6 p-0 ${
-                          selectedConversationId === conversation.id 
-                            ? 'hover:bg-white/20 text-white' 
-                            : 'hover:bg-red-100 text-red-600'
-                        }`}
+                        className="opacity-0 group-hover:opacity-100 h-5 w-5 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-opacity"
+                        title="Delete session"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
                     </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-
-        </div>
-
-        {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col h-screen">
-          <Card className="flex-1 bg-white/80 backdrop-blur-sm border-0 shadow-xl m-2 sm:m-4 lg:mx-6 lg:mb-6 flex flex-col overflow-hidden">
-            <CardHeader className="border-b border-gray-100 p-3 sm:p-4 lg:p-6 flex-shrink-0">
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2 lg:gap-3 min-w-0 flex-1">
-                  <div className="w-7 h-7 lg:w-8 lg:h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-3.5 w-3.5 lg:h-4 lg:w-4 text-white" />
-                  </div>
-                  <span className="truncate text-sm lg:text-base font-medium">NALT Citation Assistant</span>
-                </CardTitle>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500">
-                    <Sparkles className="h-3 w-3" />
-                    <span>AI Online</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSidebarOpen(true);
-                    }}
-                    data-sidebar-trigger
-                    className="lg:hidden flex items-center gap-2 text-xs px-3 py-2 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700 transition-all duration-200"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    <span>Chats</span>
-                  </Button>
-                </div>
+                  );
+                })}
               </div>
-            </CardHeader>
-            
-            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto">
-                <ScrollArea className="h-full">
-                  <div className="p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4 lg:space-y-6">
-                    {showWelcomeScreen ? (
-                      <div className="text-center py-8 lg:py-12 px-4">
-                        <div className="max-w-lg mx-auto">
-                          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-                          </div>
-                          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Start by asking a question below, or try these examples:</p>
-                          <div className="grid gap-2 lg:gap-3">
-                            {[
-                              "How do I cite a Nigerian court case using NALT format?",
-                              "What is the NALT citation style for statutes?", 
-                              "How does NALT differ from OSCOLA citation?",
-                              "What are the footnote requirements in NALT?"
-                            ].map((question, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  setNewMessage(question);
-                                  setSidebarOpen(false);
-                                }}
-                                className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
-                              >
-                                <div className="flex items-center gap-2 lg:gap-3">
-                                  <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                                    <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
-                                  </div>
-                                  <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
+            )}
+          </div>
+
+          {/* Reference Manual Status in Sidebar Footer */}
+          <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 space-y-1.5">
+            <div className="font-semibold text-slate-800 flex items-center justify-between">
+              <span>Primary Guidelines</span>
+              <Badge variant="outline" className="text-[10px] font-normal py-0 h-4 border-slate-300">Active</Badge>
+            </div>
+            <div className="space-y-1 text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <FileCheck2 className="h-3.5 w-3.5 text-[#1c3877]" />
+                <span className="truncate">NALT Monograph (2021)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <FileCheck2 className="h-3.5 w-3.5 text-blue-600" />
+                <span className="truncate">OSCOLA (4th Edition)</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Studio Work Area */}
+        <main className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
+          {/* Work Area Header */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden h-8 px-2.5 text-slate-600"
+              >
+                <Menu className="h-4 w-4 mr-1.5" />
+                <span className="text-xs">Sessions</span>
+              </Button>
+              <div className="min-w-0">
+                <h1 className="text-sm sm:text-base font-semibold text-slate-900 truncate">
+                  {activeConversation ? activeConversation.title : 'Legal Citation & Formatting Assistant'}
+                </h1>
+                <p className="text-[11px] text-slate-500 hidden sm:block">
+                  Verified answers from official Nigerian legal formatting standards
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".pdf,.txt"
+                multiple
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploadMutation.isPending}
+                className="h-8 text-xs border-slate-300 text-slate-700 hover:text-[#1c3877] hover:border-[#1c3877]"
+              >
+                <Upload className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+                <span className="hidden sm:inline">Upload Legal PDF</span>
+                <span className="sm:hidden">Upload</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Reference Document Drawer (Collapsible) */}
+          {showDocDrawer && (
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 shrink-0 shadow-xs">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  Active Knowledge Base Materials
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowDocDrawer(false)}
+                  className="h-6 w-6 p-0 text-slate-400"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {documents.map((doc) => (
+                  <div 
+                    key={doc.id}
+                    className="p-2.5 rounded border border-slate-200 bg-slate-50 flex items-start justify-between text-xs"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <div className="font-medium text-slate-900 truncate">{doc.title}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        <span className="uppercase font-semibold text-[#1c3877]">{doc.documentType}</span>
+                        <span>·</span>
+                        <span>{doc.filename}</span>
                       </div>
-                    ) : selectedConversationId ? (
-                      messagesLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                          <div className="flex items-center gap-3 text-gray-500">
-                            <div className="w-6 h-6 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                            <span>Loading conversation...</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteDocumentMutation.mutate(doc.id)}
+                      className="h-5 w-5 p-0 text-slate-400 hover:text-red-600 shrink-0"
+                      title="Remove manual"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Messages Stream */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+              {messagesLoading ? (
+                <div className="flex items-center justify-center py-20 text-slate-400">
+                  <div className="w-5 h-5 border-2 border-slate-300 border-t-[#1c3877] rounded-full animate-spin mr-3"></div>
+                  <span className="text-xs font-medium">Retrieving legal consultation records...</span>
+                </div>
+              ) : messages.length === 0 ? (
+                /* Editorial Welcome / Preset Grid */
+                <div className="py-6 sm:py-10 space-y-8">
+                  <div className="text-center max-w-xl mx-auto space-y-2">
+                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1c3877] text-white shadow-sm font-serif font-bold text-lg mb-2">
+                      §
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-tight">
+                      NALT Citation & Legal Research Assistant
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                      Consult the official Nigerian Association of Law Teachers Uniform Format, convert foreign referencing styles, or structure academic dissertations.
+                    </p>
+                  </div>
+
+                  {/* Preset Action Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    {LEGAL_PRESETS.map((preset, idx) => {
+                      const Icon = preset.icon;
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => {
+                            setNewMessage(preset.prompt);
+                            if (!selectedConversationId) {
+                              createConversationMutation.mutate(preset.title);
+                            }
+                          }}
+                          className="group p-4 bg-white border border-slate-200 hover:border-[#1c3877] rounded-lg shadow-xs hover:shadow-sm cursor-pointer transition-all duration-150 flex flex-col justify-between"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="p-2 rounded bg-slate-100 group-hover:bg-[#1c3877]/10 text-slate-700 group-hover:text-[#1c3877] transition-colors shrink-0">
+                              <Icon className="h-4 w-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="text-xs font-semibold text-slate-900 group-hover:text-[#1c3877] transition-colors flex items-center gap-1">
+                                <span>{preset.title}</span>
+                                <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </h3>
+                              <p className="text-[11px] text-slate-500 mt-1 line-clamp-2">
+                                {preset.subtitle}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      ) : messages.length === 0 ? (
-                        <div className="text-center py-8 lg:py-12 px-4">
-                          <div className="max-w-lg mx-auto">
-                            <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                              <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-                            </div>
-                            <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                            <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Try asking:</p>
-                            <div className="grid gap-2 lg:gap-3">
-                              {[
-                                "How do I cite a Nigerian court case using NALT format?",
-                                "What is the NALT citation style for statutes?",
-                                "How does NALT differ from OSCOLA citation?",
-                                "What are the footnote requirements in NALT?"
-                              ].map((question, index) => (
-                                <button
-                                  key={index}
-                                  onClick={() => {
-                                    setNewMessage(question);
-                                    setSidebarOpen(false);
-                                  }}
-                                  className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
-                                >
-                                  <div className="flex items-center gap-2 lg:gap-3">
-                                    <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                                      <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
-                                    </div>
-                                    <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
-                                  </div>
-                                </button>
-                              ))}
-                            </div>
-                          </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                /* Chat Messages */
+                <div className="space-y-6">
+                  {messages.map((msg) => {
+                    const isUser = msg.role === 'user';
+                    return (
+                      <div 
+                        key={msg.id}
+                        className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}
+                      >
+                        {/* Speaker & Timestamp Header */}
+                        <div className="flex items-center gap-2 mb-1.5 px-1 text-[11px] text-slate-500">
+                          <span className="font-semibold text-slate-700">
+                            {isUser ? 'You' : 'NALT Guide Assistant'}
+                          </span>
+                          <span>·</span>
+                          <span>{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                      ) : (
-                        messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex gap-2 sm:gap-4 ${
-                              message.role === 'user' ? 'justify-end' : 'justify-start'
-                            }`}
-                          >
-                            <div className={`flex gap-2 lg:gap-3 max-w-[90%] sm:max-w-[85%] ${
-                              message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
-                            }`}>
-                              <div className={`w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                                message.role === 'user' 
-                                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg' 
-                                  : 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg'
-                              }`}>
-                                {message.role === 'user' ? (
-                                  <User className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white" />
+
+                        {/* Content Container */}
+                        <div 
+                          className={`max-w-full sm:max-w-[85%] rounded-lg p-4 sm:p-5 text-sm leading-relaxed ${
+                            isUser 
+                              ? 'bg-[#1c3877] text-white shadow-xs' 
+                              : 'bg-white border border-slate-200 text-slate-800 shadow-xs'
+                          }`}
+                        >
+                          {/* Message Body */}
+                          <div className="whitespace-pre-wrap break-words space-y-3 font-normal">
+                            {msg.content}
+                          </div>
+
+                          {/* Sources Cited Badge */}
+                          {!isUser && msg.sources && (
+                            <div className="mt-4 pt-3 border-t border-slate-100">
+                              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700 mb-1.5">
+                                <ShieldCheck className="h-3.5 w-3.5 text-[#1c3877]" />
+                                <span>Official Reference Authorities:</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                {JSON.parse(msg.sources).map((src: string, i: number) => (
+                                  <span 
+                                    key={i}
+                                    className="inline-flex items-center px-2 py-0.5 rounded text-[11px] bg-slate-100 text-[#1c3877] font-medium border border-slate-200"
+                                  >
+                                    {src}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Action Footer for Assistant Answers */}
+                          {!isUser && (
+                            <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                              <span className="text-[11px]">Nigerian Legal Citation Standard</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => copyToClipboard(msg.content, msg.id)}
+                                className="h-7 text-xs text-slate-600 hover:text-[#1c3877] hover:bg-slate-100 px-2 rounded"
+                              >
+                                {copiedId === msg.id ? (
+                                  <>
+                                    <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" />
+                                    <span className="text-emerald-700 font-medium">Copied</span>
+                                  </>
                                 ) : (
-                                  <Bot className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 text-white" />
+                                  <>
+                                    <Copy className="h-3.5 w-3.5 mr-1" />
+                                    <span>Copy Citation</span>
+                                  </>
                                 )}
-                              </div>
-                              <div className="space-y-1 min-w-0 flex-1">
-                                <div className={`inline-block px-3 sm:px-4 py-2 sm:py-3 rounded-2xl shadow-sm max-w-full ${
-                                  message.role === 'user'
-                                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
-                                    : 'bg-white border border-gray-200 text-gray-900 rounded-bl-md'
-                                }`}>
-                                  <div className="whitespace-pre-wrap text-sm leading-relaxed break-words">{message.content}</div>
-                                  {message.sources && JSON.parse(message.sources).length > 0 && (
-                                    <div className="mt-3 pt-3 border-t border-gray-300/50">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <FileText className="h-3 w-3 text-gray-500" />
-                                        <span className="text-xs font-medium text-gray-600">Sources</span>
-                                      </div>
-                                      <div className="flex flex-wrap gap-1">
-                                        {JSON.parse(message.sources).map((source: string, index: number) => (
-                                          <span
-                                            key={index}
-                                            className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-green-100 text-green-800 border border-green-200"
-                                          >
-                                            {source.length > 30 ? `${source.substring(0, 30)}...` : source}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className={`text-xs text-gray-500 ${
-                                  message.role === 'user' ? 'text-right' : 'text-left'
-                                }`}>
-                                  {new Date(message.createdAt).toLocaleTimeString()}
-                                </div>
-                              </div>
+                              </Button>
                             </div>
-                          </div>
-                        ))
-                      )
-                    ) : (
-                      <div className="text-center py-8 lg:py-12 px-4">
-                        <div className="max-w-lg mx-auto">
-                          <div className="w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Bot className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" />
-                          </div>
-                          <h3 className="text-lg lg:text-xl font-semibold text-gray-900 mb-2">Welcome to NALT Citation Assistant</h3>
-                          <p className="text-sm lg:text-base text-gray-600 mb-4 lg:mb-6">I can help you with Nigerian legal citation standards and formatting. Start by asking a question below, or try these examples:</p>
-                          <div className="grid gap-2 lg:gap-3">
-                            {[
-                              "How do I cite a Nigerian court case using NALT format?",
-                              "What is the NALT citation style for statutes?", 
-                              "How does NALT differ from OSCOLA citation?",
-                              "What are the footnote requirements in NALT?"
-                            ].map((question, index) => (
-                              <button
-                                key={index}
-                                onClick={() => {
-                                  setNewMessage(question);
-                                  setSidebarOpen(false);
-                                }}
-                                className="text-left p-3 lg:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 rounded-xl border border-blue-100 transition-all duration-200 group"
-                              >
-                                <div className="flex items-center gap-2 lg:gap-3">
-                                  <div className="w-6 h-6 lg:w-8 lg:h-8 bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform flex-shrink-0">
-                                    <span className="text-white text-xs lg:text-sm font-medium">{index + 1}</span>
-                                  </div>
-                                  <span className="text-gray-700 text-sm lg:text-base font-medium leading-tight">{question}</span>
-                                </div>
-                              </button>
-                            ))}
-                          </div>
+                          )}
                         </div>
                       </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
+                    );
+                  })}
+
+                  {/* Pending Assistant Indicator */}
+                  {sendMessageMutation.isPending && (
+                    <div className="flex flex-col items-start space-y-1">
+                      <div className="text-[11px] font-semibold text-slate-600 px-1">
+                        Consulting NALT Knowledge Base...
+                      </div>
+                      <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-xs text-xs text-slate-500 flex items-center gap-2.5">
+                        <div className="w-4 h-4 border-2 border-slate-300 border-t-[#1c3877] rounded-full animate-spin"></div>
+                        <span>Retrieving rules and formulating citation...</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Composer / Input Dock */}
+          <div className="border-t border-slate-200 bg-white p-3 sm:p-4 shrink-0 shadow-sm">
+            <div className="max-w-4xl mx-auto space-y-2">
+              <div className="relative flex items-end gap-2 bg-[#F8FAFC] border border-slate-300 focus-within:border-[#1c3877] focus-within:ring-1 focus-within:ring-[#1c3877] rounded-lg p-1.5 transition-all">
+                <Textarea
+                  placeholder="Ask a question about NALT rules, or paste a citation to convert..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="min-h-[46px] max-h-36 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 p-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400"
+                  disabled={sendMessageMutation.isPending || createConversationMutation.isPending}
+                />
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!newMessage.trim() || sendMessageMutation.isPending || createConversationMutation.isPending}
+                  className="h-9 px-3 bg-[#1c3877] hover:bg-[#142752] text-white rounded shrink-0 shadow-xs text-xs font-medium transition-colors"
+                >
+                  <Send className="h-3.5 w-3.5 mr-1.5" />
+                  <span>Send</span>
+                </Button>
               </div>
 
-              {/* Message Input */}
-              <div className="border-t border-gray-100 bg-gray-50/50 p-3 sm:p-4 lg:p-4 flex-shrink-0">
-                <div className="flex gap-2 lg:gap-3 items-end">
-                  <div className="flex-1 relative">
-                    <Textarea
-                      placeholder="Ask about NALT guidelines, citation formats, or legal writing standards..."
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSendMessage();
-                        }
-                      }}
-                      className="min-h-[44px] sm:min-h-[48px] lg:min-h-[56px] max-h-32 resize-none border-0 bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent rounded-2xl pr-12 text-sm lg:text-base"
-                      disabled={sendMessageMutation.isPending || createConversationMutation.isPending}
-                    />
-                    {(sendMessageMutation.isPending || createConversationMutation.isPending) && (
-                      <div className="absolute bottom-3 right-3">
-                        <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></div>
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || sendMessageMutation.isPending || createConversationMutation.isPending}
-                    className="h-11 w-11 sm:h-12 sm:w-12 lg:h-14 lg:w-14 rounded-2xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {(sendMessageMutation.isPending || createConversationMutation.isPending) ? (
-                      <div className="w-4 h-4 lg:w-5 lg:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Send className="h-4 w-4 lg:h-5 lg:w-5" />
-                    )}
-                  </Button>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 gap-2 text-xs text-gray-500">
-                  <div className="flex items-center gap-4">
-                    <span className="hidden sm:inline">Press Enter to send, Shift+Enter for new line</span>
-                    <span className="sm:hidden">Tap send or press Enter</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
-                    <span>AI Assistant Online</span>
-                  </div>
-                </div>
+              {/* Composer Shortcuts & Guidelines info */}
+              <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
+                <span>Press <kbd className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Enter</kbd> to submit, <kbd className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Shift+Enter</kbd> for newline</span>
+                <span className="hidden sm:inline">Compliant with NALT Uniform Format (2021)</span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
