@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useSEO } from '@/hooks/use-seo';
@@ -19,11 +18,10 @@ import {
   Upload,
   Copy,
   Check,
-  Sparkles,
-  ArrowRight,
   ShieldCheck,
   BookmarkCheck,
-  FileCheck2
+  FileCheck2,
+  ArrowRight
 } from 'lucide-react';
 import type { ChatConversation, ChatMessage, Document } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
@@ -55,6 +53,185 @@ const LEGAL_PRESETS = [
   }
 ];
 
+/**
+ * Format markdown text inline: handles bold, italic, code spans, etc.
+ */
+function renderInlineFormatting(text: string): React.ReactNode[] {
+  // Regex to split by bold (**text**), italic (*text*), inline code (`code`)
+  const tokens = text.split(/(\*\*.*?\*\*|\*.*?\*|`.*?`)/g);
+
+  return tokens.map((token, i) => {
+    if (token.startsWith('**') && token.endsWith('**') && token.length >= 4) {
+      return <strong key={i} className="font-semibold text-slate-900">{token.slice(2, -2)}</strong>;
+    }
+    if (token.startsWith('*') && token.endsWith('*') && token.length >= 2) {
+      return <em key={i} className="italic text-slate-900 font-serif">{token.slice(1, -1)}</em>;
+    }
+    if (token.startsWith('`') && token.endsWith('`') && token.length >= 2) {
+      return (
+        <code key={i} className="px-1.5 py-0.5 rounded bg-slate-100 text-[#1c3877] font-mono text-xs border border-slate-200">
+          {token.slice(1, -1)}
+        </code>
+      );
+    }
+    return token;
+  });
+}
+
+/**
+ * Clean Academic Legal Markdown Renderer (Zero AI slop, pure typography)
+ */
+function FormattedLegalContent({ content }: { content: string }) {
+  const lines = content.split('\n');
+  const elements: React.ReactNode[] = [];
+  let currentList: { type: 'ul' | 'ol'; items: string[] } | null = null;
+  let quoteLines: string[] = [];
+
+  const flushList = (key: number) => {
+    if (!currentList) return;
+    if (currentList.type === 'ul') {
+      elements.push(
+        <ul key={`ul-${key}`} className="my-2 space-y-1.5 pl-5 list-disc text-slate-700">
+          {currentList.items.map((item, idx) => (
+            <li key={idx} className="leading-relaxed">
+              {renderInlineFormatting(item)}
+            </li>
+          ))}
+        </ul>
+      );
+    } else {
+      elements.push(
+        <ol key={`ol-${key}`} className="my-2 space-y-1.5 pl-5 list-decimal text-slate-700">
+          {currentList.items.map((item, idx) => (
+            <li key={idx} className="leading-relaxed">
+              {renderInlineFormatting(item)}
+            </li>
+          ))}
+        </ol>
+      );
+    }
+    currentList = null;
+  };
+
+  const flushQuote = (key: number) => {
+    if (quoteLines.length === 0) return;
+    const quoteText = quoteLines.join('\n');
+    elements.push(
+      <div 
+        key={`quote-${key}`} 
+        className="my-3 p-3.5 bg-slate-50 border-l-4 border-[#1c3877] rounded-r-md text-slate-800 font-serif text-[13.5px] leading-relaxed shadow-xs"
+      >
+        <div className="font-sans text-[11px] font-semibold uppercase tracking-wider text-[#1c3877] mb-1">
+          Prescribed Citation Format:
+        </div>
+        <div className="italic text-slate-900 font-medium">
+          {renderInlineFormatting(quoteText)}
+        </div>
+      </div>
+    );
+    quoteLines = [];
+  };
+
+  lines.forEach((rawLine, index) => {
+    const line = rawLine.trim();
+
+    // Horizontal rule
+    if (line === '---' || line === '***' || line === '___') {
+      flushList(index);
+      flushQuote(index);
+      elements.push(<hr key={`hr-${index}`} className="my-4 border-slate-200" />);
+      return;
+    }
+
+    // Headings
+    if (line.startsWith('### ')) {
+      flushList(index);
+      flushQuote(index);
+      elements.push(
+        <h3 key={`h3-${index}`} className="text-sm font-semibold text-slate-900 mt-4 mb-2 flex items-center gap-1.5 border-b border-slate-100 pb-1">
+          <span className="text-[#1c3877] font-serif font-bold">§</span>
+          <span>{renderInlineFormatting(line.slice(4))}</span>
+        </h3>
+      );
+      return;
+    }
+    if (line.startsWith('## ')) {
+      flushList(index);
+      flushQuote(index);
+      elements.push(
+        <h2 key={`h2-${index}`} className="text-base font-bold text-slate-900 mt-5 mb-2 font-serif">
+          {renderInlineFormatting(line.slice(3))}
+        </h2>
+      );
+      return;
+    }
+    if (line.startsWith('# ')) {
+      flushList(index);
+      flushQuote(index);
+      elements.push(
+        <h1 key={`h1-${index}`} className="text-lg font-bold text-slate-900 mt-5 mb-2 font-serif">
+          {renderInlineFormatting(line.slice(2))}
+        </h1>
+      );
+      return;
+    }
+
+    // Blockquote
+    if (line.startsWith('> ')) {
+      flushList(index);
+      quoteLines.push(line.slice(2));
+      return;
+    } else {
+      flushQuote(index);
+    }
+
+    // Unordered List
+    if (line.startsWith('* ') || line.startsWith('- ')) {
+      const itemText = line.slice(2);
+      if (!currentList || currentList.type !== 'ul') {
+        flushList(index);
+        currentList = { type: 'ul', items: [itemText] };
+      } else {
+        currentList.items.push(itemText);
+      }
+      return;
+    }
+
+    // Ordered List (1. 2. etc)
+    const olMatch = line.match(/^(\d+)\.\s+(.*)$/);
+    if (olMatch) {
+      const itemText = olMatch[2];
+      if (!currentList || currentList.type !== 'ol') {
+        flushList(index);
+        currentList = { type: 'ol', items: [itemText] };
+      } else {
+        currentList.items.push(itemText);
+      }
+      return;
+    }
+
+    // Empty line
+    if (!line) {
+      flushList(index);
+      flushQuote(index);
+      return;
+    }
+
+    // Normal Paragraph
+    flushList(index);
+    elements.push(
+      <p key={`p-${index}`} className="text-sm leading-relaxed text-slate-800">
+        {renderInlineFormatting(line)}
+      </p>
+    );
+  });
+
+  flushList(lines.length);
+  flushQuote(lines.length);
+
+  return <div className="space-y-2">{elements}</div>;
+}
+
 export default function Chat() {
   useSEO({
     title: "NALT Research Studio - Official Legal Citation Assistant",
@@ -71,7 +248,7 @@ export default function Chat() {
   const [copiedId, setCopiedId] = useState<number | null>(null);
   const [showDocDrawer, setShowDocDrawer] = useState(false);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -227,9 +404,14 @@ export default function Chat() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Auto-scroll
+  // Internal container scroll ONLY: Never scrolls the browser window or footer!
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, [messages, sendMessageMutation.isPending]);
 
   // Auto-select most recent
@@ -245,15 +427,15 @@ export default function Chat() {
   const activeConversation = conversations.find(c => c.id === selectedConversationId);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 flex flex-col font-sans">
+    <div className="h-[calc(100vh-70px)] bg-[#F8FAFC] text-slate-900 flex flex-col font-sans overflow-hidden">
       {/* Top Studio Bar */}
-      <div className="bg-[#1c3877] text-white border-b border-[#0f2047]/30 px-4 sm:px-6 py-2.5 flex items-center justify-between text-xs">
+      <div className="bg-[#1c3877] text-white border-b border-[#0f2047]/30 px-4 sm:px-6 py-2 flex items-center justify-between text-xs shrink-0">
         <div className="flex items-center gap-3">
           <span className="font-semibold tracking-wider uppercase text-blue-200">NALT Research Studio</span>
           <span className="hidden md:inline text-white/40">|</span>
           <div className="hidden md:flex items-center gap-2 text-white/80">
             <ShieldCheck className="h-3.5 w-3.5 text-blue-300" />
-            <span>Grounded in Official NALT Bluebook (2021) & OSCOLA (4th Ed)</span>
+            <span>Official NALT Bluebook (2021) & OSCOLA (4th Ed) Knowledge Base</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -264,7 +446,7 @@ export default function Chat() {
             className="h-7 text-xs text-white/90 hover:text-white hover:bg-white/10 px-2.5 rounded"
           >
             <BookOpen className="h-3.5 w-3.5 mr-1.5 text-blue-300" />
-            <span>Knowledge Base ({documents.length} docs)</span>
+            <span>Reference Manuals ({documents.length})</span>
           </Button>
         </div>
       </div>
@@ -285,18 +467,18 @@ export default function Chat() {
             lg:translate-x-0 transition-transform duration-200 ease-in-out
             fixed lg:static z-40 top-0 left-0 bottom-0
             w-72 bg-white border-r border-slate-200
-            flex flex-col
+            flex flex-col shrink-0
           `}
         >
           {/* Sidebar Header */}
-          <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+          <div className="p-3.5 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-sm">
+              <div className="w-6 h-6 rounded bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-xs">
                 N
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-900 leading-tight">Research Sessions</h2>
-                <p className="text-[11px] text-slate-500">History & active queries</p>
+                <h2 className="text-xs font-semibold text-slate-900 leading-tight">Research Sessions</h2>
+                <p className="text-[10px] text-slate-500">History & active queries</p>
               </div>
             </div>
             <Button
@@ -310,9 +492,9 @@ export default function Chat() {
           </div>
 
           {/* New Session Button */}
-          <div className="p-3 border-b border-slate-100">
+          <div className="p-2.5 border-b border-slate-100">
             {showNewConversation ? (
-              <div className="space-y-2 p-2 bg-slate-50 rounded-lg border border-slate-200">
+              <div className="space-y-2 p-2 bg-slate-50 rounded border border-slate-200">
                 <input
                   type="text"
                   placeholder="Session title..."
@@ -368,9 +550,9 @@ export default function Chat() {
           <div className="flex-1 overflow-y-auto p-2">
             {conversations.length === 0 ? (
               <div className="text-center py-10 px-4">
-                <MessageCircle className="h-6 w-6 mx-auto mb-2 text-slate-300" />
+                <MessageCircle className="h-5 w-5 mx-auto mb-2 text-slate-300" />
                 <p className="text-xs font-medium text-slate-600">No active sessions</p>
-                <p className="text-[11px] text-slate-400 mt-0.5">Start an inquiry below to begin</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Start an inquiry to begin</p>
               </div>
             ) : (
               <div className="space-y-1">
@@ -383,7 +565,7 @@ export default function Chat() {
                         setSelectedConversationId(conv.id);
                         setSidebarOpen(false);
                       }}
-                      className={`group flex items-center justify-between px-2.5 py-2 rounded text-xs cursor-pointer transition-colors ${
+                      className={`group flex items-center justify-between px-2.5 py-1.5 rounded text-xs cursor-pointer transition-colors ${
                         isSelected 
                           ? 'bg-[#1c3877]/10 text-[#1c3877] font-medium' 
                           : 'text-slate-700 hover:bg-slate-100'
@@ -412,19 +594,19 @@ export default function Chat() {
             )}
           </div>
 
-          {/* Reference Manual Status in Sidebar Footer */}
-          <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 space-y-1.5">
+          {/* Guidelines Footer in Sidebar */}
+          <div className="p-3 border-t border-slate-200 bg-slate-50 text-[11px] text-slate-600 space-y-1">
             <div className="font-semibold text-slate-800 flex items-center justify-between">
-              <span>Primary Guidelines</span>
-              <Badge variant="outline" className="text-[10px] font-normal py-0 h-4 border-slate-300">Active</Badge>
+              <span>Indexed Standards</span>
+              <Badge variant="outline" className="text-[9px] font-normal py-0 h-4 border-slate-300 text-slate-600">Active</Badge>
             </div>
-            <div className="space-y-1 text-slate-500">
-              <div className="flex items-center gap-1.5">
-                <FileCheck2 className="h-3.5 w-3.5 text-[#1c3877]" />
-                <span className="truncate">NALT Monograph (2021)</span>
+            <div className="space-y-0.5 text-slate-500 text-[10.5px]">
+              <div className="flex items-center gap-1.5 truncate">
+                <FileCheck2 className="h-3 w-3 text-[#1c3877] shrink-0" />
+                <span className="truncate">NALT Bluebook (2021)</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <FileCheck2 className="h-3.5 w-3.5 text-blue-600" />
+              <div className="flex items-center gap-1.5 truncate">
+                <FileCheck2 className="h-3 w-3 text-blue-600 shrink-0" />
                 <span className="truncate">OSCOLA (4th Edition)</span>
               </div>
             </div>
@@ -432,24 +614,24 @@ export default function Chat() {
         </aside>
 
         {/* Main Studio Work Area */}
-        <main className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
-          {/* Work Area Header */}
-          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 flex items-center justify-between shrink-0">
+        <main className="flex-1 flex flex-col min-w-0 bg-[#F8FAFC] h-full overflow-hidden">
+          {/* Work Area Sub-Header */}
+          <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3 min-w-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden h-8 px-2.5 text-slate-600"
+                className="lg:hidden h-7 px-2 text-slate-600"
               >
-                <Menu className="h-4 w-4 mr-1.5" />
+                <Menu className="h-3.5 w-3.5 mr-1" />
                 <span className="text-xs">Sessions</span>
               </Button>
               <div className="min-w-0">
-                <h1 className="text-sm sm:text-base font-semibold text-slate-900 truncate">
+                <h1 className="text-xs sm:text-sm font-semibold text-slate-900 truncate">
                   {activeConversation ? activeConversation.title : 'Legal Citation & Formatting Assistant'}
                 </h1>
-                <p className="text-[11px] text-slate-500 hidden sm:block">
+                <p className="text-[10px] text-slate-500 hidden sm:block">
                   Verified answers from official Nigerian legal formatting standards
                 </p>
               </div>
@@ -469,10 +651,10 @@ export default function Chat() {
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadMutation.isPending}
-                className="h-8 text-xs border-slate-300 text-slate-700 hover:text-[#1c3877] hover:border-[#1c3877]"
+                className="h-7 text-xs border-slate-300 text-slate-700 hover:text-[#1c3877] hover:border-[#1c3877]"
               >
-                <Upload className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
-                <span className="hidden sm:inline">Upload Legal PDF</span>
+                <Upload className="h-3 w-3 mr-1 text-slate-500" />
+                <span className="hidden sm:inline">Upload Guide PDF</span>
                 <span className="sm:hidden">Upload</span>
               </Button>
             </div>
@@ -480,7 +662,7 @@ export default function Chat() {
 
           {/* Reference Document Drawer (Collapsible) */}
           {showDocDrawer && (
-            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 shrink-0 shadow-xs">
+            <div className="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 shrink-0 shadow-xs z-10">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                   Active Knowledge Base Materials
@@ -523,8 +705,11 @@ export default function Chat() {
             </div>
           )}
 
-          {/* Messages Stream */}
-          <div className="flex-1 overflow-y-auto">
+          {/* Messages Stream - INTERNAL SCROLL ONLY */}
+          <div 
+            ref={scrollContainerRef}
+            className="flex-1 overflow-y-auto"
+          >
             <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
               {messagesLoading ? (
                 <div className="flex items-center justify-center py-20 text-slate-400">
@@ -533,12 +718,12 @@ export default function Chat() {
                 </div>
               ) : messages.length === 0 ? (
                 /* Editorial Welcome / Preset Grid */
-                <div className="py-6 sm:py-10 space-y-8">
+                <div className="py-4 sm:py-8 space-y-6">
                   <div className="text-center max-w-xl mx-auto space-y-2">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#1c3877] text-white shadow-sm font-serif font-bold text-lg mb-2">
+                    <div className="inline-flex items-center justify-center w-11 h-11 rounded-lg bg-[#1c3877] text-white shadow-xs font-serif font-bold text-base mb-1">
                       §
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-slate-900 tracking-tight">
+                    <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 tracking-tight">
                       NALT Citation & Legal Research Assistant
                     </h2>
                     <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
@@ -559,7 +744,7 @@ export default function Chat() {
                               createConversationMutation.mutate(preset.title);
                             }
                           }}
-                          className="group p-4 bg-white border border-slate-200 hover:border-[#1c3877] rounded-lg shadow-xs hover:shadow-sm cursor-pointer transition-all duration-150 flex flex-col justify-between"
+                          className="group p-3.5 bg-white border border-slate-200 hover:border-[#1c3877] rounded-lg shadow-xs hover:shadow-sm cursor-pointer transition-all duration-150 flex flex-col justify-between"
                         >
                           <div className="flex items-start gap-3">
                             <div className="p-2 rounded bg-slate-100 group-hover:bg-[#1c3877]/10 text-slate-700 group-hover:text-[#1c3877] transition-colors shrink-0">
@@ -607,10 +792,14 @@ export default function Chat() {
                               : 'bg-white border border-slate-200 text-slate-800 shadow-xs'
                           }`}
                         >
-                          {/* Message Body */}
-                          <div className="whitespace-pre-wrap break-words space-y-3 font-normal">
-                            {msg.content}
-                          </div>
+                          {/* Message Body: Formatted Cleanly */}
+                          {isUser ? (
+                            <div className="whitespace-pre-wrap break-words font-normal">
+                              {msg.content}
+                            </div>
+                          ) : (
+                            <FormattedLegalContent content={msg.content} />
+                          )}
 
                           {/* Sources Cited Badge */}
                           {!isUser && msg.sources && (
@@ -667,22 +856,20 @@ export default function Chat() {
                       <div className="text-[11px] font-semibold text-slate-600 px-1">
                         Consulting NALT Knowledge Base...
                       </div>
-                      <div className="bg-white border border-slate-200 rounded-lg p-4 shadow-xs text-xs text-slate-500 flex items-center gap-2.5">
+                      <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-xs text-xs text-slate-500 flex items-center gap-2.5">
                         <div className="w-4 h-4 border-2 border-slate-300 border-t-[#1c3877] rounded-full animate-spin"></div>
                         <span>Retrieving rules and formulating citation...</span>
                       </div>
                     </div>
                   )}
-
-                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
           </div>
 
           {/* Composer / Input Dock */}
-          <div className="border-t border-slate-200 bg-white p-3 sm:p-4 shrink-0 shadow-sm">
-            <div className="max-w-4xl mx-auto space-y-2">
+          <div className="border-t border-slate-200 bg-white p-3 shrink-0 shadow-xs">
+            <div className="max-w-4xl mx-auto space-y-1.5">
               <div className="relative flex items-end gap-2 bg-[#F8FAFC] border border-slate-300 focus-within:border-[#1c3877] focus-within:ring-1 focus-within:ring-[#1c3877] rounded-lg p-1.5 transition-all">
                 <Textarea
                   placeholder="Ask a question about NALT rules, or paste a citation to convert..."
@@ -694,7 +881,7 @@ export default function Chat() {
                       handleSendMessage();
                     }
                   }}
-                  className="min-h-[46px] max-h-36 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 p-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400"
+                  className="min-h-[44px] max-h-32 resize-none border-0 bg-transparent shadow-none focus-visible:ring-0 p-2 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400"
                   disabled={sendMessageMutation.isPending || createConversationMutation.isPending}
                 />
                 <Button
@@ -707,7 +894,7 @@ export default function Chat() {
                 </Button>
               </div>
 
-              {/* Composer Shortcuts & Guidelines info */}
+              {/* Composer Shortcuts */}
               <div className="flex items-center justify-between text-[11px] text-slate-500 px-1">
                 <span>Press <kbd className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Enter</kbd> to submit, <kbd className="px-1 py-0.5 bg-slate-100 border border-slate-200 rounded text-[10px]">Shift+Enter</kbd> for newline</span>
                 <span className="hidden sm:inline">Compliant with NALT Uniform Format (2021)</span>
