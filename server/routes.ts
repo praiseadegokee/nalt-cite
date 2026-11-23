@@ -363,13 +363,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         categoryId ? parseInt(categoryId as string) : undefined
       );
       
-      // Transform the field names to match the frontend expectations
-      const transformedItems = faqItems.map(item => ({
+      // Ensure categoryId and order are mapped regardless of whether Drizzle camelCase or snake_case is returned
+      const transformedItems = faqItems.map((item: any) => ({
         id: item.id,
         question: item.question,
         answer: item.answer,
-        categoryId: item.category_id, // Map from database field to frontend field
-        order: item.order_num // Map from database field to frontend field
+        categoryId: item.categoryId ?? item.category_id ?? 1,
+        order: item.order ?? item.order_num ?? 0
       }));
       
       res.json(transformedItems);
@@ -383,18 +383,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const id = parseInt(req.params.id);
     
     try {
-      const item = await activeStorage.getFaqItem(id);
+      const item: any = await activeStorage.getFaqItem(id);
       if (!item) {
         return res.status(404).json({ message: "FAQ item not found" });
       }
       
-      // Transform the field names to match the frontend expectations
       const transformedItem = {
         id: item.id,
         question: item.question,
         answer: item.answer,
-        categoryId: item.category_id, // Map from database field to frontend field
-        order: item.order_num // Map from database field to frontend field
+        categoryId: item.categoryId ?? item.category_id ?? 1,
+        order: item.order ?? item.order_num ?? 0
       };
       
       res.json(transformedItem);
@@ -509,13 +508,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const faqItems = await activeStorage.getFaqItems();
       
-      // Transform the field names to match the frontend expectations
-      const transformedItems = faqItems.map(item => ({
+      const transformedItems = faqItems.map((item: any) => ({
         id: item.id,
         question: item.question,
         answer: item.answer,
-        categoryId: item.category_id, // Map from database field to frontend field
-        order: item.order_num // Map from database field to frontend field
+        categoryId: item.categoryId ?? item.category_id ?? 1,
+        order: item.order ?? item.order_num ?? 0
       }));
       
       res.json(transformedItems);

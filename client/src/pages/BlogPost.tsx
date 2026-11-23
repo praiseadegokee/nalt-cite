@@ -3,24 +3,25 @@ import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
 import { 
   ChevronLeft, 
   Clock, 
   User, 
   Calendar,
   Share2,
-  Twitter,
-  Linkedin,
-  Facebook,
-  Copy,
-  Check
+  Copy, 
+  Check,
+  ShieldCheck,
+  BookOpen,
+  ArrowRight
 } from 'lucide-react';
 import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function BlogPost() {
   const { id } = useParams();
   const [copiedLink, setCopiedLink] = useState(false);
+  const { toast } = useToast();
   
   // Fetch blog post from the API
   const { data: post, isLoading, isError } = useQuery({
@@ -34,63 +35,35 @@ export default function BlogPost() {
     },
   });
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const img = e.currentTarget;
-    img.style.display = 'none';
-    
-    const fallback = document.createElement('div');
-    fallback.className = 'h-64 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] mb-8 rounded-xl flex items-center justify-center text-white';
-    fallback.innerHTML = `
-      <div class="text-center">
-        <svg class="h-12 w-12 mx-auto mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-        </svg>
-        <p class="text-sm opacity-80">Article Image</p>
-      </div>
-    `;
-    
-    img.parentNode?.insertBefore(fallback, img);
-  };
-
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopiedLink(true);
+      toast({
+        title: "Link Copied",
+        description: "Article URL copied to clipboard.",
+      });
       setTimeout(() => setCopiedLink(false), 2000);
     } catch (err) {
-      console.error('Failed to copy link');
+      toast({
+        title: "Copy Failed",
+        description: "Could not copy link.",
+        variant: "destructive"
+      });
     }
   };
 
-  const shareUrl = encodeURIComponent(window.location.href);
-  const shareTitle = encodeURIComponent(post?.title || '');
-
   if (isLoading) {
     return (
-      <div className="py-16 bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <Skeleton className="h-6 w-32 mb-8" />
-            <div className="space-y-6">
-              <div className="flex items-center space-x-3">
-                <Skeleton className="h-6 w-20" />
-                <Skeleton className="h-4 w-32" />
-              </div>
-              <Skeleton className="h-12 w-full" />
-              <div className="flex items-center space-x-4">
-                <Skeleton className="h-12 w-12 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-32" />
-                </div>
-              </div>
-              <Skeleton className="h-64 w-full rounded-xl" />
-              <div className="space-y-3">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-              </div>
-            </div>
+      <div className="py-12 bg-[#F8FAFC] min-h-screen">
+        <div className="container mx-auto px-4 max-w-4xl space-y-6">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-64 w-full rounded-2xl" />
+          <div className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
           </div>
         </div>
       </div>
@@ -99,231 +72,124 @@ export default function BlogPost() {
 
   if (isError || !post) {
     return (
-      <div className="py-20 bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">📄</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Article not found</h2>
-          <p className="text-gray-600 mb-6">The article you're looking for doesn't exist or has been removed.</p>
-          <Button asChild>
-            <Link href="/blog">
-              <ChevronLeft className="h-4 w-4 mr-2" />
-              Return to blog
-            </Link>
-          </Button>
+      <div className="py-20 bg-[#F8FAFC] min-h-screen text-center">
+        <div className="max-w-md mx-auto p-8 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-4">
+          <h2 className="text-xl font-serif font-bold text-slate-900">Article Not Found</h2>
+          <p className="text-xs text-slate-500">The scholarly article you requested does not exist or has been moved.</p>
+          <Link href="/blog">
+            <a className="inline-flex items-center gap-2 px-4 py-2 bg-[#1c3877] text-white text-xs font-semibold rounded-lg">
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to Articles</span>
+            </a>
+          </Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-blue-50/30 min-h-screen">
-      <article className="py-16">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            {/* Back to blog link */}
-            <Button variant="ghost" asChild className="mb-8 hover:bg-white/50">
-              <Link href="/blog">
-                <ChevronLeft className="h-4 w-4 mr-2" />
-                Back to all articles
-              </Link>
-            </Button>
-            
-            {/* Article header */}
-            <header className="mb-8 sm:mb-12 bg-white rounded-xl p-4 sm:p-6 lg:p-8 shadow-sm">
-              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-                <Badge variant="default" className="bg-[#294D98] hover:bg-[#1B387A] text-xs">
-                  {post.category}
-                </Badge>
-                <div className="flex items-center text-xs sm:text-sm text-gray-500">
-                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  <time dateTime={post.date}>
-                    {new Date(post.date).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </time>
-                </div>
-                <div className="flex items-center text-xs sm:text-sm text-gray-500">
-                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  {post.readTime} min read
-                </div>
-              </div>
-              
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
-                {post.title}
-              </h1>
-              
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
-                    <User className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{post.author}</p>
-                    <p className="text-xs sm:text-sm text-gray-500">Contributing Author</p>
-                  </div>
-                </div>
-                
-                {/* Share buttons */}
-                <div className="flex items-center space-x-1 sm:space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={copyToClipboard}
-                    className="hover:bg-gray-50 p-2"
-                  >
-                    {copiedLink ? (
-                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
-                    ) : (
-                      <Copy className="h-3 w-3 sm:h-4 sm:w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="hover:bg-blue-50 p-2"
-                  >
-                    <a
-                      href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Twitter className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </a>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="hover:bg-blue-50 p-2"
-                  >
-                    <a
-                      href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Linkedin className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </a>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    asChild
-                    className="hover:bg-blue-50 p-2"
-                  >
-                    <a
-                      href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Facebook className="h-3 w-3 sm:h-4 sm:w-4" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </header>
-            
-            {/* Article content */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              {/* Thumbnail image */}
-              {(post as any).thumbnail ? (
-                <img 
-                  src={(post as any).thumbnail} 
-                  alt={post.title}
-                  className="h-48 sm:h-64 lg:h-80 w-full object-cover"
-                  onError={handleImageError}
-                />
-              ) : (
-                <div className="h-48 sm:h-64 lg:h-80 w-full bg-gradient-to-br from-[#294D98] to-[#1B387A] flex items-center justify-center text-white">
-                  <div className="text-center">
-                    <Calendar className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-2 opacity-60" />
-                    <p className="text-xs sm:text-sm opacity-80">Featured Article</p>
-                  </div>
-                </div>
-              )}
-              
-              <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
-                <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-                  <p className="text-base sm:text-lg lg:text-xl text-gray-800 font-medium leading-relaxed mb-6 sm:mb-8 text-justify font-sans">
-                    {post.excerpt}
-                  </p>
-                  
-                  <div 
-                    className="prose-headings:text-slate-900 prose-headings:font-serif prose-headings:font-bold prose-p:text-slate-800 prose-p:leading-relaxed prose-p:text-justify prose-li:text-slate-800 prose-li:text-justify prose-strong:text-slate-900 prose-a:text-[#1c3877] hover:prose-a:underline prose-img:rounded-lg prose-img:shadow-md font-sans"
-                    dangerouslySetInnerHTML={{ __html: post.content }} 
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Tags section */}
-            {post.tags && (
-              <div className="mt-8 bg-white rounded-xl p-8 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Share2 className="h-5 w-5 mr-2" />
-                  Related Topics
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {(() => {
-                    let tagsArray: string[] = [];
-                    
-                    if (post.tags) {
-                      try {
-                        if (typeof post.tags === 'string') {
-                          if (post.tags.startsWith('[')) {
-                            tagsArray = JSON.parse(post.tags);
-                          } else {
-                            tagsArray = post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
-                          }
-                        } else if (Array.isArray(post.tags)) {
-                          tagsArray = post.tags;
-                        }
-                      } catch (e) {
-                        console.error('Failed to parse tags', e);
-                        if (typeof post.tags === 'string') {
-                          tagsArray = post.tags.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag);
-                        }
-                      }
-                    }
-                    
-                    if (!Array.isArray(tagsArray)) {
-                      tagsArray = [];
-                    }
-                    
-                    return tagsArray.length > 0 ? tagsArray.map((tag: string, index: number) => (
-                      <Badge 
-                        key={index} 
-                        variant="secondary"
-                        className="hover:bg-[#294D98] hover:text-white transition-colors cursor-pointer"
-                      >
-                        {tag}
-                      </Badge>
-                    )) : (
-                      <span className="text-sm text-gray-500">No tags available</span>
-                    );
-                  })()}
-                </div>
-              </div>
+    <article className="bg-[#F8FAFC] min-h-screen py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
+      <div className="max-w-4xl mx-auto space-y-8">
+        
+        {/* Back navigation & Share action */}
+        <div className="flex items-center justify-between">
+          <Link href="/blog">
+            <a className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-[#1c3877] transition-colors">
+              <ChevronLeft className="w-4 h-4" />
+              <span>Back to All Articles</span>
+            </a>
+          </Link>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={copyToClipboard}
+            className="h-8 text-xs font-medium border-slate-300 text-slate-700 hover:text-[#1c3877] gap-1.5"
+          >
+            {copiedLink ? (
+              <>
+                <Check className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="text-emerald-700">Link Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="h-3.5 w-3.5 text-slate-500" />
+                <span>Share Article</span>
+              </>
             )}
-            
-            {/* Back to blog CTA */}
-            <div className="mt-12 text-center">
-              <Separator className="mb-8" />
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900">Explore More Articles</h3>
-                <p className="text-gray-600">Discover more insights on legal citation and academic writing</p>
-                <Button asChild size="lg" className="bg-[#294D98] hover:bg-[#1B387A]">
-                  <Link href="/blog">
-                    View All Articles
-                  </Link>
-                </Button>
-              </div>
+          </Button>
+        </div>
+
+        {/* Article Header Card */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-10 shadow-xs space-y-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded bg-blue-50 text-[#1c3877] border border-blue-100">
+              {post.category}
+            </span>
+            <span className="text-xs text-slate-400">•</span>
+            <div className="flex items-center gap-1 text-xs text-slate-500 font-mono">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>
+                {new Date(post.date).toLocaleDateString('en-US', { 
+                  month: 'long', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                })}
+              </span>
+            </div>
+            <span className="text-xs text-slate-400">•</span>
+            <div className="flex items-center gap-1 text-xs text-slate-500 font-mono">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{post.readTime} min read</span>
+            </div>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-slate-900 leading-tight">
+            {post.title}
+          </h1>
+
+          {/* Author Block */}
+          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+            <div className="w-10 h-10 rounded-full bg-[#1c3877] text-white flex items-center justify-center font-serif font-bold text-sm">
+              {post.author.charAt(0)}
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-900">{post.author}</div>
+              <div className="text-xs text-slate-500">NALT Legal Contributor</div>
             </div>
           </div>
         </div>
-      </article>
-    </div>
+
+        {/* Lead Excerpt Banner - Justified */}
+        <div className="bg-[#1c3877]/5 border-l-4 border-[#1c3877] p-5 sm:p-6 rounded-r-xl">
+          <p className="text-sm sm:text-base text-slate-800 leading-relaxed font-sans text-justify italic">
+            "{post.excerpt}"
+          </p>
+        </div>
+
+        {/* Article Body - Clean Academic Typography with full text-justify */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-12 shadow-xs">
+          <div 
+            className="prose prose-slate max-w-none prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-800 prose-p:leading-relaxed prose-p:text-justify prose-li:text-slate-800 prose-li:text-justify prose-strong:text-slate-900 prose-a:text-[#1c3877] hover:prose-a:underline"
+            dangerouslySetInnerHTML={{ __html: post.content }} 
+          />
+
+          {/* Academic Source Note */}
+          <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Complies with NALT Uniform Format and Citation Guide (2021)</span>
+            </div>
+            <Link href="/citation-generator">
+              <a className="inline-flex items-center gap-1 text-[#1c3877] font-semibold hover:underline">
+                <span>Try citing in NALT format</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </Link>
+          </div>
+        </div>
+
+      </div>
+    </article>
   );
 }

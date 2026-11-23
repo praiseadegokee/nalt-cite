@@ -127,7 +127,7 @@ export default function FAQPage() {
           <div className="relative z-10 max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded bg-white/10 text-blue-200 text-xs font-semibold uppercase tracking-wider">
               <ShieldCheck className="w-3.5 h-3.5 text-blue-300" />
-              <span>Official Rules Repository • 171 Standard Questions</span>
+              <span>Official Rules Repository</span>
             </div>
             
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-white">
@@ -150,7 +150,7 @@ export default function FAQPage() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
-              placeholder="Search across 171 questions (e.g., 'unreported case', 'statute', 'initials', 'NWLR')..."
+              placeholder="Search legal citation questions (e.g., 'unreported case', 'statute', 'initials', 'NWLR')..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-11 pr-10 py-3 bg-white border border-slate-300 rounded-xl shadow-xs text-sm focus-visible:ring-1 focus-visible:ring-[#1c3877] focus-visible:border-[#1c3877]"
