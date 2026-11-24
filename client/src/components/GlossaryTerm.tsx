@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Copy, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
@@ -11,111 +11,87 @@ interface GlossaryTermProps {
 
 export default function GlossaryTerm({ term, definition, id }: GlossaryTermProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
   
-  // Cut off the definition if it's too long (when not expanded)
-  const isTruncated = definition.length > 200;
-  const displayDefinition = isExpanded ? definition : isTruncated ? `${definition.substring(0, 200)}...` : definition;
+  const isTruncated = definition.length > 220;
+  const displayDefinition = isExpanded ? definition : isTruncated ? `${definition.substring(0, 220)}...` : definition;
   
-  // Handle copying the term and definition to clipboard
-  const handleCopy = (e: React.MouseEvent) => {
+  const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const textToCopy = `${term}: ${definition}`;
-    
-    navigator.clipboard.writeText(textToCopy).then(() => {
+    try {
+      await navigator.clipboard.writeText(`${term}: ${definition}`);
+      setHasCopied(true);
       toast({
-        title: "Copied!",
-        description: "Term and definition copied to clipboard",
-        duration: 2000,
+        title: "Copied",
+        description: `Definition for "${term}" copied to clipboard.`,
       });
-    }).catch(err => {
-      console.error('Failed to copy text: ', err);
+      setTimeout(() => setHasCopied(false), 2000);
+    } catch {
       toast({
-        title: "Copy failed",
-        description: "Could not copy to clipboard",
-        variant: "destructive",
+        title: "Copy Failed",
+        description: "Could not copy definition.",
+        variant: "destructive"
       });
-    });
+    }
   };
   
   return (
     <div 
       className={cn(
-        "bg-white rounded-lg border shadow-sm transition relative group",
-        isExpanded 
-          ? "border-[#C3CDE1] shadow-md" 
-          : "border-gray-200 hover:border-[#C3CDE1] hover:shadow",
+        "bg-white rounded-xl border border-slate-200 p-5 shadow-xs transition-all duration-200 flex flex-col justify-between group",
+        isExpanded ? "border-[#1c3877]/60 shadow-sm" : "hover:border-slate-300 hover:shadow-xs",
         isTruncated && "cursor-pointer"
       )}
       onClick={() => isTruncated && setIsExpanded(!isExpanded)}
     >
-      <div className="p-4">
-        <div className="flex justify-between items-center mb-2">
-          <h4 className="font-bold text-[#294D98] text-lg">{term}</h4>
-          <div className="flex items-center gap-1">
-            <button 
-              onClick={handleCopy}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-full hover:bg-gray-100"
-              title="Copy to clipboard"
-              aria-label="Copy to clipboard"
-            >
-              <Copy size={16} className="text-gray-500 hover:text-[#294D98]" />
-            </button>
-            
-            {isTruncated && (
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsExpanded(!isExpanded);
-                }}
-                className="p-1.5 rounded-full hover:bg-gray-100"
-                title={isExpanded ? "Show less" : "Show more"}
-                aria-label={isExpanded ? "Show less" : "Show more"}
-              >
-                {isExpanded ? 
-                  <ChevronUp size={18} className="text-[#294D98]" /> : 
-                  <ChevronDown size={18} className="text-[#294D98]" />
-                }
-              </button>
+      <div className="space-y-2.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="w-5 h-5 rounded bg-[#1c3877]/10 text-[#1c3877] font-serif font-bold text-xs flex items-center justify-center shrink-0">
+              §
+            </span>
+            <h4 className="font-serif font-bold text-slate-900 text-base sm:text-lg group-hover:text-[#1c3877] transition-colors leading-tight">
+              {term}
+            </h4>
+          </div>
+
+          <button 
+            type="button"
+            onClick={handleCopy}
+            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-[#1c3877] transition-colors shrink-0"
+            title="Copy definition"
+          >
+            {hasCopied ? (
+              <Check className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <Copy className="w-4 h-4" />
             )}
-          </div>
+          </button>
         </div>
         
-        <div className="prose prose-sm max-w-none">
-          <p className="text-gray-700 leading-relaxed">{displayDefinition}</p>
-        </div>
-        
-        {isTruncated && (
-          <div className="mt-3 text-right">
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsExpanded(!isExpanded);
-              }} 
-              className="text-[#294D98] text-sm font-medium inline-flex items-center hover:underline"
-            >
-              {isExpanded ? "Show less" : "Read more"}
-              {isExpanded ? 
-                <ChevronUp size={16} className="ml-1" /> : 
-                <ChevronDown size={16} className="ml-1" />
-              }
-            </button>
-          </div>
-        )}
+        <p className="text-slate-600 text-xs sm:text-sm leading-relaxed text-justify font-sans">
+          {displayDefinition}
+        </p>
       </div>
-      
-      {isExpanded && (
-        <div className="bg-[#F8FAFD] px-4 py-2 border-t border-[#C3CDE1] text-xs text-gray-500 rounded-b-lg">
-          <div className="flex justify-between items-center">
-            <span>Term ID: {id || 'N/A'}</span>
-            <button
-              onClick={handleCopy}
-              className="text-[#294D98] hover:underline flex items-center"
-            >
-              <Copy size={12} className="mr-1" />
-              Copy full text
-            </button>
-          </div>
+
+      {isTruncated && (
+        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-end">
+          <button 
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(!isExpanded);
+            }} 
+            className="text-[11px] font-semibold text-[#1c3877] hover:underline inline-flex items-center gap-1"
+          >
+            <span>{isExpanded ? "Show less" : "Read full definition"}</span>
+            {isExpanded ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
         </div>
       )}
     </div>

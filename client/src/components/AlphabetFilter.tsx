@@ -9,19 +9,30 @@ export default function AlphabetFilter({ selectedLetter, onSelectLetter }: Alpha
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
   
   return (
-    <div className="flex flex-wrap gap-1.5 justify-center px-1">
+    <div className="flex flex-wrap gap-1 sm:gap-1.5 justify-center sm:justify-start">
+      <button
+        className={cn(
+          "px-3 h-8 sm:h-9 flex items-center justify-center rounded-lg transition-all text-xs font-semibold",
+          selectedLetter === ''
+            ? "bg-[#1c3877] text-white shadow-xs" 
+            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+        )}
+        onClick={() => onSelectLetter('')}
+        aria-pressed={selectedLetter === ''}
+      >
+        All
+      </button>
+
       {alphabet.map(letter => {
         const isSelected = selectedLetter === letter;
-        
         return (
           <button 
             key={letter}
             className={cn(
-              "w-9 h-9 flex items-center justify-center rounded-md transition-all",
-              "text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#294D98]",
+              "w-8 h-8 sm:w-8.5 sm:h-8.5 flex items-center justify-center rounded-lg transition-all text-xs font-semibold",
               isSelected
-                ? "bg-[#294D98] text-white shadow-sm" 
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-[#1c3877] text-white shadow-xs" 
+                : "bg-slate-100 text-slate-700 hover:bg-slate-200"
             )}
             onClick={() => onSelectLetter(letter)}
             aria-pressed={isSelected}
@@ -31,21 +42,6 @@ export default function AlphabetFilter({ selectedLetter, onSelectLetter }: Alpha
           </button>
         );
       })}
-      
-      <button
-        className={cn(
-          "w-auto px-3 h-9 flex items-center justify-center rounded-md transition-all ml-1",
-          "text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-[#294D98]",
-          selectedLetter === 'ALL'
-            ? "bg-[#294D98] text-white shadow-sm" 
-            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-        )}
-        onClick={() => onSelectLetter('')}
-        aria-pressed={selectedLetter === ''}
-        aria-label="Show all letters"
-      >
-        All
-      </button>
     </div>
   );
 }
